@@ -96,8 +96,10 @@ h3{font-family:var(--serif);font-size:22px;font-weight:400;color:var(--text);mar
 .ring.sm .n{font-size:14px;letter-spacing:-.02em}
 .tile>*{position:relative;z-index:1}
 .tile>.halftone{position:absolute;z-index:0}
-.tile>.corner,.tile>.play{position:absolute}
-.tile.hero{min-height:214px;padding:20px}
+.tile>.corner,.tile>.play,.tile>.pick{position:absolute}
+.tile .pick{right:86px;bottom:19px;width:52px;height:52px;border-radius:50%;background:var(--s3);color:var(--text);display:grid;place-items:center;z-index:2;box-shadow:0 8px 24px -8px #000;transition:transform .18s var(--spring)}
+.tile .pick:active{transform:scale(.9)}
+.tile.hero{min-height:200px;padding:20px}
 .tile.hero .halftone{right:-54px;bottom:-64px;width:200px;height:200px}
 .tile.hero .nm{font-family:var(--serif);font-size:40px;line-height:.98;letter-spacing:-.02em;margin-top:8px;max-width:72%}
 .tile.hero .chips{max-width:70%}
@@ -170,9 +172,8 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.7;stro
 
 /* Inicio */
 .hhead{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;position:relative}
-.hhead .burst{right:52px;top:-10px;width:96px;height:96px;opacity:.5}
+.hhead .burst{right:4px;top:-6px;width:96px;height:96px;opacity:.5}
 .hhead>div{position:relative}
-.hhead .icon-btn{position:relative;margin-top:4px}
 .greet{font-family:var(--serif);font-weight:400;font-size:46px;line-height:.96;letter-spacing:-.025em;margin:8px 0 22px}
 .info{display:flex;flex-wrap:wrap;gap:4px 16px;margin:14px 0 20px;font-size:13px;color:var(--muted)}
 .live-banner{display:flex;align-items:center;gap:12px;padding:14px 18px;border-radius:999px;background:#f3f3f1;color:#0a0a0b;margin:0 0 12px;font-weight:600;width:100%}
@@ -719,7 +720,6 @@ function nextDay() {
   return order[0];
 }
 const dayCount = d => d.ath.length + d.main.length + d.health.length;
-const dayRange = d => d.kind === 'Potencia' ? '3–5 reps' : d.kind === 'Hipertrofia' ? '8–12 reps' : `${dayCount(d)} ejercicios`;
 const lastOfDay = id => { for (let i = IDX.sorted.length - 1; i >= 0; i--) if (IDX.sorted[i].dayId === id) return IDX.sorted[i]; return null; };
 const sessionVolume = s => s.ex.reduce((v, x) => v + (x.metric === 'wr' ? x.sets.reduce((a, z) => a + num(z.w) * num(z.r), 0) : 0), 0);
 const sessionSets = s => s.ex.reduce((n, x) => n + x.sets.length, 0);
@@ -801,7 +801,7 @@ function rerender() { const y = window.scrollY; render(); window.scrollTo(0, y);
 /* ---------- Inicio ---------- */
 function vHome() {
   const now = new Date(), today = ymd(now), ws = weekStart(now), set = trainedSet(), goal = S.settings.goal;
-  const done = weekCount(ws, set), left = goal - done;
+  const done = weekCount(ws, set);
   const nd = S.routine.days[nextDay()], ndLast = lastOfDay(nd.id);
   const hr = now.getHours();
   const greet = hr < 6 ? ['Buenas', 'noches'] : hr < 13 ? ['Buenos', 'días'] : hr < 20 ? ['Buenas', 'tardes'] : ['Buenas', 'noches'];
@@ -834,11 +834,7 @@ function vHome() {
   const volBig = volT >= 10000 ? [fmt(volT / 1000), 't'] : [fmt(volT), 'kg'];
 
   return `<div class="stg">
-  <div class="hhead">${BURST}
-    <div><div class="eyebrow">${esc(now.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' }))}</div>
-      <div class="greet">${greet[0]}<br>${greet[1]}.</div></div>
-    <button class="icon-btn glass lg" data-act="pickDay" aria-label="Entrenar">${IC.plus}</button>
-  </div>
+  <div class="hhead">${BURST}<div class="greet">${greet[0]}<br>${greet[1]}.</div></div>
   ${S.timer ? `<button class="live-banner press" data-act="timerOpen"><span class="dot"></span><span style="flex:1;text-align:left">4×4 en curso · <span id="homeTimer"></span></span>${IC.chev.replace('chev', '')}</button>` : ''}
   ${S.draft ? `<button class="live-banner press" data-act="resume"><span class="dot"></span><span style="flex:1;text-align:left">Sesión en curso · ${esc(S.routine.days[S.draft.dayId]?.name || '')}</span><span class="num-f" id="homeElapsed"></span>${IC.chev.replace('chev', '')}</button>` : ''}
 
@@ -846,8 +842,8 @@ function vHome() {
     <div class="tile hero wide" role="button" data-act="dayOpen" data-day="${nd.id}">${HALFTONE}
       <span class="corner">${ring(58, done / goal, `${done}/${goal}`, 'sm')}</span>
       <div><div class="eyebrow">Próxima sesión</div><div class="nm">${esc(nd.name)}</div>
-        <div class="chips"><span class="chip g">${dayRange(nd)}</span><span class="chip">${esc(nd.weekday)}</span><span class="chip">${ndLast ? daysAgo(ndLast.date) : 'Sin registros'}</span></div></div>
-      <div class="t2" style="max-width:62%">${left <= 0 ? 'Objetivo de la semana cumplido' : `Te ${left === 1 ? 'falta 1 sesión' : `faltan ${left} sesiones`} esta semana`}</div>
+        <div class="chips">${nd.weekday ? `<span class="chip">${esc(nd.weekday)}</span>` : ''}<span class="chip">${ndLast ? daysAgo(ndLast.date) : 'Sin registros'}</span></div></div>
+      <button class="pick" data-act="pickDay" aria-label="Elegir otra sesión">${IC.plus}</button>
       <button class="play" data-act="start" data-day="${nd.id}" aria-label="Empezar ${esc(nd.name)}">${IC.play}</button>
     </div>
 
