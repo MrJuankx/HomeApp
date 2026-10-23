@@ -143,6 +143,9 @@ h3{font-family:var(--serif);font-size:22px;font-weight:400;color:var(--text);mar
 .icon-btn.glass,.icon-btn.solid{background:var(--s3)}
 .icon-btn.lg{width:52px;height:52px}
 .icon-btn.white{background:#f3f3f1;color:#0a0a0b}
+.icon-btn.sm{width:38px;height:38px;color:var(--muted)}
+.icon-btn.sm svg{width:18px;height:18px}
+.arrows{display:flex;gap:0;margin-right:-8px;flex:none}
 svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 
 /* Navegación inferior: 4 iconos */
@@ -669,6 +672,8 @@ function load() {
       const s = JSON.parse(raw), f = freshState();
       s.settings = { ...f.settings, ...(s.settings || {}) };
       s.routine = s.routine && s.routine.days ? s.routine : f.routine;
+      s.routine.order = (Array.isArray(s.routine.order) ? s.routine.order : Object.keys(s.routine.days)).filter(id => s.routine.days[id]);
+      if (!s.routine.order.length) s.routine = f.routine;
       s.sessions = Array.isArray(s.sessions) ? s.sessions : [];
       s.body = Array.isArray(s.body) ? s.body : [];
       s.cardio = Array.isArray(s.cardio) ? s.cardio : [];
@@ -713,11 +718,14 @@ function bestStreak() {
   while (ws >= first) { if (weekCount(ws, set) >= g) { cur++; best = Math.max(best, cur); } else cur = 0; ws = addDays(ws, -7); }
   return best;
 }
+// Día siguiente: el que va después de la última sesión hecha, según el orden de Ajustes
 function nextDay() {
-  const order = S.routine.order; const last = IDX.sorted[IDX.sorted.length - 1];
-  if (!last) return order[0];
-  const i = order.indexOf(last.dayId); return order[(i + 1) % order.length] || order[0];
+  const order = S.routine.order;
+  for (let i = IDX.sorted.length - 1; i >= 0; i--) { const k = order.indexOf(IDX.sorted[i].dayId); if (k >= 0) return order[(k + 1) % order.length]; }
+  return order[0];
 }
+const dayCount = d => d.ath.length + d.main.length + d.health.length;
+const dayRange = d => d.kind === 'Potencia' ? '3–5 reps' : d.kind === 'Hipertrofia' ? '8–12 reps' : `${dayCount(d)} ejercicios`;
 const lastOfDay = id => { for (let i = IDX.sorted.length - 1; i >= 0; i--) if (IDX.sorted[i].dayId === id) return IDX.sorted[i]; return null; };
 const sessionVolume = s => s.ex.reduce((v, x) => v + (x.metric === 'wr' ? x.sets.reduce((a, z) => a + num(z.w) * num(z.r), 0) : 0), 0);
 const sessionSets = s => s.ex.reduce((n, x) => n + x.sets.length, 0);
@@ -854,7 +862,7 @@ function vHome() {
     <div class="tile hero wide" role="button" data-act="dayOpen" data-day="${nd.id}">${HALFTONE}
       <span class="corner">${ring(58, done / goal, `${done}/${goal}`, 'sm')}</span>
       <div><div class="eyebrow">Próxima sesión</div><div class="nm">${esc(nd.name)}</div>
-        <div class="chips"><span class="chip g">${nd.kind === 'Potencia' ? '3–5' : '8–12'} reps</span><span class="chip">${esc(nd.weekday)}</span><span class="chip">${ndLast ? daysAgo(ndLast.date) : 'Sin registros'}</span></div></div>
+        <div class="chips"><span class="chip g">${dayRange(nd)}</span><span class="chip">${esc(nd.weekday)}</span><span class="chip">${ndLast ? daysAgo(ndLast.date) : 'Sin registros'}</span></div></div>
       <div class="t2" style="max-width:62%">${left <= 0 ? 'Objetivo de la semana cumplido' : `Te ${left === 1 ? 'falta 1 sesión' : `faltan ${left} sesiones`} esta semana`}</div>
       <button class="play" data-act="start" data-day="${nd.id}" aria-label="Empezar ${esc(nd.name)}">${IC.play}</button>
     </div>
@@ -910,6 +918,7 @@ function startSession(dayId) {
     if (!confirm('Ya tienes una sesión en curso. ¿Descartarla y empezar otra?')) return;
   }
   const day = S.routine.days[dayId]; if (!day) return;
+  if (!dayCount(day)) { toast('Este día no tiene ejercicios: añádelos en Ajustes'); return; }
   const mk = (e, blk) => ({
     key: uid(), name: e.name, metric: e.metric, basic: !!e.basic, side: !!e.side, blk, alts: e.alts || [],
     t: { sets: e.sets, reps: e.reps, inc: e.inc ?? 2.5, rest: e.rest || 0 },
@@ -1381,7 +1390,9 @@ function vSet() {
   const st = S.settings;
   const sw = (k, t1, t2) => `<button class="setting" data-act="toggle" data-k="${k}"><div class="grow"><div style="font-weight:600">${t1}</div>${t2 ? `<div class="t2">${t2}</div>` : ''}</div><span class="sw ${st[k] ? 'on' : ''}"></span></button>`;
   return `<div class="stg"><div class="eyebrow gold">Ajustes</div><h1>Configuración</h1>
-  <h3>Rutina</h3><div class="card" style="padding:2px 16px">${S.routine.order.map((id, i) => { const d = S.routine.days[id]; return `<button class="list-item" data-act="editDay" data-day="${id}"><div class="lead">${esc(d.short)}</div><div class="grow"><div class="t1">${esc(d.name)}</div><div class="t2">Día ${i + 1} · ${d.ath.length + d.main.length + d.health.length} ejercicios · ${esc(d.weekday)}</div></div>${IC.chev}</button>`; }).join('')}</div>
+  <h3>Rutina</h3><div class="card" style="padding:2px 16px">${S.routine.order.map((id, i, o) => { const d = S.routine.days[id]; return `<div class="list-item" role="button" data-act="editDay" data-day="${id}"><div class="lead">${esc(d.short)}</div><div class="grow"><div class="t1">${esc(d.name)}</div><div class="t2">Día ${i + 1} · ${dayCount(d)} ejercicios${d.weekday ? ' · ' + esc(d.weekday) : ''}</div></div>${arrows('dayMove', `data-day="${id}"`, i, o.length)}</div>`; }).join('')}
+    <button class="list-item" data-act="addDay"><div class="lead">${IC.plus}</div><div class="grow"><div class="t1">Añadir día</div><div class="t2">Vacío o copiando uno existente</div></div></button></div>
+  <div class="muted" style="font-size:12.5px;margin-top:8px">Las flechas cambian el orden de rotación. En Inicio, la próxima sesión es el día que va después de tu última sesión en este orden.</div>
   <h3>Objetivo semanal</h3><div class="card"><div class="goalpick">${[1, 2, 3, 4, 5, 6, 7].map(n => `<button class="${n === st.goal ? 'on' : ''}" data-act="goal" data-n="${n}">${n}</button>`).join('')}</div></div>
   <h3>Bloques de la sesión</h3><div class="card" style="padding:2px 16px">
     ${sw('warmup', 'Calentamiento', 'Lista de 8–10 min antes del bloque atlético')}
@@ -1416,15 +1427,42 @@ function vSet() {
 
 function vEditDay() {
   const d = S.routine.days[ui.editDay]; if (!d) return vSet();
+  const sel = (f, opts) => `<select class="inp" data-dayf="${f}">${[...new Set([...opts, d[f] || opts[opts.length - 1]])].map(o => `<option ${o === d[f] ? 'selected' : ''}>${esc(o)}</option>`).join('')}</select>`;
   return `<div class="stg"><button class="icon-btn" style="margin-left:-10px" data-act="nav" data-nav="set">${IC.back}</button>
-  <div class="eyebrow gold" style="margin-top:6px">Editar día</div><h1 style="font-size:30px">${esc(d.name)}</h1>
+  <div class="eyebrow gold" style="margin-top:6px">Editar día · ${S.routine.order.indexOf(d.id) + 1} de ${S.routine.order.length}</div><h1 style="font-size:30px">${esc(d.name)}</h1>
   <div class="card" style="margin-top:16px">
     <label class="field" style="margin-top:0"><span>Nombre</span><input class="inp" data-dayf="name" value="${esc(d.name)}"></label>
     <div class="pair"><label class="field"><span>Código</span><input class="inp" data-dayf="short" maxlength="3" value="${esc(d.short)}"></label><label class="field"><span>Día sugerido</span><input class="inp" data-dayf="weekday" value="${esc(d.weekday)}"></label></div>
+    <div class="pair"><label class="field"><span>Zona</span>${sel('zone', ['Torso', 'Pierna', 'Cuerpo completo', 'Otro'])}</label><label class="field"><span>Tipo</span>${sel('kind', ['Potencia', 'Hipertrofia', 'Fuerza', 'Otro'])}</label></div>
   </div>
-  ${BLOCKS.map(([b, n]) => `<h3>${n}</h3><div class="card" style="padding:2px 16px">${d[b].map((e, i) => `<button class="list-item" data-act="editEx" data-b="${b}" data-i="${i}"><div class="grow"><div class="t1">${esc(e.name)}${e.basic ? '<span class="tag">Básico</span>' : ''}</div><div class="t2">${rng(e.sets)} × ${rng(e.reps)} ${UNIT[e.metric]}${e.side ? ' por lado' : ''}${e.metric === 'wr' || e.metric === 'dist' ? ` · +${fmt(e.inc)} kg` : ''} · ${fmtDur(e.rest || DEFAULT_REST[b])}</div></div>${IC.edit}</button>`).join('') || '<div class="empty">Sin ejercicios</div>'}
-    <button class="list-item" data-act="editEx" data-b="${b}" data-i="-1" style="color:var(--gold)"><span>${IC.plus}</span><span class="grow" style="font-weight:600">Añadir ejercicio</span></button></div>`).join('')}
-  <div class="muted" style="font-size:12.5px;margin-top:12px">Los cambios aplican a las próximas sesiones. El historial se agrupa por nombre del ejercicio.</div></div>`;
+  ${BLOCKS.map(([b, n]) => `<h3>${n}</h3><div class="card" style="padding:2px 16px">${d[b].map((e, i, l) => `<div class="list-item" role="button" data-act="editEx" data-b="${b}" data-i="${i}"><div class="grow"><div class="t1">${esc(e.name)}${e.basic ? '<span class="tag">Básico</span>' : ''}</div><div class="t2">${rng(e.sets)} × ${rng(e.reps)} ${UNIT[e.metric]}${e.side ? ' por lado' : ''}${e.metric === 'wr' || e.metric === 'dist' ? ` · +${fmt(e.inc)} kg` : ''} · ${fmtDur(e.rest || DEFAULT_REST[b])}</div></div>${arrows('moveEx', `data-b="${b}"`, i, l.length)}</div>`).join('') || '<div class="empty">Sin ejercicios</div>'}
+    <button class="list-item" data-act="editEx" data-b="${b}" data-i="-1"><span>${IC.plus}</span><span class="grow" style="font-weight:600">Añadir ejercicio</span></button></div>`).join('')}
+  <div class="muted" style="font-size:12.5px;margin-top:12px">Las flechas cambian el orden de los ejercicios. Los cambios aplican a las próximas sesiones; el historial se agrupa por nombre del ejercicio.</div>
+  <button class="btn danger block" style="margin-top:22px" data-act="delDay" data-day="${d.id}">${IC.trash} Eliminar este día</button></div>`;
+}
+// Flechas para subir o bajar un elemento de una lista (no hacen nada en los extremos)
+const arrows = (act, data, i, n) => `<span class="arrows"><button class="icon-btn sm" data-act="${act}" ${data} data-i="${i}" data-d="-1" aria-label="Subir" ${i === 0 ? 'style="opacity:.25"' : ''}>${IC.up}</button><button class="icon-btn sm" data-act="${act}" ${data} data-i="${i}" data-d="1" aria-label="Bajar" ${i === n - 1 ? 'style="opacity:.25"' : ''}>${IC.down}</button></span>`;
+function sheetAddDay() {
+  openSheet(`<div class="eyebrow">Rutina</div><h2 style="margin:6px 0 8px">Añadir día</h2>
+    <button class="opt" data-act="addDayConfirm" data-from="">Día vacío</button>
+    ${S.routine.order.map(id => `<button class="opt" data-act="addDayConfirm" data-from="${id}">Copia de ${esc(S.routine.days[id].name)}</button>`).join('')}
+    <div class="muted" style="font-size:12.5px;margin-top:12px">El día nuevo se añade al final del orden; luego puedes moverlo con las flechas.</div>`);
+}
+function addDay(from) {
+  const src = from && S.routine.days[from] ? clone(S.routine.days[from]) : { zone: 'Otro', kind: 'Otro', weekday: '', ath: [], main: [], health: [] };
+  const id = 'd' + uid(), n = S.routine.order.length + 1;
+  const d = { ...src, id, name: from ? `${src.name} (copia)` : `Día ${n}`, short: from ? (src.short.slice(0, 2) + n).toUpperCase() : `D${n}` };
+  for (const b of ['ath', 'main', 'health']) d[b] = (d[b] || []).map(e => ({ ...e, id: uid() }));
+  S.routine.days[id] = d; S.routine.order.push(id); save(); closeSheet();
+  go('editDay', { editDay: id }); toast('Día añadido');
+}
+function delDay(id) {
+  const d = S.routine.days[id]; if (!d) return;
+  if (S.routine.order.length <= 1) { toast('La rutina necesita al menos un día'); return; }
+  if (S.draft && S.draft.dayId === id) { toast('Hay una sesión en curso de este día'); return; }
+  if (!confirm(`¿Eliminar «${d.name}» de la rutina? Las sesiones que ya hiciste se conservan.`)) return;
+  delete S.routine.days[id]; S.routine.order = S.routine.order.filter(x => x !== id);
+  save(); go('set'); toast('Día eliminado');
 }
 function sheetEditEx(b, i) {
   const d = S.routine.days[ui.editDay];
@@ -1706,6 +1744,10 @@ const A = {
   bodyDel: el => { if (!confirm('¿Eliminar este registro?')) return; S.body = S.body.filter(b => b.date !== el.dataset.d); save(); rerender(); },
   toggle: el => { const k = el.dataset.k; S.settings[k] = !S.settings[k]; save(); el.querySelector('.sw').classList.toggle('on', S.settings[k]); if (k === 'wake') wake(S.settings.wake); },
   editDay: el => go('editDay', { editDay: el.dataset.day }),
+  dayMove: el => { const o = S.routine.order, i = o.indexOf(el.dataset.day), j = i + +el.dataset.d; if (i < 0 || j < 0 || j >= o.length) return; [o[i], o[j]] = [o[j], o[i]]; save(); rerender(); },
+  addDay: () => sheetAddDay(),
+  addDayConfirm: el => addDay(el.dataset.from),
+  delDay: el => delDay(el.dataset.day),
   finishFromMenu: () => sheetFinish(),
   editEx: el => sheetEditEx(el.dataset.b, +el.dataset.i),
   fToggle: el => $('#' + el.dataset.f).classList.toggle('on'),
