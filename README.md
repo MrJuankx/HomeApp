@@ -16,7 +16,7 @@ En Ajustes, al final de la sección Datos, la app indica si el servidor tiene to
 
 | Archivo | Para qué sirve |
 |---|---|
-| `index.html` | La app completa (HTML, CSS y JS en un solo archivo). Incluye la tipografía Fraunces (licencia SIL OFL) incrustada, así que no descarga nada. |
+| `index.html` | La app completa (HTML, CSS y JS en un solo archivo). Incluye las tipografías Newsreader y Geist (licencia SIL OFL) incrustadas, así que no descarga nada. |
 | `manifest.json` | Permite instalarla como app (nombre, colores, iconos). |
 | `sw.js` | Service worker: guarda la app en el teléfono para que abra sin conexión. |
 | `icon-*.png`, `icon.svg` | Iconos. |

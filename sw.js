@@ -1,6 +1,6 @@
 /* Service worker: guarda la app en el teléfono para que funcione sin conexión.
    Al publicar una versión nueva, sube VERSION para que el teléfono la descargue. */
-const VERSION = 'phul-v4';
+const VERSION = 'phul-v5';
 const FILES = ['./', './index.html', './manifest.json', './icon-180.png', './icon-192.png', './icon-512.png', './icon-maskable-512.png'];
 
 self.addEventListener('install', e => {
