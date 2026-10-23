@@ -250,6 +250,93 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.7;stro
 .dots>i.c{background:#fff}
 .fbody{flex:1;min-height:0;display:flex;flex-direction:column;justify-content:center;padding:10px 0;overflow:hidden}
 .fbody>.step{overflow-y:auto;overflow-x:hidden;max-height:100%;padding:2px}
+.fbody.ses{justify-content:flex-start;padding:14px 0 12px}
+.fbody.ses>.step{flex:1;min-height:0;display:flex;flex-direction:column}
+.fbody.ses>.step>*{flex:none}
+
+/* Reloj compacto con la cabecera del paso a su derecha */
+.ctop{display:flex;align-items:center;gap:14px}
+.clock .ctop .tm{flex:none;width:112px;font-size:44px;letter-spacing:-.045em}
+.clock .ctop .tm.long{font-size:32px}
+.chead{flex:1;min-width:0;align-self:stretch;display:flex;align-items:center;padding-left:14px;border-left:1px solid var(--line2)}
+.chead .xhead{gap:12px;width:100%}
+.clock .chead .blk{display:flex;align-items:center;gap:4px;font-size:10px;letter-spacing:.14em;min-height:16px}
+.chead .blk span{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.clock .chead .xn{font-size:22px;line-height:1.04;margin:3px 0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.clock .chead .xn.long{font-size:18.5px}
+.clock .chead .xm{font-size:12px;line-height:1.3}
+.chead .stico .n svg{width:18px;height:18px}
+.chead .donec{width:44px;height:44px;box-shadow:0 0 0 3px var(--s3)}
+.chead .donec svg{width:20px;height:20px}
+.icon-btn.xmore{width:34px;height:30px;margin:-8px -8px -8px 0;color:var(--muted)}
+.icon-btn.xmore svg{width:18px;height:18px}
+.clock .ctop+.sub{margin-top:12px;min-height:32px}
+
+/* Mosaico bajo las series: llena el hueco y se recorta solo en pantallas bajas */
+.xinfo{flex:1 1 0!important;min-height:0;container:xi / size;margin-top:14px}
+.xinfo>.in{height:100%;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:auto minmax(0,1fr);gap:10px}
+.ti{position:relative;overflow:hidden;min-width:0;min-height:0;display:flex;flex-direction:column;justify-content:space-between;gap:10px;padding:12px 14px;border-radius:22px;background:var(--card);border:1px solid rgba(255,255,255,.05);box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}
+.ti>*{position:relative;z-index:1}
+.ti>.halftone{position:absolute;z-index:0}
+.ti .lb{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ti .v{font-size:22px;font-weight:600;letter-spacing:-.03em;line-height:1;font-variant-numeric:tabular-nums;white-space:nowrap}
+.ti .v small{font-size:12.5px;color:var(--muted);font-weight:500;letter-spacing:0;margin-left:2px}
+.ti .t2{font-size:12px;color:var(--muted);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ti .nm{font-family:var(--serif);font-size:18px;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ti.sm{gap:7px;justify-content:flex-start;padding-bottom:17px}
+.ti.sm .pb{position:absolute;left:14px;right:14px;bottom:10px}
+.ti .pb{height:3px;border-radius:3px;background:rgba(255,255,255,.1);overflow:hidden}
+.ti .pb i{display:block;height:100%;background:#f3f3f1;border-radius:3px;transition:width .6s var(--ease)}
+.ti.wide{grid-column:1/-1;justify-content:flex-start;gap:0}
+.ti .hrow{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.ti .bst{font-size:12px;color:var(--muted);white-space:nowrap}
+.ti .bst b{font-size:15px;color:var(--text);font-weight:600;font-variant-numeric:tabular-nums}
+.ti .bst .badge{vertical-align:2px}
+.xbars{flex:1;min-height:0;display:grid;grid-template-columns:repeat(8,1fr);gap:7px;align-items:end;margin-top:12px}
+.xbars>*{display:block;min-height:4px;max-height:100%;border-radius:6px}
+.xbars b{height:4px;background:rgba(255,255,255,.06)}
+.xbars i{background:rgba(255,255,255,.16);transform-origin:bottom}
+.xbars i.t{background:#f3f3f1}
+.xbars i.t.e{background:transparent;border:1.5px dashed rgba(255,255,255,.32)}
+.step.in-r .xbars i,.step.in-l .xbars i{animation:growy .8s var(--ease) both}
+.xlab{display:grid;grid-template-columns:repeat(8,1fr);gap:7px;margin-top:7px;font-size:10.5px;color:var(--dim);font-weight:600;white-space:nowrap}
+.xlab span:last-child{color:var(--text);text-align:center}
+.ti.first{justify-content:flex-end}
+.ti.first .lb{margin-bottom:auto}
+.ti.first .halftone{right:-46px;top:-58px;width:180px;height:180px;opacity:.5}
+.ti .q{font-family:var(--serif);font-size:21px;line-height:1.12;letter-spacing:-.01em;max-width:88%}
+.ti.first .t2{white-space:normal;margin-top:6px}
+@container xi (max-height:190px){
+  .xinfo .ti.sm{display:none}
+  .xinfo>.in{grid-template-rows:minmax(0,1fr)}
+}
+@container xi (max-height:230px){ .ti.first .t2{display:none} }
+@container xi (max-height:125px){ .xlab{display:none} .xbars{margin-top:8px} }
+@container xi (max-height:96px){ .xinfo>.in{display:none} }
+
+/* Calentamiento: la lista ocupa todo el alto disponible */
+.wlist{flex:1 1 0!important;min-height:0;display:flex;flex-direction:column;margin-top:2px}
+.wlist .warm{flex:1 1 0;min-height:46px;max-height:72px;font-size:15.5px;padding:6px 2px}
+.warm .lbl{flex:1;min-width:0;line-height:1.25}
+.warm .lbl small{display:block;font-size:12.5px;color:var(--muted);margin-top:2px}
+.warm .wi{font-family:var(--serif);font-size:19px;color:var(--dim);flex:none}
+.warm.on .wi{color:var(--text)}
+
+/* Cierre: resumen arriba y notas que llenan el resto */
+.step.st-end .sumgrid{margin:0 0 4px}
+.step.st-end .stat .v small{font-size:15px;color:var(--muted);font-weight:500}
+.step.st-end textarea.fill{flex:1 1 0!important;min-height:90px;resize:none;margin-top:12px}
+.elist{flex:0 1 auto!important;min-height:0;overflow-y:auto;margin-top:8px}
+.erow{display:flex;align-items:center;gap:10px;padding:9px 2px;border-bottom:1px solid var(--line);font-size:14px}
+.erow:last-child{border-bottom:0}
+.erow .bx{width:20px;height:20px;border-radius:50%;background:#f3f3f1;color:#0a0a0b;display:grid;place-items:center;flex:none}
+.erow .bx svg{width:12px;height:12px;stroke-width:3}
+.erow.no{color:var(--muted)}
+.erow.no .bx{background:transparent;border:1.5px solid var(--line2)}
+.erow .nm{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.erow .r{color:var(--muted);font-size:12.5px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.erow .r b{color:var(--text);font-weight:600}
+.erow .badge{vertical-align:1px}
 .step.in-r{animation:inR .45s var(--ease) both}
 .step.in-l{animation:inL .45s var(--ease) both}
 @keyframes inR{from{opacity:0;transform:translateX(40px)}}
@@ -466,6 +553,8 @@ code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;color:#fff
   .sets{margin-top:8px}
   .num{height:40px} .ck{height:40px;width:40px}
   .warm{padding:8px 2px}
+  .wlist .warm{font-size:15px}
+  .warm .lbl small{display:inline;margin-left:6px}
   .upnext{padding-top:10px}
 }
 @media (max-width:360px){ .srow{gap:4px;padding:4px 2px} .focus{padding-left:12px;padding-right:12px} .upnext{margin:0 -12px} }
@@ -922,16 +1011,19 @@ function vSession() {
   const nextName = k => { const s = steps[k]; return !s ? '' : s.t === 'ex' ? d.ex[s.i].name : s.t === 'end' ? 'Cierre y notas' : 'Calentamiento'; };
   const upNext = (k, btn) => `<span class="sq">${steps[k] && steps[k].t === 'ex' ? steps[k].i + 1 : IC.flag}</span>
     <div class="grow"><div class="t1">${esc(nextName(k))}</div><div class="t2">A continuación</div></div>${btn}`;
-  let body = '', bar = '';
+  let head = '', body = '', bar = '';
   if (st.t === 'warm') {
     const wd = d.warmup.filter(Boolean).length;
-    body = `<div class="xhead">${ring(56, wd / WARMUP.length, wd === WARMUP.length ? IC.check : `${wd}/${WARMUP.length}`, 'stico sm')}
-        <div class="grow"><div class="blk">Calentamiento</div><div class="xn">Entrar en calor</div><div class="xm">8–10 min · toca cada paso al hacerlo</div></div></div>
-      <div style="margin-top:12px">${WARMUP.map((w, i) => `<button class="warm ${d.warmup[i] ? 'on' : ''}" data-act="warm" data-i="${i}"><span class="bx">${IC.check}</span><span class="lbl">${esc(w)}</span></button>`).join('')}</div>`;
+    head = xHead(ring(44, wd / WARMUP.length, wd === WARMUP.length ? IC.check : `${wd}/${WARMUP.length}`, 'stico sm'), 'Calentamiento', 'Entrar en calor', '8–10 min · toca cada paso');
+    body = `<div class="wlist">${WARMUP.map((w, i) => {
+      const [a, ...b] = w.split(' · ');
+      return `<button class="warm ${d.warmup[i] ? 'on' : ''}" data-act="warm" data-i="${i}"><span class="bx">${IC.check}</span><span class="lbl">${esc(a)}${b.length ? `<small>${esc(b.join(' · '))}</small>` : ''}</span><span class="wi">${pad(i + 1)}</span></button>`;
+    }).join('')}</div>`;
     bar = upNext(d.step + 1, `<button class="btn primary" data-act="stepGo" data-d="1">Empezar →</button>`);
   } else if (st.t === 'ex') {
     const x = d.ex[st.i], ci = x.sets.findIndex(z => !z.done);
-    body = stepExercise(x, st.i, d.ex.length);
+    ({ head, body } = stepExercise(x, st.i, d.ex.length));
+    body += exInfo(x, steps[d.step + 1]);
     if (ci >= 0) {
       const prev = IDX.last.get(x.name), p = placeholders(x, prev, suggest(x, prev))[ci] || {}, z = x.sets[ci];
       const tgt = { w: has(z.w) ? z.w : p.w, r: has(z.r) ? z.r : p.r };
@@ -940,24 +1032,74 @@ function vSession() {
         <button class="btn primary" data-act="toggleSet" data-x="${st.i}" data-s="${ci}">${IC.check.replace('class="i"', 'class="i" style="width:20px;height:20px;stroke-width:2.4"')} Hecha</button>`;
     } else bar = upNext(d.step + 1, `<button class="btn primary" data-act="stepGo" data-d="1">Siguiente →</button>`);
   } else {
-    const nSets = d.ex.reduce((n, x) => n + x.sets.filter(z => z.done).length, 0), pend = d.ex.reduce((n, x) => n + x.sets.filter(z => !z.done).length, 0);
-    body = `<div class="xhead"><span class="donec">${IC.check}</span><div class="grow"><div class="blk">Final</div><div class="xn">Buen trabajo.</div><div class="xm">${nSets} series hechas${pend ? ` · ${pend} sin marcar (no se guardan)` : ''}</div></div></div>
-      <textarea class="note" data-snote placeholder="Sensaciones, sueño, molestias…" style="margin-top:16px">${esc(d.note)}</textarea>`;
-    bar = `<div class="grow"><div class="t1">${nSets} series</div><div class="t2">Valora y guarda la sesión</div></div><button class="btn primary" data-act="finish">Guardar</button>`;
+    const s = draftStats(d), exDone = d.ex.filter(x => x.sets.some(z => z.done)).length;
+    head = xHead(`<span class="donec">${IC.check}</span>`, 'Final', 'Buen trabajo.', `${s.nSets} series hechas${s.pending ? ` · ${s.pending} sin marcar (no se guardan)` : ''}`);
+    body = `<div class="sumgrid">
+        <div class="stat"><div class="v">${s.nSets}</div><div class="l">Series</div></div>
+        <div class="stat"><div class="v">${fmtK(s.vol).replace(' kg', '')}</div><div class="l">${s.vol >= 10000 ? 'Volumen' : 'Volumen kg'}</div></div>
+        <div class="stat"><div class="v">${exDone}<small>/${d.ex.length}</small></div><div class="l">Ejercicios</div></div>
+      </div>
+      <div class="elist">${d.ex.map(x => {
+        const dn = x.sets.filter(z => z.done), v = z => x.metric === 'wr' ? e1rm(num(z.w), num(z.r)) : num(z.r);
+        if (!dn.length) return `<div class="erow no"><span class="bx"></span><span class="nm">${esc(x.name)}</span><span class="r">sin marcar</span></div>`;
+        const top = dn.reduce((a, z) => v(z) > v(a) ? z : a);
+        return `<div class="erow"><span class="bx">${IC.check}</span><span class="nm">${esc(x.name)}</span><span class="r">${s.prs.some(p => p.name === x.name) ? '<span class="badge">PR</span> ' : ''}${dn.length} ${dn.length === 1 ? 'serie' : 'series'} · <b>${esc(setStr(top, x.metric) + (x.metric === 'reps' ? ' reps' : ''))}</b></span></div>`;
+      }).join('')}</div>
+      <textarea class="note fill" data-snote placeholder="Sensaciones, sueño, molestias…">${esc(d.note)}</textarea>`;
+    bar = `<div class="grow"><div class="t1">${s.nSets} series</div><div class="t2">Valora y guarda la sesión</div></div><button class="btn primary" data-act="finish">Guardar</button>`;
   }
+  const el = fmtDur((Date.now() - d.start) / 1000);
   return `<div class="focus">
     <div class="fhead"><button class="icon-btn glass" data-act="minimize" aria-label="Minimizar">${IC.chevd}</button><span class="sp"></span>
       <button class="icon-btn glass" data-act="stepList" aria-label="Ejercicios de la sesión">${IC.sliders}</button>
       <button class="btn outline sm" data-act="finish">Terminar</button></div>
-    <div class="clock" id="clock"><div class="tm" id="clockTm">${fmtDur((Date.now() - d.start) / 1000)}</div>
+    <div class="clock" id="clock">
+      <div class="ctop"><div class="tm ${el.length > 5 ? 'long' : ''}" id="clockTm">${el}</div><div class="chead step ${anim}">${head}</div></div>
       <div class="sub"><span class="lb" id="clockSub"><b>${esc(day.name)}</b> · en curso</span><span class="rctl"><button data-act="restAdj" data-n="-15">−15</button><button data-act="restAdj" data-n="15">+15</button><button data-act="restClose">Saltar</button></span></div>
       <div class="rbar"><i id="clockBar"></i></div></div>
     <div class="dots">${steps.map((s, k) => `<i class="${k === d.step ? 'c' : stepDone(d, s) ? 'd' : ''}"></i>`).join('')}</div>
-    <div class="fbody"><div class="step ${anim}">${body}</div></div>
+    <div class="fbody ses"><div class="step st-${st.t} ${anim}">${body}</div></div>
     <div class="upnext">${bar}</div>
   </div>`;
 }
+// Cabecera del paso (anillo, bloque, nombre y pauta), junto al reloj
+const xHead = (ic, blk, name, meta, more = '') => `<div class="xhead">${ic}<div class="grow"><div class="blk"><span>${blk}</span>${more}</div><div class="xn ${name.length > 22 ? 'long' : ''}">${esc(name)}</div><div class="xm">${meta}</div></div></div>`;
 
+// Resumen de la sesión en curso: series hechas, volumen y récords
+function draftStats(d) {
+  const doneEx = d.ex.map(x => ({ ...x, sets: x.sets.filter(z => z.done) })).filter(x => x.sets.length);
+  const nSets = doneEx.reduce((n, x) => n + x.sets.length, 0), total = d.ex.reduce((n, x) => n + x.sets.length, 0);
+  const vol = doneEx.reduce((v, x) => v + (x.metric === 'wr' ? x.sets.reduce((a, z) => a + num(z.w) * num(z.r), 0) : 0), 0);
+  const prs = doneEx.filter(x => x.metric === 'wr').map(x => ({ name: x.name, now: bestE1(x.sets), before: bestBefore(x.name) })).filter(p => p.before > 0 && p.now > p.before + 0.01);
+  return { nSets, total, vol, prs, pending: total - nSets };
+}
+const exBest = (sets, m) => m === 'wr' ? bestE1(sets) : Math.max(0, ...sets.map(z => num(z.r)));
+
+// Mosaico bajo las series: progreso de la sesión, lo que viene y la evolución del ejercicio
+function exInfo(x, nx) {
+  const d = S.draft, s = draftStats(d), m = x.metric, unit = m === 'wr' ? 'kg' : UNIT[m];
+  const nxEx = nx && nx.t === 'ex' ? d.ex[nx.i] : null;
+  const ser = exSeries(x.name).slice(-7).map(o => exBest(o.x.sets, m)).filter(v => v > 0);
+  const today = exBest(x.sets.filter(z => z.done), m);
+  let wide;
+  if (ser.length) {
+    const all = [...ser, today], hi = Math.max(...all), lo = Math.min(...all.filter(v => v > 0)) * .9, best = Math.max(...ser);
+    const h = v => hi > lo ? 14 + (v - lo) / (hi - lo) * 86 : 70;
+    const first = exSeries(x.name).slice(-7).find(o => exBest(o.x.sets, m) > 0);
+    wide = `<div class="ti wide">
+      <div class="hrow"><div class="lb">Progreso · ${m === 'wr' ? '1RM est.' : 'mejor serie'}</div><div class="bst">${today > best + .01 ? '<span class="badge">PR</span> ' : ''}mejor <b>${fmt(Math.max(best, today))}</b> ${unit}</div></div>
+      <div class="xbars">${'<b></b>'.repeat(7 - ser.length)}${ser.map(v => `<i style="height:${h(v).toFixed(1)}%"></i>`).join('')}<i class="t ${today ? '' : 'e'}" style="height:${h(today || ser[ser.length - 1]).toFixed(1)}%"></i></div>
+      <div class="xlab"><span style="grid-column:${8 - ser.length}">${first ? shortDate(first.s.date) : ''}</span><span style="grid-column:8">hoy</span></div></div>`;
+  } else {
+    const cue = (BLOCKS.find(b => b[0] === x.blk) || [])[2] || '';
+    wide = `<div class="ti wide first">${HALFTONE}<div class="lb">Primera vez</div><div class="q">${esc(cue.replace(/ · /g, ', '))}.</div><div class="t2">Hoy marcas tu referencia en este ejercicio.</div></div>`;
+  }
+  return `<div class="xinfo"><div class="in">
+    <div class="ti sm"><div class="lb">Sesión</div><div class="v">${s.nSets}<small>/${s.total} series</small></div><div class="pb"><i style="width:${s.total ? s.nSets / s.total * 100 : 0}%"></i></div></div>
+    <div class="ti sm"><div class="lb">Después</div><div class="nm">${esc(nxEx ? nxEx.name : 'Cierre y notas')}</div></div>
+    ${wide}
+  </div></div>`;
+}
 function toggleSet(xi, si) {
   const d = S.draft, x = d.ex[xi], z = x.sets[si];
   if (z.done) { z.done = false; save(); rerender(); return; }
@@ -981,11 +1123,7 @@ function toggleSet(xi, si) {
 
 function sheetFinish() {
   const d = S.draft, day = S.routine.days[d.dayId];
-  const doneEx = d.ex.map(x => ({ ...x, sets: x.sets.filter(z => z.done) })).filter(x => x.sets.length);
-  const nSets = doneEx.reduce((n, x) => n + x.sets.length, 0);
-  const vol = doneEx.reduce((v, x) => v + (x.metric === 'wr' ? x.sets.reduce((a, z) => a + num(z.w) * num(z.r), 0) : 0), 0);
-  const prs = doneEx.filter(x => x.metric === 'wr').map(x => ({ name: x.name, now: bestE1(x.sets), before: bestBefore(x.name) })).filter(p => p.before > 0 && p.now > p.before + 0.01);
-  const pending = d.ex.reduce((n, x) => n + x.sets.filter(z => !z.done).length, 0);
+  const { nSets, vol, prs, pending } = draftStats(d);
   openSheet(`<div class="eyebrow gold">Terminar</div><h2 style="margin:6px 0 0">${esc(day?.name || 'Sesión')}</h2>
   <div class="sumgrid">
     <div class="stat"><div class="v" style="font-size:22px">${fmtDur((Date.now() - d.start) / 1000)}</div><div class="l">Duración</div></div>
@@ -1077,7 +1215,6 @@ function vDay() {
   <div class="row between"><button class="icon-btn glass" data-act="nav" data-nav="home" aria-label="Volver">${IC.back}</button>
     <button class="icon-btn glass" data-act="editDay" data-day="${d.id}" aria-label="Editar día">${IC.edit}</button></div>
   <div class="dayhead">${HALFTONE}
-    <div class="eyebrow" style="position:relative">Día ${S.routine.order.indexOf(d.id) + 1} · ${esc(d.zone)} · ${esc(d.kind)} · ${esc(d.weekday)}</div>
     <h1 style="position:relative">${esc(d.name)}</h1></div>
   <div class="grid3" style="margin-top:6px">
     <div class="stat"><div class="v">${hist.length}</div><div class="l">Veces</div></div>
@@ -1109,8 +1246,8 @@ function sessionSteps(d) {
 function stepExercise(x, xi, nEx) {
   const prev = IDX.last.get(x.name), sug = suggest(x, prev), ph = placeholders(x, prev, sug);
   const m = x.metric, unit = UNIT[m], ci = x.sets.findIndex(z => !z.done);
-  const meta = `${rng(x.t.sets)} × ${rng(x.t.reps)} ${unit}${x.side ? ' por lado' : ''}${m === 'wr' ? ' · RIR ≥ 1' : ''} · descanso ${fmtDur(restOf(x))}`;
-  const head = { wr: ['#', 'Anterior', 'kg', 'Reps', 'RIR', ''], reps: ['#', 'Anterior', 'Reps', ''], time: ['#', 'Anterior', 'Seg', ''], dist: ['#', 'Anterior', 'kg', 'Metros', ''] }[m];
+  const meta = `${rng(x.t.sets)} × ${rng(x.t.reps)} ${unit}${x.side ? ' por lado' : ''}${m === 'wr' ? ' · RIR ≥ 1' : ''}`;
+  const cols = { wr: ['#', 'Anterior', 'kg', 'Reps', 'RIR', ''], reps: ['#', 'Anterior', 'Reps', ''], time: ['#', 'Anterior', 'Seg', ''], dist: ['#', 'Anterior', 'kg', 'Metros', ''] }[m];
   const inp = (si, f, val, p) => `<input class="num" type="text" inputmode="decimal" autocomplete="off" data-x="${xi}" data-s="${si}" data-f="${f}" value="${esc(val)}" placeholder="${esc(p ?? '')}">`;
   const rows = x.sets.map((z, si) => {
     const p = ph[si] || {}, pv = prev && prev.sets[si] ? setStr(prev.sets[si], m) : '—';
@@ -1124,14 +1261,14 @@ function stepExercise(x, xi, nEx) {
   const sugHtml = sug ? `<div class="sug"><span class="arr">${sug.dir === 'up' ? '↑' : sug.dir === 'down' ? '↓' : '→'}</span><div><b>${sug.w ? `${fmt(sug.w)} kg × ${sug.r}` : `${sug.r} reps`}</b> <span class="w">sugerido</span><div class="w">${esc(sug.why)}</div></div></div>`
     : (!prev && m === 'wr' ? `<div class="sug"><span class="arr">i</span><div class="w">Primera vez: elige una carga con la que te queden 1–2 reps en reserva al llegar a ${x.t.reps[0]}.</div></div>` : '');
   const nd = x.sets.filter(z => z.done).length;
-  return `<div class="xhead">${ring(56, nd / x.sets.length, nd === x.sets.length ? IC.check : xi + 1, 'stico')}
-      <div class="grow"><div class="blk">${BLOCK_NAME[x.blk]} · ${xi + 1}/${nEx}${x.basic ? ' · Básico' : ''}</div><div class="xn">${esc(x.name)}</div></div>
-      <button class="icon-btn" style="margin-right:-8px;align-self:flex-start" data-act="exMenu" data-x="${xi}" aria-label="Opciones del ejercicio">${IC.more}</button></div>
-    <div class="xm" style="margin-top:8px">${meta}</div>
-    ${sugHtml}
+  return {
+    head: xHead(ring(44, nd / x.sets.length, nd === x.sets.length ? IC.check : xi + 1, 'stico sm'), `${BLOCK_NAME[x.blk]} · ${xi + 1}/${nEx}${x.basic ? ' · Básico' : ''}`, x.name, meta,
+      `<button class="icon-btn xmore" data-act="exMenu" data-x="${xi}" aria-label="Opciones del ejercicio">${IC.more}</button>`),
+    body: `${sugHtml}
     ${prev && prev.note ? `<div class="prev-note">Nota del ${shortDate(prev.date)}: “${esc(prev.note)}”</div>` : ''}
-    <div class="sets"><div class="srow ${m} hd">${head.map(h => `<span>${h}</span>`).join('')}</div>${rows}</div>
-    ${x.showNote || x.note ? `<textarea class="note" data-xnote="${xi}" placeholder="Técnica, molestias, ajustes de máquina…">${esc(x.note)}</textarea>` : ''}`;
+    <div class="sets"><div class="srow ${m} hd">${cols.map(h => `<span>${h}</span>`).join('')}</div>${rows}</div>
+    ${x.showNote || x.note ? `<textarea class="note" data-xnote="${xi}" placeholder="Técnica, molestias, ajustes de máquina…">${esc(x.note)}</textarea>` : ''}`,
+  };
 }
 
 // Lista de la sesión (como la referencia): estado de cada paso, ir a él, opciones y cierre
@@ -1601,7 +1738,8 @@ function tick() {
   // En la sesión, el descanso vive en el reloj grande; fuera de ella, en una píldora
   if (clk) {
     clk.classList.toggle('resting', !!rest); clk.classList.toggle('over', over);
-    $('#clockTm').textContent = rest ? (over ? '0:00' : fmtDur(Math.ceil(left))) : el2;
+    const tm = $('#clockTm'), tt = rest ? (over ? '0:00' : fmtDur(Math.ceil(left))) : el2;
+    tm.textContent = tt; tm.classList.toggle('long', tt.length > 5);
     $('#clockBar').style.width = pct;
     const sub = $('#clockSub'), key = rest ? (over ? 'o' : 'r') + rest.label : 'e';
     if (sub.dataset.k !== key) {
@@ -1664,7 +1802,7 @@ const A = {
   warm: el => {
     const d = S.draft, i = +el.dataset.i; d.warmup[i] = !d.warmup[i]; save(); el.classList.toggle('on', d.warmup[i]);
     const n = d.warmup.filter(Boolean).length, r = document.querySelector('.xhead .ring');
-    if (r) r.outerHTML = ring(56, n / WARMUP.length, n === WARMUP.length ? IC.check : `${n}/${WARMUP.length}`, 'stico sm');
+    if (r) r.outerHTML = ring(44, n / WARMUP.length, n === WARMUP.length ? IC.check : `${n}/${WARMUP.length}`, 'stico sm');
   },
   toggleSet: el => toggleSet(+el.dataset.x, +el.dataset.s),
   addSet: el => { const x = S.draft.ex[+el.dataset.x]; x.sets.push({ w: '', r: '', rir: '', done: false }); save(); closeSheet(); rerender(); toast(`${x.sets.length} series`); },
