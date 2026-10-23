@@ -814,16 +814,6 @@ function vHome() {
   const lastS = IDX.sorted[IDX.sorted.length - 1];
   const cw = cardioWeek(ws), [cg] = CARDIO_GOAL;
   const dow = (now.getDay() + 6) % 7, todayHint = dow === 2 ? '4x4' : dow === 5 ? 'z2' : null;
-  const wsY = ymd(ws);
-
-  // Los cuatro días: anillo lleno si ya se hizo esta semana
-  const days = S.routine.order.map((id, i) => {
-    const d = S.routine.days[id], l = lastOfDay(id), thisWk = l && l.date >= wsY;
-    return `<div class="tile day" role="button" data-act="dayOpen" data-day="${id}">
-      ${id === nd.id ? '<span class="badge">Siguiente</span>' : ''}
-      ${ring(54, thisWk ? 1 : 0, thisWk ? IC.check : i + 1)}
-      <div><div class="t1">${esc(d.name)}</div><div class="t2">${esc(d.weekday)} · ${l ? daysAgo(l.date) : 'nunca'}</div></div></div>`;
-  }).join('');
 
   // Peso corporal: último registro
   const kgs = S.body.filter(e => num(e.kg) > 0).sort((a, b) => a.date.localeCompare(b.date)), lastKg = kgs[kgs.length - 1];
@@ -867,7 +857,10 @@ function vHome() {
       <button class="play" data-act="start" data-day="${nd.id}" aria-label="Empezar ${esc(nd.name)}">${IC.play}</button>
     </div>
 
-    ${days}
+    <div class="tile wide" role="button" data-act="nav" data-nav="cal">
+      <div class="hrow"><div><div class="t1">Constancia</div><div class="t2">${stk} ${stk === 1 ? 'semana' : 'semanas'} de racha · ${monthN} este mes · ${S.sessions.length} en total</div></div>${IC.chev}</div>
+      <div class="dots3" style="margin-top:18px">${dots}</div>
+    </div>
 
     <div class="tile" role="button" data-act="progGo" data-t="body">
       <div class="eyebrow">Peso</div>
@@ -876,11 +869,6 @@ function vHome() {
     <div class="tile" role="button" data-act="cardioMenu">
       <div class="hrow"><div class="eyebrow">Cardio</div>${ring(48, cw.M / cg, '', 'sm')}</div>
       <div><div class="big">${fmt(cw.M)}<small>min</small></div><div class="t2">${todayHint && !cardioOn(today).length && !S.draft ? `Hoy toca ${CARDIO[todayHint].short}` : cw.M >= cg ? 'Meta OMS cumplida' : `de ${cg} · faltan ${fmt(cg - cw.M)}`}</div></div>
-    </div>
-
-    <div class="tile wide" role="button" data-act="nav" data-nav="cal">
-      <div class="hrow"><div><div class="t1">Constancia</div><div class="t2">${stk} ${stk === 1 ? 'semana' : 'semanas'} de racha · ${monthN} este mes · ${S.sessions.length} en total</div></div>${IC.chev}</div>
-      <div class="dots3" style="margin-top:18px">${dots}</div>
     </div>
 
     <div class="tile wide" role="button" data-act="progGo" data-t="wk">
@@ -902,10 +890,10 @@ function sheetPickDay() {
   openSheet(`<div class="eyebrow gold">Entrenar</div><h2 style="margin:6px 0 10px">¿Qué toca hoy?</h2>
   ${S.routine.order.map((id, i) => {
     const d = S.routine.days[id], l = lastOfDay(id);
-    return `<button class="list-item" data-act="start" data-day="${id}">
+    return `<button class="list-item" data-act="dayOpen" data-day="${id}">
       <div class="lead">${esc(d.short)}</div>
       <div class="grow"><div class="t1">${esc(d.name)} ${id === nd ? '<span class="badge" style="margin-left:6px">Siguiente</span>' : ''}</div>
-      <div class="t2">Día ${i + 1} · ${d.main.length} ejercicios · ${l ? 'última ' + daysAgo(l.date) : 'sin registros'}</div></div>${IC.chev}</button>`;
+      <div class="t2">Día ${i + 1} · ${dayCount(d)} ejercicios · ${l ? 'última ' + daysAgo(l.date) : 'sin registros'}</div></div>${IC.chev}</button>`;
   }).join('')}
   <button class="list-item" data-act="timerStart"><div class="lead">${IC.pulse}</div><div class="grow"><div class="t1">4×4 noruego guiado</div><div class="t2">Temporizador por fases · 40 min</div></div>${IC.chev}</button>
   <button class="list-item" data-act="cardioLog"><div class="lead">${IC.bike}</div><div class="grow"><div class="t1">Registrar cardio</div><div class="t2">Zona 2, caminata u otro</div></div>${IC.chev}</button>`);
@@ -1697,7 +1685,7 @@ const A = {
   stepList: () => sheetSesList(),
   sesMenu: () => sheetSesList(),
   progGo: el => go('prog', { progTab: el.dataset.t }),
-  dayOpen: el => go('day', { dayId: el.dataset.day }),
+  dayOpen: el => { closeSheet(); go('day', { dayId: el.dataset.day }); },
   cardioMenu: () => sheetCardioMenu(),
   timerMenu: () => openSheet(`<div class="eyebrow gold">4×4</div><h2 style="margin:6px 0 8px">Opciones</h2>
     <button class="opt" data-act="timerFinish"><span class="ic">${IC.check}</span>Terminar y guardar lo hecho</button>
