@@ -1,4 +1,4 @@
-# PHUL · Diario de entrenamiento
+# Home
 
 App web para el celular que funciona sin internet: rutina PHUL con bloque atlético, salud articular y cardio (4×4 guiado y meta OMS). Guarda todo en el propio teléfono (localStorage); nada sale del dispositivo.
 

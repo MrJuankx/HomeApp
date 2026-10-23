@@ -1,6 +1,6 @@
 {
-  "name": "PHUL · Diario de entrenamiento",
-  "short_name": "PHUL",
+  "name": "Home",
+  "short_name": "Home",
   "description": "Hub de entrenamiento personal: PHUL, bloque atlético, salud articular y cardio. Funciona sin conexión.",
   "lang": "es",
   "start_url": "./index.html",
