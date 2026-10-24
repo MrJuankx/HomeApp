@@ -782,9 +782,10 @@ function bestStreak() {
   return best;
 }
 // Día siguiente: el que va después de la última sesión hecha, según el orden de Ajustes
+// Próxima sesión: la que sigue a la última de esta semana en el orden de Ajustes; cada lunes vuelve a empezar por el primer día
 function nextDay() {
-  const order = S.routine.order;
-  for (let i = IDX.sorted.length - 1; i >= 0; i--) { const k = order.indexOf(IDX.sorted[i].dayId); if (k >= 0) return order[(k + 1) % order.length]; }
+  const order = S.routine.order, ws = ymd(weekStart(new Date()));
+  for (let i = IDX.sorted.length - 1; i >= 0 && IDX.sorted[i].date >= ws; i--) { const k = order.indexOf(IDX.sorted[i].dayId); if (k >= 0) return order[(k + 1) % order.length]; }
   return order[0];
 }
 const dayCount = d => d.ath.length + d.main.length + d.health.length;
