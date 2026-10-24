@@ -751,7 +751,7 @@ function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e
 let saveT; const saveSoon = () => { clearTimeout(saveT); saveT = setTimeout(save, 300); };
 if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
 
-const ui = { view: 'home', calMonth: null, calSel: ymd(new Date()), progTab: 'ex', exName: null, chart: 'e1rm', editDay: null };
+const ui = { view: 'home', stack: ['home'], calMonth: null, calSel: ymd(new Date()), progTab: 'ex', exName: null, chart: 'e1rm', editDay: null };
 let IDX = { last: new Map(), sorted: [] };
 let rest = S.rest && S.rest.end > Date.now() - 6000 ? S.rest : null;  // { end, total, label, fired } · se guarda para sobrevivir a recargas
 const setRest = v => { rest = v; S.rest = v; saveSoon(); };
@@ -852,6 +852,8 @@ function render() {
   if (ui.view === 'session' && !S.draft) ui.view = 'home';
   if (ui.view === 'timer' && !S.timer) ui.view = 'home';
   if (ui.view === 'day' && !S.routine.days[ui.dayId]) ui.view = 'home';
+  if (ui.stack[ui.stack.length - 1] !== ui.view) ui.stack = ui.view === 'home' ? ['home'] : ['home', ui.view];
+  queueSync();
   const app = $('#app');
   const full = ui.view === 'session' || ui.view === 'timer';
   app.className = (ui.view === 'session' ? 'in-session' : ui.view === 'timer' ? 'in-timer' : '') + (ui.enter ? ' enter' : '');
@@ -864,7 +866,43 @@ function render() {
   $('#nav').classList.toggle('live', !!(S.draft || S.timer));
   tick();
 }
-function go(v, o = {}) { closeSheet(); Object.assign(ui, o); ui.view = v; ui.enter = true; render(); window.scrollTo(0, 0); }
+function go(v, o = {}) {
+  closeSheet(); Object.assign(ui, o);
+  // Pila de pantallas para el gesto atrás: las pestañas cuelgan del inicio; el resto se apila encima
+  const i = ui.stack.indexOf(v);
+  ui.stack = v === 'home' ? ['home'] : TABS.includes(v) ? ['home', v] : i > 0 ? ui.stack.slice(0, i + 1) : [...ui.stack, v];
+  ui.view = v; ui.enter = true; render(); window.scrollTo(0, 0);
+}
+
+/* ---------- Gesto o botón atrás de Android ----------
+   Cada capa (pantalla sobre el inicio u hoja abierta) es una entrada del historial, y una entrada de guardia en el inicio
+   hace que un solo "atrás" no cierre la app. Chrome se salta al ir atrás las entradas creadas sin un toque del usuario,
+   así que la guardia y las capas solo se añaden durante un toque. */
+const TABS = ['home', 'cal', 'prog', 'set'];
+const NAV = { d: -1, busy: false, queued: false };  // d: profundidad de la entrada actual (guardia = 0, sin guardia = -1)
+const depthUI = () => ui.stack.length - 1 + ($('#sheet').classList.contains('open') ? 1 : 0);
+function syncHistory() {
+  NAV.queued = false;
+  if (NAV.d < 0 || NAV.busy) return;
+  const want = depthUI();
+  while (NAV.d < want) history.pushState({ d: ++NAV.d }, '');
+  if (want < NAV.d) { NAV.busy = true; history.go(want - NAV.d); }
+}
+const queueSync = () => { if (!NAV.queued) { NAV.queued = true; queueMicrotask(syncHistory); } };
+function armHistory() { if (NAV.d < 0 && !NAV.busy) { history.pushState({ d: 0 }, ''); NAV.d = 0; queueSync(); } }
+addEventListener('pointerup', armHistory, true);
+addEventListener('click', armHistory, true);
+addEventListener('popstate', e => {
+  const d = e.state && Number.isInteger(e.state.d) ? e.state.d : -1;
+  NAV.d = d;
+  if (NAV.busy) { NAV.busy = false; queueSync(); return; }  // fue nuestro: la interfaz ya cerró esa capa
+  if ($('#sheet').classList.contains('open')) closeSheet();
+  else if (ui.stack.length > 1) { ui.stack.pop(); ui.view = ui.stack[ui.stack.length - 1]; ui.enter = true; render(); window.scrollTo(0, 0); }
+  else if (d < 0) toast('Desliza atrás otra vez para salir');
+  if (d >= 0) queueSync();
+});
+// Tras recargar, el historial puede conservar capas viejas: se vuelve a la guardia
+if (history.state && Number.isInteger(history.state.d)) { NAV.d = history.state.d; queueSync(); }
 function rerender() { const y = window.scrollY; render(); window.scrollTo(0, y); }
 
 /* ---------- Inicio ---------- */
@@ -994,7 +1032,7 @@ function vSession() {
   let head = '', body = '', bar = '';
   if (st.t === 'warm') {
     const wd = d.warmup.filter(Boolean).length;
-    head = xHead(ring(44, wd / WARMUP.length, wd === WARMUP.length ? IC.check : `${wd}/${WARMUP.length}`, 'stico sm'), 'Entrar en calor', { blk: 'Calentamiento', meta: '8–10 min · toca cada paso' });
+    head = xHead(ring(44, wd / WARMUP.length, wd === WARMUP.length ? IC.check : `${wd}/${WARMUP.length}`, 'stico sm'), 'Entrar en calor', { blk: 'Calentamiento' });
     body = `<div class="wlist">${WARMUP.map((w, i) => {
       const [a, ...b] = w.split(' · ');
       return `<button class="warm ${d.warmup[i] ? 'on' : ''}" data-act="warm" data-i="${i}"><span class="bx">${IC.check}</span><span class="lbl">${esc(a)}${b.length ? `<small>${esc(b.join(' · '))}</small>` : ''}</span><span class="wi">${pad(i + 1)}</span></button>`;
@@ -1218,7 +1256,7 @@ function stepExercise(x, xi) {
   const sugHtml = sug ? `<div class="sug"><span class="arr">${sug.dir === 'up' ? '↑' : sug.dir === 'down' ? '↓' : '→'}</span><div><b>${sug.w ? `${fmt(sug.w)} kg × ${sug.r}` : `${sug.r} reps`}</b> <span class="w">sugerido</span><div class="w">${esc(sug.why)}</div></div></div>`
     : (!prev && m === 'wr' ? `<div class="sug"><span class="arr">i</span><div class="w">Primera vez: elige una carga con la que te queden 1–2 reps en reserva al llegar a ${x.t.reps[0]}.</div></div>` : '');
   return {
-    head: xHead('', x.name, { more: `<button class="icon-btn xmore" data-act="exMenu" data-x="${xi}" aria-label="Opciones del ejercicio">${IC.more}</button>` }),
+    head: xHead('', x.name, { blk: BLOCK_NAME[x.blk], more: `<button class="icon-btn xmore" data-act="exMenu" data-x="${xi}" aria-label="Opciones del ejercicio">${IC.more}</button>` }),
     body: `${sugHtml}
     ${prev && prev.note ? `<div class="prev-note">Nota del ${shortDate(prev.date)}: “${esc(prev.note)}”</div>` : ''}
     <div class="sets"><div class="srow ${m} hd">${cols.map(h => `<span>${h}</span>`).join('')}</div>${rows}</div>
@@ -1675,8 +1713,8 @@ function finishTimer() {
 /* =========================================================
    Hoja modal, aviso, temporizador, sonido, pantalla
    ========================================================= */
-function openSheet(html) { $('#sheetIn').innerHTML = html; $('#sheet').classList.add('open'); $('#sheet .pn').scrollTop = 0; document.body.style.overflow = 'hidden'; }
-function closeSheet() { $('#sheet').classList.remove('open'); document.body.style.overflow = ''; }
+function openSheet(html) { $('#sheetIn').innerHTML = html; $('#sheet').classList.add('open'); $('#sheet .pn').scrollTop = 0; document.body.style.overflow = 'hidden'; queueSync(); }
+function closeSheet() { $('#sheet').classList.remove('open'); document.body.style.overflow = ''; queueSync(); }
 
 // Las hojas se cierran deslizando hacia abajo (desde la barrita o desde cualquier punto si su contenido está arriba del todo)
 (() => {
