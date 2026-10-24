@@ -577,6 +577,29 @@ code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;color:#fff
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
 }
+
+/* Reemplazos: hoja de cambio, editor en Ajustes, propuestas y variantes en Progreso */
+.optl .opt .grow{flex:1;min-width:0;line-height:1.25}
+.optl .opt .grow small{display:block;font-size:12.5px;color:var(--muted);font-weight:400;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.optl.alts{margin-top:6px}
+.optl.altl .opt{padding:8px 0 8px 2px}
+.optl.altl .opt:last-child{border-bottom:0}
+.optl.altl .icon-btn.sm{flex:none;color:var(--muted)}
+.ctype.k2{grid-template-columns:1fr 1fr}
+.ctype.k2 button{height:40px}
+.xswap.on{background:#f3f3f1;color:#0a0a0b;border-color:transparent}
+.alt-of{display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:1px}
+.altsug{padding:14px 0;border-bottom:1px solid var(--line)}
+.altsug:last-child{border-bottom:0}
+.altsug .t1{font-size:17px;font-weight:600;letter-spacing:-.01em}
+.altsug .t2{font-size:13px;color:var(--muted);margin-top:3px;line-height:1.4}
+.altsug .t2 b{color:var(--text);font-weight:600}
+.altsug .pair{margin-top:12px}
+.vchips{display:flex;gap:6px;overflow-x:auto;margin:14px -18px 0;padding:0 18px;scrollbar-width:none}
+.vchips::-webkit-scrollbar{display:none}
+.vchips button{flex:none;height:34px;padding:0 14px;border-radius:999px;border:1px solid var(--line2);font-size:13px;font-weight:600;color:var(--muted);white-space:nowrap;transition:background .2s,color .2s}
+.vchips button.on{background:#f3f3f1;color:#0a0a0b;border-color:transparent}
+#nav.note [data-nav=set]::before{content:"";position:absolute;top:9px;right:calc(50% - 17px);width:8px;height:8px;border-radius:50%;background:#fff;box-shadow:0 0 0 3px var(--bg)}
 </style>
 </head>
 <body>
@@ -601,12 +624,56 @@ code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;color:#fff
 
 <script>
 'use strict';
+const clone = o => JSON.parse(JSON.stringify(o));
 /* =========================================================
    Rutina por defecto: PHUL + bloques atlético y de salud
    ========================================================= */
-const E = (id, name, sets, reps, o = {}) => ({ id, name, sets, reps, metric: 'wr', basic: false, inc: 2.5, rest: 0, side: false, alts: [], ...o });
+// Reemplazos de cada ejercicio: menor riesgo, sin máquina y en otra máquina (si la habitual está ocupada)
+const ALT_KIND = { safe: 'Menor riesgo', free: 'Sin máquina', mach: 'Otra máquina', own: 'Otro' };
+const alt3 = (safe, free, mach) => [['safe', safe], ['free', free], ['mach', mach]].filter(([, n]) => n).map(([kind, name]) => ({ name, kind }));
+const DEF_ALTS = {
+  'Lanzamiento de balón al pecho': alt3('Pase de pecho con balón ligero', 'Flexiones explosivas', 'Press explosivo en polea'),
+  'Lanzamiento rotacional': alt3('Lanzamiento rotacional de rodillas', 'Rotación explosiva con banda', 'Rotación explosiva en polea'),
+  'Press banca con barra': alt3('Press de suelo con mancuernas', 'Flexiones lastradas', 'Press banca en máquina Smith'),
+  'Press inclinado con mancuernas': alt3('Press inclinado con agarre neutro', 'Flexiones con pies elevados', 'Press inclinado en máquina'),
+  'Remo inclinado con barra': alt3('Remo con pecho apoyado', 'Remo invertido', 'Remo en barra T'),
+  'Jalón al pecho': alt3('Jalón con agarre neutro', 'Dominadas', 'Dominadas asistidas en máquina'),
+  'Press militar': alt3('Press landmine', 'Press de pie con mancuernas', 'Press de hombro en máquina'),
+  'Curl con barra': alt3('Curl con barra Z', 'Curl con mancuernas', 'Curl en polea'),
+  'Press francés': alt3('Press francés con mancuernas', 'Fondos en banco', 'Extensión de tríceps en polea'),
+  'Paseo del granjero': alt3('Paseo con barra hexagonal', 'Paseo con kettlebells', ''),
+  'Saltos al cajón': alt3('Saltos al cajón bajo', 'Saltos verticales', ''),
+  'Sentadilla': alt3('Sentadilla a caja', 'Sentadilla goblet', 'Sentadilla hack'),
+  'Peso muerto': alt3('Peso muerto con barra hexagonal', 'Peso muerto rumano con mancuernas', 'Peso muerto rumano en máquina Smith'),
+  'Prensa': alt3('Prensa con pies altos', 'Zancadas con mancuernas', 'Sentadilla hack'),
+  'Curl femoral': alt3('Curl femoral sentado', 'Curl nórdico', 'Curl femoral de pie'),
+  'Gemelos de pie': alt3('', 'Gemelos a una pierna con mancuerna', 'Gemelos en prensa'),
+  'Copenhagen': alt3('Copenhagen con rodilla apoyada', '', 'Aductores en máquina'),
+  'Lanzamiento por encima de la cabeza': alt3('Lanzamiento por encima de la cabeza de rodillas', 'Flexiones pliométricas', ''),
+  'Press inclinado con barra': alt3('Press inclinado con mancuernas', 'Flexiones con pies elevados', 'Press inclinado en máquina Smith'),
+  'Aperturas con mancuernas': alt3('Aperturas en máquina', 'Aperturas con banda', 'Cruce de poleas'),
+  'Remo sentado en polea': alt3('Remo en máquina con pecho apoyado', 'Remo con banda', 'Remo en barra T'),
+  'Remo a una mano con mancuerna': alt3('Remo con pecho apoyado en banco inclinado', 'Remo invertido', 'Remo a una mano en polea'),
+  'Elevaciones laterales': alt3('Elevaciones laterales sentado', 'Elevaciones laterales con banda', 'Elevaciones laterales en máquina'),
+  'Curl inclinado con mancuernas': alt3('Curl sentado con mancuernas', 'Curl con banda', 'Curl en polea baja'),
+  'Extensión de tríceps en polea': alt3('Patada de tríceps con mancuerna', 'Extensión de tríceps con banda', 'Fondos en máquina'),
+  'Carga a una mano': alt3('Paseo del granjero', 'Carga a una mano con kettlebell', ''),
+  'Saltos de longitud': alt3('Saltos al cajón', 'Saltos verticales', ''),
+  'Saltos laterales a una pierna': alt3('Saltos laterales a dos piernas', '', ''),
+  'Sentadilla frontal': alt3('Sentadilla goblet', '', 'Sentadilla hack'),
+  'Sentadilla búlgara': alt3('Zancada inversa', '', 'Sentadilla búlgara en máquina Smith'),
+  'Extensión de cuádriceps': alt3('Sentadilla española con banda', 'Extensión de cuádriceps con banda', 'Prensa con pies bajos'),
+  'Curl nórdico': alt3('Curl nórdico asistido con banda', 'Curl femoral con deslizadores', 'Curl femoral'),
+  'Gemelo sentado': alt3('', 'Gemelo sentado con mancuerna', 'Gemelos en prensa'),
+  'Gemelos en prensa': alt3('', 'Gemelos a una pierna con mancuerna', 'Gemelos de pie en máquina'),
+  'Equilibrio a una pierna': alt3('Equilibrio a una pierna con apoyo de un dedo', '', ''),
+};
+// Alternativas de versiones anteriores (texto suelto): se sustituyen por las de arriba
+const OLD_ALTS = new Set(['Remo Pendlay', 'Dominadas', 'Curl con barra Z', 'Extensión de tríceps en polea', 'Peso muerto rumano', 'Curl nórdico', 'Gemelos en prensa', 'Flexiones pliométricas', 'Sentadilla goblet', 'Curl femoral']);
+const E = (id, name, sets, reps, o = {}) => ({ id, name, sets, reps, metric: 'wr', basic: false, inc: 2.5, rest: 0, side: false, alts: clone(DEF_ALTS[name] || []), ...o });
 
 const DEFAULT_ROUTINE = {
+  altsV: 1,
   order: ['tp', 'pp', 'th', 'ph'],
   days: {
     tp: { id: 'tp', name: 'Torso potencia', short: 'TP', zone: 'Torso', kind: 'Potencia', weekday: 'Lunes',
@@ -617,11 +684,11 @@ const DEFAULT_ROUTINE = {
       main: [
         E('tp1', 'Press banca con barra', [3, 4], [3, 5], { basic: true, rest: 180 }),
         E('tp2', 'Press inclinado con mancuernas', [3, 4], [6, 10], { inc: 2, rest: 120 }),
-        E('tp3', 'Remo inclinado con barra', [3, 4], [3, 5], { basic: true, rest: 180, alts: ['Remo Pendlay'] }),
-        E('tp4', 'Jalón al pecho', [3, 4], [6, 10], { rest: 120, alts: ['Dominadas'] }),
+        E('tp3', 'Remo inclinado con barra', [3, 4], [3, 5], { basic: true, rest: 180 }),
+        E('tp4', 'Jalón al pecho', [3, 4], [6, 10], { rest: 120 }),
         E('tp5', 'Press militar', [2, 3], [5, 8], { rest: 150 }),
-        E('tp6', 'Curl con barra', [2, 3], [6, 10], { inc: 1, rest: 90, alts: ['Curl con barra Z'] }),
-        E('tp7', 'Press francés', [2, 3], [6, 10], { inc: 1, rest: 90, alts: ['Extensión de tríceps en polea'] }),
+        E('tp6', 'Curl con barra', [2, 3], [6, 10], { inc: 1, rest: 90 }),
+        E('tp7', 'Press francés', [2, 3], [6, 10], { inc: 1, rest: 90 }),
       ],
       health: [E('tp-h1', 'Paseo del granjero', [3, 3], [30, 40], { metric: 'dist', inc: 2, rest: 90 })],
     },
@@ -629,15 +696,15 @@ const DEFAULT_ROUTINE = {
       ath: [E('pp-a1', 'Saltos al cajón', [4, 4], [3, 3], { metric: 'reps' })],
       main: [
         E('pp1', 'Sentadilla', [3, 4], [3, 5], { basic: true, inc: 5, rest: 180 }),
-        E('pp2', 'Peso muerto', [3, 4], [3, 5], { basic: true, inc: 5, rest: 180, alts: ['Peso muerto rumano'] }),
+        E('pp2', 'Peso muerto', [3, 4], [3, 5], { basic: true, inc: 5, rest: 180 }),
         E('pp3', 'Prensa', [3, 5], [10, 15], { inc: 5, rest: 120 }),
-        E('pp4', 'Curl femoral', [3, 4], [6, 10], { rest: 90, alts: ['Curl nórdico'] }),
-        E('pp5', 'Gemelos de pie', [4, 4], [6, 10], { rest: 90, alts: ['Gemelos en prensa'] }),
+        E('pp4', 'Curl femoral', [3, 4], [6, 10], { rest: 90 }),
+        E('pp5', 'Gemelos de pie', [4, 4], [6, 10], { rest: 90 }),
       ],
       health: [E('pp-h1', 'Copenhagen', [1, 2], [6, 12], { metric: 'reps', side: true, rest: 60 })],
     },
     th: { id: 'th', name: 'Torso hipertrofia', short: 'TH', zone: 'Torso', kind: 'Hipertrofia', weekday: 'Jueves',
-      ath: [E('th-a1', 'Lanzamiento por encima de la cabeza', [4, 4], [3, 3], { metric: 'reps', alts: ['Flexiones pliométricas'] })],
+      ath: [E('th-a1', 'Lanzamiento por encima de la cabeza', [4, 4], [3, 3], { metric: 'reps' })],
       main: [
         E('th1', 'Press inclinado con barra', [3, 4], [8, 12], { rest: 120 }),
         E('th2', 'Aperturas con mancuernas', [3, 4], [8, 12], { inc: 1, rest: 90 }),
@@ -655,10 +722,10 @@ const DEFAULT_ROUTINE = {
         E('ph-a2', 'Saltos laterales a una pierna', [2, 2], [3, 3], { metric: 'reps', side: true }),
       ],
       main: [
-        E('ph1', 'Sentadilla frontal', [3, 4], [8, 12], { rest: 150, alts: ['Sentadilla goblet'] }),
+        E('ph1', 'Sentadilla frontal', [3, 4], [8, 12], { rest: 150 }),
         E('ph2', 'Sentadilla búlgara', [3, 4], [8, 12], { side: true, inc: 2, rest: 120 }),
         E('ph3', 'Extensión de cuádriceps', [3, 4], [10, 15], { rest: 90 }),
-        E('ph4', 'Curl nórdico', [3, 3], [3, 6], { inc: 0, rest: 120, alts: ['Curl femoral'] }),
+        E('ph4', 'Curl nórdico', [3, 3], [3, 6], { inc: 0, rest: 120 }),
         E('ph5', 'Gemelo sentado', [3, 4], [8, 12], { rest: 90 }),
         E('ph6', 'Gemelos en prensa', [3, 4], [8, 12], { rest: 90 }),
       ],
@@ -690,7 +757,6 @@ const DEFAULT_REST = { ath: 75, main: 120, health: 60 };
    Utilidades
    ========================================================= */
 const $ = s => document.querySelector(s);
-const clone = o => JSON.parse(JSON.stringify(o));
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 const pad = n => String(n).padStart(2, '0');
 const ymd = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
@@ -727,6 +793,10 @@ const IC = {
   down: '<svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M6 13l6 6 6-6"/></svg>',
   plus: '<svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>',
   minus: '<svg class="i" viewBox="0 0 24 24"><path d="M5 12h14"/></svg>',
+  shield: '<svg class="i" viewBox="0 0 24 24"><path d="M12 3.5 19 6v5.5c0 4.2-2.9 7.6-7 9-4.1-1.4-7-4.8-7-9V6z"/><path d="m9 12 2.2 2.2L15.5 10"/></svg>',
+  mach: '<svg class="i" viewBox="0 0 24 24"><path d="M5 3.5v17M19 3.5v17M5 6h14M12 6v4.5"/><rect x="9" y="10.5" width="6" height="7" rx="1"/></svg>',
+  undo: '<svg class="i" viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>',
+  x: '<svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg>',
   play: '<svg viewBox="0 0 24 24" width="18" height="18"><path d="M8 5.5v13l10.5-6.5z" fill="currentColor"/></svg>',
   edit: '<svg class="i" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m13.5 6.5 4 4"/></svg>',
   list: '<svg class="i" viewBox="0 0 24 24"><path d="M9 6.5h11M9 12h11M9 17.5h11"/><circle cx="4.5" cy="6.5" r=".9"/><circle cx="4.5" cy="12" r=".9"/><circle cx="4.5" cy="17.5" r=".9"/></svg>',
@@ -765,6 +835,7 @@ const freshState = () => ({
   v: 1,
   settings: { goal: 4, warmup: true, athletic: true, health: true, autoRest: true, sound: true, vibrate: true, wake: true, fcmax: '' },
   routine: clone(DEFAULT_ROUTINE), sessions: [], body: [], cardio: [], draft: null, timer: null, rest: null,
+  altSug: [], altNo: [],
 });
 function load() {
   try {
@@ -779,11 +850,24 @@ function load() {
       s.body = Array.isArray(s.body) ? s.body : [];
       s.cardio = Array.isArray(s.cardio) ? s.cardio : [];
       if (!s.timer || !Array.isArray(s.timer.plan)) s.timer = null;
+      s.altSug = Array.isArray(s.altSug) ? s.altSug : [];
+      s.altNo = Array.isArray(s.altNo) ? s.altNo : [];
+      if (s.routine.altsV !== 1) seedAlts(s.routine);
       return s;
     }
   } catch (e) { /* datos corruptos: empezar de cero */ }
   return freshState();
 }
+// Una sola vez: da a la rutina guardada los reemplazos por defecto y conserva los que puso el usuario
+function seedAlts(r) {
+  for (const d of Object.values(r.days)) for (const b of ['ath', 'main', 'health']) for (const e of d[b] || []) {
+    const def = DEF_ALTS[e.name] || [];
+    const keep = normAlts(e.alts).filter(a => !OLD_ALTS.has(a.name) && !def.some(x => x.name === a.name));
+    e.alts = [...clone(def), ...keep];
+  }
+  r.altsV = 1;
+}
+const normAlts = l => (Array.isArray(l) ? l : []).map(a => typeof a === 'string' ? { name: a, kind: 'own' } : a).filter(a => a && a.name);
 let S = load();
 function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { toast('No se pudo guardar en el dispositivo'); } }
 let saveT; const saveSoon = () => { clearTimeout(saveT); saveT = setTimeout(save, 300); };
@@ -797,10 +881,20 @@ const setRest = v => { rest = v; S.rest = v; saveSoon(); };
 /* =========================================================
    Consultas sobre el historial
    ========================================================= */
+// Un reemplazo se guarda dentro del ejercicio original (name) con su nombre literal en alt
+const lit = x => x.alt || x.name;
+const exKey = x => x.alt ? `${x.name} › ${x.alt}` : x.name;
+// Ejercicio de la rutina del que sale uno de la sesión (por id y, si no, por nombre)
+function routineEx(x, dayId) {
+  const d = S.routine.days[dayId]; if (!d) return null;
+  const all = [...d.ath, ...d.main, ...d.health];
+  return (x.rid && all.find(e => e.id === x.rid)) || all.find(e => e.name === x.name) || null;
+}
+const altsFor = x => { const e = routineEx(x, S.draft.dayId); return normAlts(e ? e.alts : x.alts); };
 function buildIndex() {
   const sorted = [...S.sessions].sort((a, b) => a.start - b.start);
   const last = new Map();
-  for (const s of sorted) for (const x of s.ex) if (x.sets.length) last.set(x.name, { date: s.date, sets: x.sets, note: x.note });
+  for (const s of sorted) for (const x of s.ex) if (x.sets.length) last.set(exKey(x), { date: s.date, sets: x.sets, note: x.note });
   return { last, sorted };
 }
 const byDate = () => { const m = new Map(); for (const s of S.sessions) { if (!m.has(s.date)) m.set(s.date, []); m.get(s.date).push(s); } return m; };
@@ -831,7 +925,7 @@ const lastOfDay = id => { for (let i = IDX.sorted.length - 1; i >= 0; i--) if (I
 const sessionVolume = s => s.ex.reduce((v, x) => v + (x.metric === 'wr' ? x.sets.reduce((a, z) => a + num(z.w) * num(z.r), 0) : 0), 0);
 const sessionSets = s => s.ex.reduce((n, x) => n + x.sets.length, 0);
 const bestE1 = sets => Math.max(0, ...sets.map(z => e1rm(num(z.w), num(z.r))));
-function bestBefore(name) { let b = 0; for (const s of S.sessions) for (const x of s.ex) if (x.name === name && x.metric === 'wr') b = Math.max(b, bestE1(x.sets)); return b; }
+function bestBefore(key) { let b = 0; for (const s of S.sessions) for (const x of s.ex) if (exKey(x) === key && x.metric === 'wr') b = Math.max(b, bestE1(x.sets)); return b; }
 const restOf = x => x.t.rest || DEFAULT_REST[x.blk] || 90;
 
 /* Doble progresión (sección 5 del plan) */
@@ -903,6 +997,7 @@ function render() {
   document.body.classList.toggle('in-session-bg', full);
   document.querySelectorAll('#nav [data-nav]').forEach(b => b.classList.toggle('on', b.dataset.nav === navOf));
   $('#nav').classList.toggle('live', !!(S.draft || S.timer));
+  $('#nav').classList.toggle('note', pendingAlts().length > 0);
   tick();
 }
 function go(v, o = {}) {
@@ -1054,7 +1149,7 @@ function startSession(dayId) {
   const day = S.routine.days[dayId]; if (!day) return;
   if (!dayCount(day)) { toast('Este día no tiene ejercicios: añádelos en Ajustes'); return; }
   const mk = (e, blk) => ({
-    key: uid(), name: e.name, metric: e.metric, basic: !!e.basic, side: !!e.side, blk, alts: e.alts || [],
+    key: uid(), rid: e.id, name: e.name, metric: e.metric, basic: !!e.basic, side: !!e.side, blk,
     t: { sets: e.sets, reps: e.reps, inc: e.inc ?? 2.5, rest: e.rest || 0 },
     sets: Array.from({ length: Math.max(1, e.sets[0]) }, () => ({ w: '', r: '', rir: '', done: false })),
     note: '', showNote: false,
@@ -1075,7 +1170,7 @@ function vSession() {
   const d = S.draft, steps = sessionSteps(d);
   d.step = Math.max(0, Math.min(d.step || 0, steps.length - 1));
   const st = steps[d.step], anim = ui.stepAnim || ''; ui.stepAnim = '';
-  const nextName = k => { const s = steps[k]; return !s ? '' : s.t === 'ex' ? d.ex[s.i].name : s.t === 'end' ? 'Cierre y notas' : 'Calentamiento'; };
+  const nextName = k => { const s = steps[k]; return !s ? '' : s.t === 'ex' ? lit(d.ex[s.i]) : s.t === 'end' ? 'Cierre y notas' : 'Calentamiento'; };
   const upNext = (k, btn) => `<span class="sq">${steps[k] && steps[k].t === 'ex' ? steps[k].i + 1 : IC.flag}</span>
     <div class="grow"><div class="t1">${esc(nextName(k))}</div><div class="t2">A continuación</div></div>${btn}`;
   let head = '', goal = '', body = '', bar = '';
@@ -1091,7 +1186,7 @@ function vSession() {
     const x = d.ex[st.i], ci = x.sets.findIndex(z => !z.done);
     ({ head, goal, body } = stepExercise(x, st.i));
     if (ci >= 0) {
-      const prev = IDX.last.get(x.name), p = placeholders(x, prev, suggest(x, prev))[ci] || {}, z = x.sets[ci];
+      const prev = IDX.last.get(exKey(x)), p = placeholders(x, prev, suggest(x, prev))[ci] || {}, z = x.sets[ci];
       const tgt = { w: has(z.w) ? z.w : p.w, r: has(z.r) ? z.r : p.r };
       const goal = !has(tgt.r) ? '' : x.metric === 'wr' ? (num(tgt.w) ? `${fmt(num(tgt.w))} kg × ${tgt.r}` : `${tgt.r} reps`) : x.metric === 'time' ? `${tgt.r} s` : x.metric === 'dist' ? `${fmt(num(tgt.w))} kg · ${tgt.r} m` : `${tgt.r} reps`;
       bar = `<div class="grow"><div class="t1">Serie ${ci + 1} de ${x.sets.length}</div><div class="t2">${goal ? esc(goal) + ' · ' : ''}descanso ${fmtDur(restOf(x))}</div></div>
@@ -1107,9 +1202,9 @@ function vSession() {
       </div>
       <div class="elist">${d.ex.map(x => {
         const dn = x.sets.filter(z => z.done), v = z => x.metric === 'wr' ? e1rm(num(z.w), num(z.r)) : num(z.r);
-        if (!dn.length) return `<div class="erow no"><span class="bx"></span><span class="nm">${esc(x.name)}</span><span class="r">sin marcar</span></div>`;
+        if (!dn.length) return `<div class="erow no"><span class="bx"></span><span class="nm">${esc(lit(x))}</span><span class="r">sin marcar</span></div>`;
         const top = dn.reduce((a, z) => v(z) > v(a) ? z : a);
-        return `<div class="erow"><span class="bx">${IC.check}</span><span class="nm">${esc(x.name)}</span><span class="r">${s.prs.some(p => p.name === x.name) ? '<span class="badge">PR</span> ' : ''}${dn.length} ${dn.length === 1 ? 'serie' : 'series'} · <b>${esc(setStr(top, x.metric) + (x.metric === 'reps' ? ' reps' : ''))}</b></span></div>`;
+        return `<div class="erow"><span class="bx">${IC.check}</span><span class="nm">${esc(lit(x))}</span><span class="r">${s.prs.some(p => p.key === exKey(x)) ? '<span class="badge">PR</span> ' : ''}${dn.length} ${dn.length === 1 ? 'serie' : 'series'} · <b>${esc(setStr(top, x.metric) + (x.metric === 'reps' ? ' reps' : ''))}</b></span></div>`;
       }).join('')}</div>
       <textarea class="note fill" data-snote placeholder="Sensaciones, sueño, molestias…">${esc(d.note)}</textarea>`;
     bar = `<div class="grow"><div class="t1">${s.nSets} series</div><div class="t2">Valora y guarda la sesión</div></div><button class="btn primary" data-act="finish">Guardar</button>`;
@@ -1140,20 +1235,20 @@ function draftStats(d) {
   const doneEx = d.ex.map(x => ({ ...x, sets: x.sets.filter(z => z.done) })).filter(x => x.sets.length);
   const nSets = doneEx.reduce((n, x) => n + x.sets.length, 0), total = d.ex.reduce((n, x) => n + x.sets.length, 0);
   const vol = doneEx.reduce((v, x) => v + (x.metric === 'wr' ? x.sets.reduce((a, z) => a + num(z.w) * num(z.r), 0) : 0), 0);
-  const prs = doneEx.filter(x => x.metric === 'wr').map(x => ({ name: x.name, now: bestE1(x.sets), before: bestBefore(x.name) })).filter(p => p.before > 0 && p.now > p.before + 0.01);
+  const prs = doneEx.filter(x => x.metric === 'wr').map(x => ({ name: lit(x), key: exKey(x), now: bestE1(x.sets), before: bestBefore(exKey(x)) })).filter(p => p.before > 0 && p.now > p.before + 0.01);
   return { nSets, total, vol, prs, pending: total - nSets };
 }
 function toggleSet(xi, si) {
   const d = S.draft, x = d.ex[xi], z = x.sets[si];
   if (z.done) { z.done = false; save(); rerender(); return; }
-  const prev = IDX.last.get(x.name), ph = placeholders(x, prev, suggest(x, prev))[si] || {};
+  const prev = IDX.last.get(exKey(x)), ph = placeholders(x, prev, suggest(x, prev))[si] || {};
   const fields = x.metric === 'wr' ? ['w', 'r'] : x.metric === 'dist' ? ['w', 'r'] : ['r'];
   for (const f of fields) if (!has(z[f]) && has(ph[f])) z[f] = String(ph[f]);
   if (!(num(z.r) > 0)) { toast('Introduce las ' + (x.metric === 'time' ? 'segundos' : x.metric === 'dist' ? 'metros' : 'repeticiones')); return; }
   z.done = true; ui.justSet = `${xi}-${si}`;
   if (navigator.vibrate && S.settings.vibrate) navigator.vibrate(18);
   const nextIdx = x.sets.findIndex(s => !s.done);
-  const nextLabel = nextIdx >= 0 ? `${x.name} · serie ${nextIdx + 1}` : (d.ex[xi + 1] ? d.ex[xi + 1].name : 'Cerrar sesión');
+  const nextLabel = nextIdx >= 0 ? `${lit(x)} · serie ${nextIdx + 1}` : (d.ex[xi + 1] ? lit(d.ex[xi + 1]) : 'Cerrar sesión');
   if (S.settings.autoRest) startRest(restOf(x), nextLabel);
   save(); rerender();
   // Ejercicio completo: tras un instante, pasa solo al siguiente (con animación)
@@ -1189,45 +1284,65 @@ function saveSession() {
   const rec = {
     id: d.id, dayId: d.dayId, dayName: day.name || 'Sesión', short: day.short || '', date: d.date, start: d.start, end: Date.now(),
     rating: d.rating || 0, note: (d.note || '').trim(),
-    ex: d.ex.map(x => ({ name: x.name, metric: x.metric, basic: x.basic, side: x.side, blk: x.blk, t: x.t, note: (x.note || '').trim(), sets: x.sets.filter(z => z.done).map(z => ({ w: z.w, r: z.r, rir: z.rir })) })).filter(x => x.sets.length),
+    ex: d.ex.map(x => ({ name: x.name, ...(x.alt ? { alt: x.alt } : {}), metric: x.metric, basic: x.basic, side: x.side, blk: x.blk, t: x.t, note: (x.note || '').trim(), sets: x.sets.filter(z => z.done).map(z => ({ w: z.w, r: z.r, rir: z.rir })) })).filter(x => x.sets.length),
   };
   if (!rec.ex.length) { toast('Marca al menos una serie'); return; }
+  // Reemplazos que no estaban en Ajustes: quedan como propuesta para añadirlos
+  for (const x of d.ex) if (x.alt && x.sets.some(z => z.done)) {
+    const e = routineEx(x, d.dayId), k = `${x.name}|${x.alt}`.toLowerCase();
+    if (!e || normAlts(e.alts).some(a => a.name.toLowerCase() === x.alt.toLowerCase()) || S.altNo.includes(k) || S.altSug.some(z => z.k === k)) continue;
+    S.altSug.push({ k, name: x.name, alt: x.alt, kind: x.altKind || 'own', date: d.date });
+  }
   S.sessions.push(rec); S.draft = null; setRest(null); save(); closeSheet(); wake(false);
   go('home'); toast('Sesión guardada. Buen trabajo.');
 }
 
 function sheetExMenu(xi) {
   const x = S.draft.ex[xi];
-  openSheet(`<div class="eyebrow gold">${BLOCK_NAME[x.blk]}</div><h2 style="margin:6px 0 8px">${esc(x.name)}</h2>
+  openSheet(`<div class="eyebrow gold">${BLOCK_NAME[x.blk]}</div><h2 style="margin:6px 0 8px">${esc(lit(x))}</h2>
     <div class="optl">
       <button class="opt" data-act="exMove" data-x="${xi}" data-d="-1"><span class="ic">${IC.up}</span>Mover antes</button>
       <button class="opt" data-act="exMove" data-x="${xi}" data-d="1"><span class="ic">${IC.down}</span>Mover después</button>
       <button class="opt red" data-act="exRemove" data-x="${xi}"><span class="ic">${IC.trash}</span>Quitar de esta sesión</button>
     </div>`);
 }
+const KIND_IC = { safe: IC.shield, free: IC.dumb, mach: IC.mach, own: IC.edit };
+const kindPick = (id, on) => `<div class="ctype k2" id="${id}" data-k="${on}">${Object.entries(ALT_KIND).map(([k, l]) => `<button class="${k === on ? 'on' : ''}" data-act="kindPick" data-k="${k}">${l}</button>`).join('')}</div>`;
+// Cambiar ejercicio: primero los reemplazos de Ajustes; abajo, uno nuevo escrito en el momento
 function sheetSwap(xi) {
-  const x = S.draft.ex[xi];
-  openSheet(`<div class="eyebrow gold">Sustitución</div><h2 style="margin:6px 0 4px">Cambiar ${esc(x.name)}</h2>
-    <div class="muted" style="font-size:13px">Los básicos se mantienen; el resto se puede cambiar por otro del mismo patrón.</div>
-    ${(x.alts || []).map(a => `<button class="opt" data-act="swapTo" data-x="${xi}" data-name="${esc(a)}"><span class="ic">${IC.swap}</span>${esc(a)}</button>`).join('')}
-    <label class="field"><span>Otro ejercicio</span><input class="inp" id="swapName" placeholder="Nombre del ejercicio"></label>
+  const x = S.draft.ex[xi], alts = altsFor(x).filter(a => a.name !== x.alt);
+  const opt = (name, kind, sub, ic) => `<button class="opt" data-act="swapTo" data-x="${xi}" data-name="${esc(name)}" data-kind="${kind}"><span class="ic">${ic}</span><span class="grow">${esc(name)}<small>${sub}</small></span></button>`;
+  const last = name => { const p = IDX.last.get(`${x.name} › ${name}`); return p ? ` · ${shortDate(p.date)}: ${esc(setStr(p.sets[0], x.metric))}` : ''; };
+  openSheet(`<div class="eyebrow gold">Cambiar ejercicio</div><h2 style="margin:6px 0 4px">${esc(x.name)}</h2>
+    <div class="muted" style="font-size:13px">${x.basic ? 'Es un básico: cámbialo solo si hace falta. ' : ''}El progreso del reemplazo se guarda dentro de este ejercicio.</div>
+    <div class="optl alts">
+      ${x.alt ? opt(x.name, '', 'Ejercicio original', IC.undo) : ''}
+      ${alts.map(a => opt(a.name, a.kind, (ALT_KIND[a.kind] || ALT_KIND.own) + last(a.name), KIND_IC[a.kind] || IC.edit)).join('')}
+    </div>
+    ${alts.length ? '' : '<div class="muted" style="font-size:13px;margin-top:12px">Sin reemplazos guardados. Puedes añadirlos en Ajustes, al editar el día.</div>'}
+    <label class="field"><span>Otro reemplazo</span><input class="inp" id="swapName" placeholder="Nombre del ejercicio" autocomplete="off"></label>
+    <div style="margin-top:8px">${kindPick('swapKind', 'own')}</div>
     <button class="btn primary block" style="margin-top:14px" data-act="swapCustom" data-x="${xi}">Cambiar</button>`);
 }
-function swapTo(xi, name) {
-  name = name.trim(); if (!name) return;
-  const x = S.draft.ex[xi]; const old = x.name;
-  x.alts = [old, ...(x.alts || []).filter(a => a !== name && a !== old)];
-  x.name = name; x.sets.forEach(z => { z.w = ''; z.r = ''; z.rir = ''; z.done = false; });
-  save(); closeSheet(); rerender(); toast(`Cambiado a ${name}`);
+function swapTo(xi, name, kind) {
+  name = (name || '').trim(); if (!name) { toast('Escribe el nombre del reemplazo'); return; }
+  const x = S.draft.ex[xi], known = altsFor(x).find(a => a.name.toLowerCase() === name.toLowerCase());
+  if (known) { name = known.name; kind = known.kind; }
+  const alt = name.toLowerCase() === x.name.toLowerCase() ? '' : name;
+  if ((x.alt || '') === alt) { closeSheet(); return; }
+  if (x.sets.some(z => z.done) && !confirm('Este ejercicio tiene series marcadas y se borrarán al cambiarlo. ¿Cambiar?')) return;
+  if (alt) { x.alt = alt; x.altKind = kind || 'own'; } else { delete x.alt; delete x.altKind; }
+  x.sets.forEach(z => { z.w = ''; z.r = ''; z.rir = ''; z.done = false; });
+  save(); closeSheet(); rerender(); toast(alt ? `Cambiado a ${alt}` : `De vuelta a ${x.name}`);
 }
-function sheetHist(name) {
-  const rows = [];
+function sheetHist(name, alt = '') {
+  const rows = [], key = alt ? `${name} › ${alt}` : name;
   for (let i = IDX.sorted.length - 1; i >= 0 && rows.length < 8; i--) {
-    const s = IDX.sorted[i], x = s.ex.find(e => e.name === name);
+    const s = IDX.sorted[i], x = s.ex.find(e => exKey(e) === key);
     if (x) rows.push(`<div class="hist"><div class="row between"><b>${shortDate(s.date)}</b><span class="dim" style="font-size:12px">${x.metric === 'wr' && bestE1(x.sets) ? '1RM est. ' + fmt(bestE1(x.sets)) + ' kg' : ''}</span></div><div class="sets-t">${x.sets.map(z => setStr(z, x.metric) + (has(z.rir) ? ` <span class="dim">@${z.rir}</span>` : '')).join(' · ')}</div>${x.note ? `<div class="prev-note" style="margin-top:4px">${esc(x.note)}</div>` : ''}</div>`);
   }
-  openSheet(`<div class="eyebrow gold">Historial</div><h2 style="margin:6px 0 12px">${esc(name)}</h2>${rows.length ? `<div class="card lst">${rows.join('')}</div>` : '<div class="empty">Aún no hay registros de este ejercicio.</div>'}
-    ${rows.length ? `<button class="btn ghost block" style="margin-top:14px" data-act="exOpen" data-name="${esc(name)}">Ver progreso completo</button>` : ''}`);
+  openSheet(`<div class="eyebrow gold">${alt ? `Historial · en lugar de ${esc(name)}` : 'Historial'}</div><h2 style="margin:6px 0 12px">${esc(alt || name)}</h2>${rows.length ? `<div class="card lst">${rows.join('')}</div>` : `<div class="empty">Aún no hay registros de ${alt ? 'este reemplazo' : 'este ejercicio'}.</div>`}
+    ${rows.length ? `<button class="btn ghost block" style="margin-top:14px" data-act="exOpen" data-name="${esc(name)}" data-alt="${esc(alt)}">Ver progreso completo</button>` : ''}`);
 }
 function sheetAddEx() {
   openSheet(`<div class="eyebrow gold">Añadir</div><h2 style="margin:6px 0 4px">Ejercicio extra</h2>
@@ -1268,7 +1383,7 @@ function vDay() {
     const main = s.ex.filter(x => x.blk === 'main' && x.metric === 'wr').slice(0, 2);
     return `<button class="hist" data-act="openSession" data-id="${s.id}"><div class="row between"><b>${esc(cap(longDate(s.date)))}</b><span class="dim" style="font-size:12px">${s.rating ? '★'.repeat(s.rating) : ''}</span></div>
       <div class="sets-t">${fmtMin((s.end - s.start) / 1000)} · ${sessionSets(s)} series · ${fmtK(sessionVolume(s))}</div>
-      ${main.length ? `<div class="sets-t dim" style="font-size:12.5px">${main.map(x => `${esc(x.name)} ${fmt(bestE1(x.sets))} kg`).join(' · ')} <span style="opacity:.7">(1RM est.)</span></div>` : ''}</button>`;
+      ${main.length ? `<div class="sets-t dim" style="font-size:12.5px">${main.map(x => `${esc(lit(x))} ${fmt(bestE1(x.sets))} kg`).join(' · ')} <span style="opacity:.7">(1RM est.)</span></div>` : ''}</button>`;
   }).join('') : '<div class="empty">Aún no has hecho este día. Cuando lo hagas, aquí verás cada sesión.</div>'}</div>
   <div style="height:70px"></div>
   </div>
@@ -1285,7 +1400,7 @@ function sessionSteps(d) {
 }
 
 function stepExercise(x, xi) {
-  const prev = IDX.last.get(x.name), sug = suggest(x, prev), ph = placeholders(x, prev, sug);
+  const prev = IDX.last.get(exKey(x)), sug = suggest(x, prev), ph = placeholders(x, prev, sug);
   const m = x.metric, ci = x.sets.findIndex(z => !z.done);
   // Pauta del ejercicio en recuadros al pie: series, reps (o segundos/metros) y RIR
   const lab = x.side ? { wr: 'Por lado', reps: 'Por lado', time: 'Seg. por lado', dist: 'm por lado' }[m] : { wr: 'Reps', reps: 'Reps', time: 'Segundos', dist: 'Metros' }[m];
@@ -1304,7 +1419,7 @@ function stepExercise(x, xi) {
   const sugHtml = sug ? `<div class="sug"><span class="arr">${sug.dir === 'up' ? '↑' : sug.dir === 'down' ? '↓' : '→'}</span><div><b>${sug.w ? `${fmt(sug.w)} kg × ${sug.r}` : `${sug.r} reps`}</b> <span class="w">sugerido</span><div class="w">${esc(sug.why)}</div></div></div>`
     : (!prev && m === 'wr' ? `<div class="sug"><span class="arr">i</span><div class="w">Primera vez: elige una carga con la que te queden 1–2 reps en reserva al llegar a ${x.t.reps[0]}.</div></div>` : '');
   return {
-    head: xHead('', x.name, { blk: BLOCK_NAME[x.blk], more: `<div class="xctl"><button class="xswap" data-act="swapMenu" data-x="${xi}" aria-label="Cambiar ejercicio">${IC.swap}</button><button class="icon-btn xmore" data-act="exMenu" data-x="${xi}" aria-label="Opciones del ejercicio">${IC.more}</button></div>` }),
+    head: xHead('', lit(x), { blk: x.alt ? `${BLOCK_NAME[x.blk]} · reemplazo` : BLOCK_NAME[x.blk], more: `<div class="xctl"><button class="xswap ${x.alt ? 'on' : ''}" data-act="swapMenu" data-x="${xi}" aria-label="Cambiar ejercicio">${IC.swap}</button><button class="icon-btn xmore" data-act="exMenu" data-x="${xi}" aria-label="Opciones del ejercicio">${IC.more}</button></div>` }),
     goal: goalHtml(goal),
     body: `${sugHtml}
     ${prev && prev.note ? `<div class="prev-note">Nota del ${shortDate(prev.date)}: “${esc(prev.note)}”</div>` : ''}
@@ -1338,8 +1453,8 @@ function sheetSesList() {
     } else if (s.t === 'ex') {
       const x = d.ex[s.i], n = x.sets.filter(z => z.done).length;
       ic = n === x.sets.length ? done : n ? ring(52, n / x.sets.length, `${n}/${x.sets.length}`) : `<span class="sq">${s.i + 1}</span>`;
-      nm = x.name; sub = `${x.sets.length} × ${rng(x.t.reps)} ${UNIT[x.metric]} · ${BLOCK_NAME[x.blk]}`;
-      more = `<button class="icon-btn" data-act="exMenu" data-x="${s.i}" aria-label="Opciones de ${esc(x.name)}">${IC.more}</button>`;
+      nm = lit(x); sub = x.alt ? `En lugar de ${esc(x.name)}` : `${x.sets.length} × ${rng(x.t.reps)} ${UNIT[x.metric]} · ${BLOCK_NAME[x.blk]}`;
+      more = `<button class="icon-btn" data-act="exMenu" data-x="${s.i}" aria-label="Opciones de ${esc(nm)}">${IC.more}</button>`;
     } else { ic = `<span class="sq">${IC.check}</span>`; nm = 'Cierre y notas'; sub = 'Valoración y guardado'; }
     return `<div class="srowl ${k === d.step ? 'cur' : ''}" role="button" data-act="stepTo" data-k="${k}">${ic}<div class="grow"><div class="t1">${esc(nm)}</div><div class="t2">${sub}</div></div>${more}</div>`;
   }).join('')}
@@ -1365,7 +1480,7 @@ function sheetSession(id) {
     <div class="stat"><div class="v" style="font-size:20px">${sessionSets(s)}</div><div class="l">Series</div></div>
     <div class="stat"><div class="v" style="font-size:20px">${s.rating ? s.rating + '/5' : '—'}</div><div class="l">Sensación</div></div>
   </div>
-  <div class="card lst" style="margin-top:4px">${s.ex.map(x => `<div class="hist"><div class="row between"><b>${esc(x.name)}</b><span class="dim" style="font-size:12px">${x.metric === 'wr' && bestE1(x.sets) ? '1RM est. ' + fmt(bestE1(x.sets)) : ''}</span></div><div class="sets-t">${x.sets.map(z => setStr(z, x.metric) + (has(z.rir) ? ` <span class="dim">@${z.rir}</span>` : '')).join(' · ')}</div>${x.note ? `<div class="prev-note" style="margin-top:4px">${esc(x.note)}</div>` : ''}</div>`).join('')}</div>
+  <div class="card lst" style="margin-top:4px">${s.ex.map(x => `<div class="hist"><div class="row between"><b>${esc(lit(x))}${x.alt ? `<span class="alt-of">en lugar de ${esc(x.name)}</span>` : ''}</b><span class="dim" style="font-size:12px">${x.metric === 'wr' && bestE1(x.sets) ? '1RM est. ' + fmt(bestE1(x.sets)) : ''}</span></div><div class="sets-t">${x.sets.map(z => setStr(z, x.metric) + (has(z.rir) ? ` <span class="dim">@${z.rir}</span>` : '')).join(' · ')}</div>${x.note ? `<div class="prev-note" style="margin-top:4px">${esc(x.note)}</div>` : ''}</div>`).join('')}</div>
   ${s.note ? `<div class="card" style="margin-top:14px"><div class="eyebrow">Notas</div><div style="margin-top:6px">${esc(s.note)}</div></div>` : ''}
   <div class="muted" style="font-size:13px;margin-top:14px">Volumen total: ${fmtK(sessionVolume(s))}</div>
   <button class="btn danger block" style="margin-top:16px" data-act="delSession" data-id="${s.id}">${IC.trash} Eliminar sesión</button>`);
@@ -1454,11 +1569,13 @@ function barChart(items, goal) {
     ${goal ? `<line class="goal" x1="${pl}" x2="${W}" y1="${Y(goal).toFixed(1)}" y2="${Y(goal).toFixed(1)}"/><text class="yl" x="${pl - 6}" y="${(Y(goal) + 3).toFixed(1)}" text-anchor="end" style="fill:var(--gold)">${goal}</text>` : `<text class="yl" x="${pl - 6}" y="${pt + 4}" text-anchor="end">${fmt(max)}</text>`}
   </svg>`;
 }
-function exSeries(name) {
+// Serie de un ejercicio: solo el original, o solo uno de sus reemplazos (alt)
+function exSeries(name, alt = '') {
   const out = [];
-  for (const s of IDX.sorted) { const x = s.ex.find(e => e.name === name); if (x) out.push({ s, x }); }
+  for (const s of IDX.sorted) { const x = s.ex.find(e => e.name === name && (e.alt || '') === alt); if (x) out.push({ s, x }); }
   return out;
 }
+const altsDone = name => [...new Set(IDX.sorted.flatMap(s => s.ex.filter(x => x.name === name && x.alt).map(x => x.alt)))];
 function vProg() {
   const tab = ui.progTab;
   const segs = [['ex', 'Ejercicios'], ['wk', 'Semanas'], ['body', 'Cuerpo']];
@@ -1469,11 +1586,11 @@ function vProg() {
     const groups = { main: [], ath: [], health: [] };
     for (const [n, i] of names) (groups[i.blk] || groups.main).push([n, i]);
     body = names.size ? Object.entries(groups).filter(([, l]) => l.length).map(([b, list]) => `<h3>${BLOCK_NAME[b]}</h3><div class="card" style="padding:2px 16px">${list.sort((a, b) => b[1].date.localeCompare(a[1].date)).map(([n, i]) => {
-      const ser = exSeries(n);
-      const best = i.metric === 'wr' ? Math.max(...ser.map(o => bestE1(o.x.sets))) : Math.max(...ser.map(o => Math.max(...o.x.sets.map(z => num(z.r)))));
+      const ser = exSeries(n), na = altsDone(n).length;
+      const best = !ser.length ? 0 : i.metric === 'wr' ? Math.max(...ser.map(o => bestE1(o.x.sets))) : Math.max(...ser.map(o => Math.max(...o.x.sets.map(z => num(z.r)))));
       const spark = ser.slice(-10).map(o => i.metric === 'wr' ? bestE1(o.x.sets) : Math.max(...o.x.sets.map(z => num(z.r))));
-      return `<button class="list-item" data-act="exOpen" data-name="${esc(n)}"><div class="grow"><div class="t1">${esc(n)}</div><div class="t2">${ser.length} ${ser.length === 1 ? 'sesión' : 'sesiones'} · ${daysAgo(i.date)}</div></div>
-        ${sparkline(spark)}<div style="text-align:right;min-width:62px"><div class="gold" style="font-family:var(--serif);font-size:19px">${fmt(best)}</div><div class="dim" style="font-size:10px;letter-spacing:.1em;text-transform:uppercase">${i.metric === 'wr' ? '1RM est.' : 'mejor ' + UNIT[i.metric]}</div></div></button>`;
+      return `<button class="list-item" data-act="exOpen" data-name="${esc(n)}"><div class="grow"><div class="t1">${esc(n)}${na ? `<span class="tag">+${na} ${na === 1 ? 'reemplazo' : 'reemplazos'}</span>` : ''}</div><div class="t2">${ser.length ? `${ser.length} ${ser.length === 1 ? 'sesión' : 'sesiones'}` : 'Solo con reemplazos'} · ${daysAgo(i.date)}</div></div>
+        ${sparkline(spark)}<div style="text-align:right;min-width:62px"><div class="gold" style="font-family:var(--serif);font-size:19px">${best ? fmt(best) : '—'}</div><div class="dim" style="font-size:10px;letter-spacing:.1em;text-transform:uppercase">${i.metric === 'wr' ? '1RM est.' : 'mejor ' + UNIT[i.metric]}</div></div></button>`;
     }).join('')}</div>`).join('') : '<div class="card" style="margin-top:18px"><div class="empty">Cuando registres sesiones aparecerá aquí la evolución de cada ejercicio, con 1RM estimado (Epley) y récords.</div></div>';
   } else if (tab === 'wk') {
     const goal = S.settings.goal, set = trainedSet(), ws0 = weekStart(new Date());
@@ -1518,7 +1635,13 @@ function sparkline(v) {
   return `<svg width="56" height="20" viewBox="0 0 56 20" style="flex:none;overflow:visible"><polyline points="${p}" fill="none" stroke="var(--gold)" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" opacity=".85"/></svg>`;
 }
 function vExDetail() {
-  const name = ui.exName, ser = exSeries(name);
+  const name = ui.exName, alts = altsDone(name);
+  // Cada reemplazo lleva su propio progreso dentro de este ejercicio
+  let alt = alts.includes(ui.exAlt) ? ui.exAlt : '';
+  if (!alt && !exSeries(name).length && alts.length) alt = alts[0];
+  ui.exAlt = alt;
+  const ser = exSeries(name, alt), hasOrig = !!exSeries(name).length;
+  const vchips = alts.length ? `<div class="vchips">${hasOrig ? `<button class="${alt ? '' : 'on'}" data-act="exAlt" data-a="">Original</button>` : ''}${alts.map(a => `<button class="${a === alt ? 'on' : ''}" data-act="exAlt" data-a="${esc(a)}">${esc(a)}</button>`).join('')}</div>` : '';
   if (!ser.length) return `<button class="icon-btn" data-act="nav" data-nav="prog">${IC.back}</button><div class="empty">Sin datos.</div>`;
   const m = ser[ser.length - 1].x.metric;
   const modes = m === 'wr' ? [['e1rm', '1RM est.'], ['top', 'Carga máx.'], ['vol', 'Volumen']] : [['best', 'Mejor']];
@@ -1546,6 +1669,7 @@ function vExDetail() {
   }
   return `<div class="stg"><button class="icon-btn" style="margin-left:-10px" data-act="nav" data-nav="prog">${IC.back}</button>
     <div class="eyebrow gold" style="margin-top:6px">Ejercicio</div><h1 style="font-size:30px">${esc(name)}</h1>
+    ${vchips}${alt ? `<div class="muted" style="font-size:13px;margin-top:10px">Reemplazo: <b style="color:var(--text)">${esc(alt)}</b>. Su progreso se lleva aparte del original.</div>` : ''}
     <div class="seg" style="margin-top:18px">${modes.map(([k, l]) => `<button class="${ui.chart === k ? 'on' : ''}" data-act="chart" data-c="${k}">${l}</button>`).join('')}</div>
     <div class="card" style="margin-top:12px">${lineChart(pts, { unit })}</div>
     ${m === 'wr' ? '<div class="muted" style="font-size:12px;margin-top:8px">1RM estimado con Epley: w · (1 + r/30), más fiable con r ≤ 10.</div>' : ''}
@@ -1554,10 +1678,16 @@ function vExDetail() {
 }
 
 /* ---------- Ajustes ---------- */
+// Reemplazos usados en una sesión que aún no están en la rutina
+const pendingAlts = () => S.altSug.filter(g => Object.values(S.routine.days).some(d => [...d.ath, ...d.main, ...d.health].some(e => e.name === g.name && !normAlts(e.alts).some(a => a.name.toLowerCase() === g.alt.toLowerCase()))));
 function vSet() {
   const st = S.settings;
   const sw = (k, t1, t2) => `<button class="setting" data-act="toggle" data-k="${k}"><div class="grow"><div style="font-weight:600">${t1}</div>${t2 ? `<div class="t2">${t2}</div>` : ''}</div><span class="sw ${st[k] ? 'on' : ''}"></span></button>`;
+  const pend = pendingAlts();
   return `<div class="stg"><div class="eyebrow gold">Ajustes</div><h1>Configuración</h1>
+  ${pend.length ? `<h3>Reemplazos nuevos</h3><div class="card lst">${pend.map(g => `<div class="altsug"><div class="t1">${esc(g.alt)}</div>
+    <div class="t2">Lo usaste en lugar de <b>${esc(g.name)}</b> el ${shortDate(g.date)}. ¿Lo añades a sus reemplazos${g.kind && g.kind !== 'own' ? ` como «${ALT_KIND[g.kind].toLowerCase()}»` : ''}?</div>
+    <div class="pair"><button class="btn primary sm" data-act="altSugAdd" data-k="${esc(g.k)}">Añadir</button><button class="btn ghost sm" data-act="altSugNo" data-k="${esc(g.k)}">Descartar</button></div></div>`).join('')}</div>` : ''}
   <h3>Rutina</h3><div class="card" style="padding:2px 16px">${S.routine.order.map((id, i, o) => { const d = S.routine.days[id]; return `<div class="list-item" role="button" data-act="editDay" data-day="${id}"><div class="lead">${esc(d.short)}</div><div class="grow"><div class="t1">${esc(d.name)}</div><div class="t2">Día ${i + 1} · ${dayCount(d)} ejercicios${d.weekday ? ' · ' + esc(d.weekday) : ''}</div></div>${arrows('dayMove', `data-day="${id}"`, i, o.length)}</div>`; }).join('')}
     <button class="list-item" data-act="addDay"><div class="lead">${IC.plus}</div><div class="grow"><div class="t1">Añadir día</div><div class="t2">Vacío o copiando uno existente</div></div></button></div>
   <div class="muted" style="font-size:12.5px;margin-top:8px">Las flechas cambian el orden de rotación. En Inicio, la próxima sesión es el día que va después de tu última sesión en este orden.</div>
@@ -1605,7 +1735,7 @@ function vEditDay() {
   </div>
   ${BLOCKS.map(([b, n]) => `<h3>${n}</h3><div class="card" style="padding:2px 16px">${d[b].map((e, i, l) => `<div class="list-item" role="button" data-act="editEx" data-b="${b}" data-i="${i}"><div class="grow"><div class="t1">${esc(e.name)}${e.basic ? '<span class="tag">Básico</span>' : ''}</div><div class="t2">${rng(e.sets)} × ${rng(e.reps)} ${UNIT[e.metric]}${e.side ? ' por lado' : ''}${e.metric === 'wr' || e.metric === 'dist' ? ` · +${fmt(e.inc)} kg` : ''} · ${fmtDur(e.rest || DEFAULT_REST[b])}</div></div>${arrows('moveEx', `data-b="${b}"`, i, l.length)}</div>`).join('') || '<div class="empty">Sin ejercicios</div>'}
     <button class="list-item" data-act="editEx" data-b="${b}" data-i="-1"><span>${IC.plus}</span><span class="grow" style="font-weight:600">Añadir ejercicio</span></button></div>`).join('')}
-  <div class="muted" style="font-size:12.5px;margin-top:12px">Las flechas cambian el orden de los ejercicios. Los cambios aplican a las próximas sesiones; el historial se agrupa por nombre del ejercicio.</div>
+  <div class="muted" style="font-size:12.5px;margin-top:12px">Toca un ejercicio para editar su pauta y sus reemplazos. Las flechas cambian el orden de los ejercicios. Los cambios aplican a las próximas sesiones; el historial se agrupa por nombre del ejercicio.</div>
   <button class="btn danger block" style="margin-top:22px" data-act="delDay" data-day="${d.id}">${IC.trash} Eliminar este día</button></div>`;
 }
 // Flechas para subir o bajar un elemento de una lista (no hacen nada en los extremos)
@@ -1632,16 +1762,30 @@ function delDay(id) {
   delete S.routine.days[id]; S.routine.order = S.routine.order.filter(x => x !== id);
   save(); go('set'); toast('Día eliminado');
 }
+// Reemplazos en edición (se guardan con el ejercicio al pulsar Guardar)
+const altRows = () => ui.altEdit.length ? ui.altEdit.map((a, i) => `<div class="opt"><span class="ic">${KIND_IC[a.kind] || IC.edit}</span><span class="grow">${esc(a.name)}<small>${ALT_KIND[a.kind] || ALT_KIND.own}</small></span><button class="icon-btn sm" data-act="altDel" data-i="${i}" aria-label="Quitar ${esc(a.name)}">${IC.x}</button></div>`).join('')
+  : '<div class="muted" style="font-size:13px;padding:6px 0">Sin reemplazos. Añade uno de menor riesgo, sin máquina o en otra máquina.</div>';
+function altAddFromForm() {
+  const inp = $('#fAltName'), name = inp.value.trim(); if (!name) return false;
+  const kind = $('#fAltKind').dataset.k || 'own';
+  ui.altEdit = ui.altEdit.filter(a => a.name.toLowerCase() !== name.toLowerCase()); ui.altEdit.push({ name, kind });
+  inp.value = ''; $('#fAlts').innerHTML = altRows(); return true;
+}
 function sheetEditEx(b, i) {
   const d = S.routine.days[ui.editDay];
   const e = i >= 0 ? d[b][i] : E(uid(), '', [3, 3], [8, 12], { metric: b === 'main' ? 'wr' : 'reps' });
+  ui.altEdit = clone(normAlts(e.alts));
   openSheet(`<div class="eyebrow gold">${BLOCK_NAME[b]}</div><h2 style="margin:6px 0 0">${i >= 0 ? 'Editar ejercicio' : 'Nuevo ejercicio'}</h2>
     <label class="field"><span>Nombre</span><input class="inp" id="fName" value="${esc(e.name)}" placeholder="Nombre"></label>
     <label class="field"><span>Registro</span><select class="inp" id="fMetric">${Object.entries(METRIC_NAME).map(([k, v]) => `<option value="${k}" ${e.metric === k ? 'selected' : ''}>${v}</option>`).join('')}</select></label>
     <div class="pair"><label class="field"><span>Series mín.</span><input class="inp" id="fS0" inputmode="numeric" value="${e.sets[0]}"></label><label class="field"><span>Series máx.</span><input class="inp" id="fS1" inputmode="numeric" value="${e.sets[1]}"></label></div>
     <div class="pair"><label class="field"><span>Rango mín. (a)</span><input class="inp" id="fR0" inputmode="numeric" value="${e.reps[0]}"></label><label class="field"><span>Rango máx. (b)</span><input class="inp" id="fR1" inputmode="numeric" value="${e.reps[1]}"></label></div>
     <div class="pair"><label class="field"><span>Incremento kg</span><input class="inp" id="fInc" inputmode="decimal" value="${e.inc}"></label><label class="field"><span>Descanso (s)</span><input class="inp" id="fRest" inputmode="numeric" value="${e.rest || DEFAULT_REST[b]}"></label></div>
-    <label class="field"><span>Alternativas (separadas por coma)</span><input class="inp" id="fAlts" value="${esc((e.alts || []).join(', '))}"></label>
+    <div class="field"><span>Reemplazos</span></div>
+    <div class="optl altl" id="fAlts">${altRows()}</div>
+    <input class="inp" id="fAltName" placeholder="Añadir reemplazo" autocomplete="off" style="margin-top:10px">
+    <div style="margin-top:8px">${kindPick('fAltKind', 'safe')}</div>
+    <button class="btn ghost block" style="margin-top:8px" data-act="altAdd">${IC.plus} Añadir reemplazo</button>
     <div class="card" style="padding:2px 14px;margin-top:14px">
       <button class="setting" data-act="fToggle" data-f="fBasic"><div class="grow"><div style="font-weight:600">Ejercicio básico</div></div><span class="sw ${e.basic ? 'on' : ''}" id="fBasic"></span></button>
       <button class="setting" data-act="fToggle" data-f="fSide"><div class="grow"><div style="font-weight:600">Por lado</div></div><span class="sw ${e.side ? 'on' : ''}" id="fSide"></span></button></div>
@@ -1909,16 +2053,17 @@ const A = {
     <div class="muted" style="font-size:12.5px;margin-top:12px">Suena y vibra al cambiar de fase. Con la pantalla bloqueada el teléfono puede silenciar el aviso, por eso la pantalla se mantiene encendida.${num(S.settings.fcmax) ? '' : ' Añade tu FC máxima en Ajustes para ver las pulsaciones objetivo.'}</div>`),
   exMenu: el => sheetExMenu(+el.dataset.x),
   swapMenu: el => sheetSwap(+el.dataset.x),
-  swapTo: el => swapTo(+el.dataset.x, el.dataset.name),
-  swapCustom: el => swapTo(+el.dataset.x, $('#swapName').value),
-  exHist: el => sheetHist(S.draft.ex[+el.dataset.x].name),
+  swapTo: el => swapTo(+el.dataset.x, el.dataset.name, el.dataset.kind),
+  swapCustom: el => swapTo(+el.dataset.x, $('#swapName').value, $('#swapKind').dataset.k),
+  kindPick: el => { const p = el.parentNode; p.dataset.k = el.dataset.k; p.querySelectorAll('button').forEach(b => b.classList.toggle('on', b === el)); },
+  exHist: el => { const x = S.draft.ex[+el.dataset.x]; sheetHist(x.name, x.alt || ''); },
   exMove: el => { const i = +el.dataset.x, j = i + +el.dataset.d, ex = S.draft.ex; if (j < 0 || j >= ex.length || ex[j].blk !== ex[i].blk) { toast('Ya está en el extremo del bloque'); return; } [ex[i], ex[j]] = [ex[j], ex[i]]; S.draft.step = (S.draft.step || 0) + (j - i); save(); closeSheet(); rerender(); },
   exRemove: el => { const x = S.draft.ex[+el.dataset.x]; if (x.sets.some(z => z.done) && !confirm('Este ejercicio tiene series marcadas. ¿Quitarlo?')) return; S.draft.ex.splice(+el.dataset.x, 1); save(); closeSheet(); rerender(); },
   addEx: () => sheetAddEx(),
   addExConfirm: () => {
     const name = $('#newExName').value.trim(); if (!name) { toast('Escribe un nombre'); return; }
     const metric = $('#newExMetric').value, blk = $('#newExBlk').value, n = Math.max(1, Math.min(10, parseInt($('#newExSets').value) || 3)), r = Math.max(1, parseInt($('#newExReps').value) || 10);
-    const x = { key: uid(), name, metric, basic: false, side: false, blk, alts: [], t: { sets: [n, n], reps: [r, r], inc: metric === 'wr' ? 2.5 : 0, rest: 0 }, sets: Array.from({ length: n }, () => ({ w: '', r: '', rir: '', done: false })), note: '' };
+    const x = { key: uid(), name, metric, basic: false, side: false, blk, t: { sets: [n, n], reps: [r, r], inc: metric === 'wr' ? 2.5 : 0, rest: 0 }, sets: Array.from({ length: n }, () => ({ w: '', r: '', rir: '', done: false })), note: '' };
     const lastIdx = S.draft.ex.map(e => e.blk).lastIndexOf(blk);
     S.draft.ex.splice(lastIdx >= 0 ? lastIdx + 1 : S.draft.ex.length, 0, x);
     save(); closeSheet(); rerender(); toast('Ejercicio añadido');
@@ -1936,7 +2081,8 @@ const A = {
   calDay: el => { ui.calSel = el.dataset.d; rerender(); },
   goal: el => { S.settings.goal = +el.dataset.n; save(); rerender(); },
   progTab: el => { ui.progTab = el.dataset.t; render(); },
-  exOpen: el => { closeSheet(); go('exDetail', { exName: el.dataset.name, chart: 'e1rm' }); },
+  exOpen: el => { closeSheet(); go('exDetail', { exName: el.dataset.name, exAlt: el.dataset.alt || '', chart: 'e1rm' }); },
+  exAlt: el => { ui.exAlt = el.dataset.a; rerender(); },
   chart: el => { ui.chart = el.dataset.c; rerender(); },
   bodySave: () => {
     const date = $('#bDate').value || ymd(new Date()), e = { date, kg: $('#bKg').value.replace(',', '.'), waist: $('#bWaist').value.replace(',', '.'), arm: $('#bArm').value.replace(',', '.'), thigh: $('#bThigh').value.replace(',', '.') };
@@ -1955,6 +2101,17 @@ const A = {
   finishFromMenu: () => sheetFinish(),
   editEx: el => sheetEditEx(el.dataset.b, +el.dataset.i),
   fToggle: el => $('#' + el.dataset.f).classList.toggle('on'),
+  altAdd: () => { if (!altAddFromForm()) toast('Escribe el nombre del reemplazo'); },
+  altDel: el => { ui.altEdit.splice(+el.dataset.i, 1); $('#fAlts').innerHTML = altRows(); },
+  altSugAdd: el => {
+    const g = S.altSug.find(z => z.k === el.dataset.k); if (!g) return;
+    let n = 0;
+    for (const d of Object.values(S.routine.days)) for (const b of ['ath', 'main', 'health']) for (const e of d[b]) if (e.name === g.name) {
+      e.alts = normAlts(e.alts); if (!e.alts.some(a => a.name.toLowerCase() === g.alt.toLowerCase())) { e.alts.push({ name: g.alt, kind: g.kind || 'own' }); n++; }
+    }
+    S.altSug = S.altSug.filter(z => z !== g); save(); rerender(); toast(n ? `Añadido a los reemplazos de ${g.name}` : 'Ya estaba entre los reemplazos');
+  },
+  altSugNo: el => { S.altNo.push(el.dataset.k); S.altSug = S.altSug.filter(z => z.k !== el.dataset.k); save(); rerender(); },
   saveEx: el => {
     const d = S.routine.days[ui.editDay], b = el.dataset.b, i = +el.dataset.i;
     const name = $('#fName').value.trim(); if (!name) { toast('Escribe un nombre'); return; }
@@ -1962,7 +2119,7 @@ const A = {
     let s0 = int('#fS0', 3), s1 = int('#fS1', s0), r0 = int('#fR0', 8), r1 = int('#fR1', r0);
     if (s1 < s0) [s0, s1] = [s1, s0]; if (r1 < r0) [r0, r1] = [r1, r0];
     const base = i >= 0 ? d[b][i] : { id: uid() };
-    const e = { ...base, name, metric: $('#fMetric').value, sets: [s0, s1], reps: [r0, r1], inc: Math.max(0, num($('#fInc').value)), rest: Math.max(0, parseInt($('#fRest').value) || 0), alts: $('#fAlts').value.split(',').map(a => a.trim()).filter(Boolean), basic: $('#fBasic').classList.contains('on'), side: $('#fSide').classList.contains('on') };
+    const e = { ...base, name, metric: $('#fMetric').value, sets: [s0, s1], reps: [r0, r1], inc: Math.max(0, num($('#fInc').value)), rest: Math.max(0, parseInt($('#fRest').value) || 0), alts: (altAddFromForm(), clone(ui.altEdit)), basic: $('#fBasic').classList.contains('on'), side: $('#fSide').classList.contains('on') };
     if (i >= 0) d[b][i] = e; else d[b].push(e);
     save(); closeSheet(); rerender(); toast('Rutina actualizada');
   },
