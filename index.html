@@ -282,10 +282,29 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.7;stro
 .fbody.ses .srow.dist{grid-template-columns:22px minmax(0,1fr) minmax(54px,68px) minmax(54px,68px) 48px}
 .fbody.ses .num{height:50px;font-size:17px;border-radius:16px}
 .fbody.ses .ck{width:48px;height:48px}
-.xstats{display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));gap:8px;margin-top:12px}
-.xstats .stat{padding:14px 6px}
-.xstats .stat .v{font-size:24px;white-space:nowrap}
-.xstats .stat .l{font-size:10px;letter-spacing:.1em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.xg{margin-top:12px;white-space:nowrap}
+.xg span{color:var(--muted)}
+/* a: tira editorial, cifras en serif separadas por filetes */
+.xg-a{display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));border-top:1px solid var(--line2);padding-top:16px}
+.xg-a>div{display:flex;flex-direction:column;align-items:center;gap:7px}
+.xg-a>div+div{border-left:1px solid var(--line2)}
+.xg-a b{font-family:var(--serif);font-weight:400;font-size:38px;line-height:1;letter-spacing:-.01em}
+.xg-a span{font-size:10px;letter-spacing:.16em;text-transform:uppercase;font-weight:600}
+/* b: una frase en serif */
+.xg-b{text-align:center;border-top:1px solid var(--line2);padding-top:16px;white-space:normal}
+.xg-b .ph{font-family:var(--serif);font-size:28px;line-height:1.1;letter-spacing:-.01em}
+.xg-b .sm{font-size:13px;color:var(--muted);margin-top:6px}
+/* c: ficha, etiqueta a la izquierda y valor a la derecha */
+.xg-c>div{display:flex;justify-content:space-between;align-items:baseline;padding:10px 2px;border-top:1px solid var(--line)}
+.xg-c>div:last-child{border-bottom:1px solid var(--line)}
+.xg-c b{order:2;font-size:17px;font-weight:600;font-variant-numeric:tabular-nums}
+.xg-c span{font-size:11px;letter-spacing:.16em;text-transform:uppercase;font-weight:600}
+/* d: cifras grandes en línea con su etiqueta al lado */
+.xg-d{display:flex;justify-content:space-between;align-items:baseline;padding:0 6px}
+.xg-d>div{display:flex;align-items:baseline;gap:6px}
+.xg-d b{font-size:40px;font-weight:600;letter-spacing:-.04em;line-height:1;font-variant-numeric:tabular-nums}
+.xg-d span{font-size:13px}
+.xg-d span:not(.k){text-transform:lowercase}
 
 /* Calentamiento: la lista ocupa todo el alto disponible */
 .wlist{flex:1 1 0!important;min-height:0;display:flex;flex-direction:column;margin-top:2px}
@@ -532,8 +551,7 @@ code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;color:#fff
   .fbody.ses .sets>.srow:not(.hd){min-height:46px}
   .fbody.ses .num{height:42px;font-size:16px;border-radius:14px}
   .fbody.ses .ck{width:42px;height:42px}
-  .xstats .stat{padding:10px 4px}
-  .xstats .stat .v{font-size:20px}
+  .xg-a b{font-size:30px} .xg-b .ph{font-size:23px} .xg-c>div{padding:7px 2px} .xg-d b{font-size:32px}
   .upnext{padding-top:10px}
 }
 @media (max-width:360px){ .srow{gap:4px;padding:4px 2px} .focus{padding-left:12px;padding-right:12px} .upnext{margin:0 -12px} }
@@ -1239,9 +1257,9 @@ function sessionSteps(d) {
 function stepExercise(x, xi) {
   const prev = IDX.last.get(x.name), sug = suggest(x, prev), ph = placeholders(x, prev, sug);
   const m = x.metric, ci = x.sets.findIndex(z => !z.done);
-  // Pauta del ejercicio en recuadros al pie: series, reps (o segundos/metros), RIR y descanso
+  // Pauta del ejercicio en recuadros al pie: series, reps (o segundos/metros) y RIR
   const lab = x.side ? { wr: 'Reps / lado', reps: 'Reps / lado', time: 'Seg / lado', dist: 'Metros / lado' }[m] : { wr: 'Reps', reps: 'Reps', time: 'Segundos', dist: 'Metros' }[m];
-  const goal = [['Series', rng(x.t.sets)], [lab, rng(x.t.reps)], ...(m === 'wr' ? [['RIR', '≥ 1']] : []), ['Descanso', fmtDur(restOf(x))]];
+  const goal = [['Series', rng(x.t.sets)], [lab, rng(x.t.reps)], ...(m === 'wr' ? [['RIR', '≥ 1']] : [])];
   const cols = { wr: ['#', 'Anterior', 'kg', 'Reps', 'RIR', ''], reps: ['#', 'Anterior', 'Reps', ''], time: ['#', 'Anterior', 'Seg', ''], dist: ['#', 'Anterior', 'kg', 'Metros', ''] }[m];
   const inp = (si, f, val, p) => `<input class="num" type="text" inputmode="decimal" autocomplete="off" data-x="${xi}" data-s="${si}" data-f="${f}" value="${esc(val)}" placeholder="${esc(p ?? '')}">`;
   const rows = x.sets.map((z, si) => {
@@ -1261,8 +1279,15 @@ function stepExercise(x, xi) {
     ${prev && prev.note ? `<div class="prev-note">Nota del ${shortDate(prev.date)}: “${esc(prev.note)}”</div>` : ''}
     <div class="sets"><div class="srow ${m} hd">${cols.map(h => `<span>${h}</span>`).join('')}</div>${rows}</div>
     ${x.showNote || x.note ? `<textarea class="note" data-xnote="${xi}" placeholder="Técnica, molestias, ajustes de máquina…">${esc(x.note)}</textarea>` : ''}
-    <div class="xstats" style="--n:${goal.length}">${goal.map(([l, v]) => `<div class="stat"><div class="v">${esc(v)}</div><div class="l">${esc(l)}</div></div>`).join('')}</div>`,
+    ${goalHtml(x, goal)}`,
   };
+}
+
+// Pauta al pie del ejercicio. Propuestas de estilo (a: tira editorial, b: frase, c: ficha, d: cifras en línea)
+function goalHtml(x, goal) {
+  const v = ui.xs || 'a';
+  if (v === 'b') return `<div class="xg xg-b"><div class="ph">${rng(x.t.sets)} series de ${rng(x.t.reps)} ${UNIT[x.metric]}${x.side ? ' por lado' : ''}</div>${x.metric === 'wr' ? '<div class="sm">RIR ≥ 1 · deja al menos una rep en reserva</div>' : ''}</div>`;
+  return `<div class="xg xg-${v}" style="--n:${goal.length}">${goal.map(([l, val]) => `<div><b>${esc(val)}</b><span class="${l === 'RIR' ? 'k' : ''}">${esc(l)}</span></div>`).join('')}</div>`;
 }
 
 // Lista de la sesión (como la referencia): estado de cada paso, ir a él, opciones y cierre
