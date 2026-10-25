@@ -235,16 +235,7 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.7;stro
 .clock .tm{font-size:64px;font-weight:600;letter-spacing:-.05em;line-height:1;font-variant-numeric:tabular-nums;transition:color .3s}
 .clock .sub{font-size:14px;color:var(--muted);margin-top:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .clock .sub b{color:var(--text);font-weight:600}
-.clock .rctl{display:none;gap:6px;margin-left:auto}
-.clock.resting .rctl{display:flex}
-.clock.resting .tm{color:#fff}
-.clock.over .tm{animation:blink 1s infinite}
 .clock .sub span.lb{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:1}
-.clock .rctl button{height:32px;padding:0 12px;border-radius:999px;background:var(--s3);font-size:13px;font-weight:600;transition:transform .18s var(--spring)}
-.clock .rctl button:active{transform:scale(.9)}
-.clock .rbar{height:2px;background:rgba(255,255,255,.1);margin-top:12px;border-radius:2px;overflow:hidden;opacity:0;transition:opacity .3s}
-.clock.resting .rbar{opacity:1}
-.clock .rbar i{display:block;height:100%;background:#fff;width:0;transition:width .25s linear}
 .dots{display:flex;gap:4px;margin:14px 0 0}
 .dots>i{flex:1;height:3px;border-radius:3px;background:rgba(255,255,255,.12);transition:background .4s}
 .dots>i.d{background:rgba(255,255,255,.55)}
@@ -255,64 +246,98 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.7;stro
 .fbody.ses>.step{flex:1;min-height:0;display:flex;flex-direction:column}
 .fbody.ses>.step>*{flex:none}
 
-/* Reloj compacto con la cabecera del paso a su derecha; la fila del descanso se despliega solo al descansar */
-.ctop{display:flex;align-items:center;gap:14px}
-.clock .ctop .tm{flex:none;width:112px;font-size:44px;letter-spacing:-.045em}
-.clock .ctop .tm.long{font-size:32px}
-.chead{flex:1;min-width:0;align-self:stretch;display:flex;align-items:center;padding-left:14px;border-left:1px solid var(--line2)}
-.chead .xhead{gap:12px;width:100%}
-.clock .chead .blk{font-size:10px;letter-spacing:.14em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.clock .chead .xn{font-size:25px;line-height:1.04;margin:3px 0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.clock .chead .xn.long{font-size:20px}
-.clock .chead .xm{font-size:12px;line-height:1.3}
+/* Barra superior: el reloj de la sesión va entre ⌄ y los ajustes y no se detiene al descansar */
+.fhead .ftm{flex:1;min-width:0;text-align:center;font-size:30px;font-weight:600;letter-spacing:-.045em;line-height:1;font-variant-numeric:tabular-nums;white-space:nowrap}
+.fhead .ftm.long{font-size:25px}
+
+/* Cabecera del paso: bloque y botones en una fila fina; el nombre a todo lo ancho y la pauta pequeña a su derecha */
+.chead .xhead{display:block}
+.xeb{display:flex;align-items:center;gap:8px;min-height:30px}
+.step .xeb .blk{flex:1;min-width:0;font-size:10.5px;letter-spacing:.16em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.xrow{display:flex;align-items:center;gap:14px;margin-top:2px}
+.clock .chead .xn{flex:1;min-width:0;font-size:30px;line-height:1.04;margin:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.clock .chead .xn.long{font-size:25px}
+.xp{flex:none;font-size:12px;line-height:1.5;color:var(--muted);white-space:nowrap;padding-left:12px;border-left:1px solid var(--line2)}
+.xp b{color:var(--text);font-weight:600;font-size:13px;font-variant-numeric:tabular-nums}
 .chead .stico .n svg{width:18px;height:18px}
 .chead .donec{width:44px;height:44px;box-shadow:0 0 0 3px var(--s3)}
 .chead .donec svg{width:20px;height:20px}
-.icon-btn.xmore{width:34px;height:34px;margin-right:-8px;color:var(--muted)}
-.icon-btn.xmore svg{width:18px;height:18px}
-.xctl .icon-btn.xmore{margin:0;width:32px;height:28px}
-.rrow{display:grid;grid-template-rows:0fr;opacity:0;transition:grid-template-rows .4s var(--ease),opacity .3s}
+
+/* Descanso, estilo «Fila»: se despliega bajo el nombre con la cuenta atrás grande */
+.rrow{display:none}
+.rest-row .rrow{display:grid;grid-template-rows:0fr;opacity:0;transition:grid-template-rows .4s var(--ease),opacity .3s}
 .rrow>div{min-height:0;overflow:hidden}
-.clock.resting .rrow{grid-template-rows:1fr;opacity:1}
-.rrow .sub{margin-top:12px}
+.rest-row.resting .rrow{grid-template-rows:1fr;opacity:1}
+.rrow .sub{margin-top:12px;display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted)}
+.rrow .rt.big{font-size:30px;font-weight:600;letter-spacing:-.045em;line-height:1;color:#fff;font-variant-numeric:tabular-nums}
+.rrow .lb{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rrow .lb b{color:var(--text);font-weight:600}
+.rrow .rctl{display:flex;gap:6px;flex:none}
+.rrow .rctl button{height:32px;padding:0 11px;border-radius:999px;background:var(--s3);font-size:13px;font-weight:600;transition:transform .18s var(--spring)}
+.rrow .rctl button:active{transform:scale(.9)}
+.rrow .rbar{height:2px;background:rgba(255,255,255,.1);margin-top:12px;border-radius:2px;overflow:hidden}
+.rrow .rbar i{display:block;height:100%;background:#fff;transform-origin:left;transform:scaleX(var(--rp,0));transition:transform .25s linear}
+.over .rrow .rt.big{animation:blink 1s infinite}
+
+/* Descanso, estilo «Barra»: la barra inferior se vuelve la cuenta atrás y se vacía de izquierda a derecha */
+.upnext{position:relative;overflow:hidden}
+.upnext>*{transition:opacity .25s}
+.urest{position:absolute;inset:0;display:flex;align-items:center;gap:8px;padding:14px 18px calc(var(--sb) + 16px);background:#161618;opacity:0;transform:translateY(12px);pointer-events:none;transition:opacity .3s,transform .45s var(--ease)}
+.rest-bar.resting:not(.over) .urest,.rest-set.nocur.resting:not(.over) .urest{opacity:1;transform:none;pointer-events:auto}
+.rest-bar.resting:not(.over) .upnext>:not(.urest),.rest-set.nocur.resting:not(.over) .upnext>:not(.urest){opacity:0}
+.urest .ufill{position:absolute;inset:0;background:rgba(255,255,255,.07);box-shadow:inset 0 2px 0 #fff;transform-origin:left;transform:scaleX(var(--rp,0));transition:transform .25s linear}
+.urest>:not(.ufill){position:relative}
+.urest .t2{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;font-weight:600;color:var(--muted)}
+.urest .ut{font-size:34px;font-weight:600;letter-spacing:-.045em;line-height:1.05;font-variant-numeric:tabular-nums}
+.urest .ub{width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,.08);border:1px solid var(--line2);font-size:13px;font-weight:600;flex:none;transition:transform .18s var(--spring)}
+.urest .ub:active{transform:scale(.9)}
+.urest .btn{height:48px;padding:0 18px;margin-left:4px}
+.resting.over .upnext>.btn.primary{animation:nudge 1s ease-in-out infinite}
+@keyframes nudge{50%{transform:scale(1.06)}}
+
+/* Descanso, estilo «Serie»: anillo con la cuenta atrás en el botón de la serie que toca; la fila se va llenando */
+.ck{position:relative}
+.rring{position:absolute;inset:-1.5px;display:none;place-items:center}
+.ck .rring svg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)}
+.rring circle{fill:none;stroke:rgba(255,255,255,.14);stroke-width:2.5}
+.rring .fg{stroke:#fff;stroke-linecap:round;transition:stroke-dashoffset .25s linear}
+.rring b{position:relative;font-size:12px;font-weight:600;color:#fff;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.rest-set.resting:not(.over) .srow.cur .rring{display:grid}
+.rest-set.resting:not(.over) .srow.cur .ck{border-color:transparent}
+.rest-set.resting:not(.over) .srow.cur .ck>svg{display:none}
+.rest-set .srow.cur{position:relative;isolation:isolate}
+.rest-set.resting:not(.over) .srow.cur::before{content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;background:rgba(255,255,255,.07);transform-origin:left;transform:scaleX(calc(1 - var(--rp,0)));transition:transform .25s linear}
+.rest-set.resting.over .srow.cur .ck{border-color:#fff;color:#fff;animation:nudge 1s ease-in-out infinite}
 
 /* Pauta del ejercicio al pie; las series ocupan el centro y se reparten el alto */
 .fbody.ses .sets{flex:1 1 auto;display:flex;flex-direction:column;justify-content:center;margin-top:10px}
-.fbody.ses .sets>.srow:not(.hd){flex:1 1 0;min-height:54px;max-height:78px}
+.fbody.ses .sets>.srow:not(.hd){flex:1 1 0;min-height:54px;max-height:84px}
 .fbody.ses .srow.wr{grid-template-columns:22px minmax(0,1fr) minmax(54px,68px) minmax(46px,58px) minmax(40px,48px) 48px}
 .fbody.ses .srow.reps,.fbody.ses .srow.time{grid-template-columns:22px minmax(0,1fr) 88px 48px}
 .fbody.ses .srow.dist{grid-template-columns:22px minmax(0,1fr) minmax(54px,68px) minmax(54px,68px) 48px}
 .fbody.ses .num{height:50px;font-size:17px;border-radius:16px}
 .fbody.ses .ck{width:48px;height:48px}
-.xg{display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));margin-top:14px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
-.xg>div{display:flex;justify-content:center;align-items:baseline;gap:7px;padding:9px 4px;min-width:0}
-.xg>div+div{border-left:1px solid var(--line)}
-.xg span{font-size:10px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
-.xg b{font-size:16px;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
 
-/* Acciones del ejercicio al pie: series, historial y nota */
-.xact{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
-.xact .btn{height:44px;padding:0 12px;font-size:14px;gap:7px}
-.xact .btn svg{width:18px;height:18px;flex:none}
-.xact .btn .s{display:none}
-.xact .btn[disabled]{opacity:.35}
+/* Historial y nota: botón discreto en la cabecera de la tabla; añadir serie: un «+» pequeño bajo las series */
+.srow.hd .xnb{justify-self:center;width:32px;height:26px;margin:-4px 0;display:grid;place-items:center;color:var(--muted);position:relative;border-radius:9px;transition:background .2s}
+.srow.hd .xnb:active{background:var(--s3)}
+.xnb svg{width:17px;height:17px;stroke-width:1.7}
+.xnb.has::after{content:"";position:absolute;top:2px;right:5px;width:6px;height:6px;border-radius:50%;background:#fff;box-shadow:0 0 0 2px var(--bg)}
+.addset{flex:none;align-self:flex-start;width:28px;height:28px;margin:6px 0 0 3px;border-radius:50%;border:1px dashed rgba(255,255,255,.28);display:grid;place-items:center;color:var(--muted);transition:transform .18s var(--spring),background .2s}
+.addset:active{transform:scale(.88);background:var(--s3)}
+.addset svg{width:14px;height:14px;stroke-width:2}
 .fbody.ses.tight .sug{margin-top:8px;padding:7px 12px}
 .fbody.ses.tight .sets{margin-top:6px}
 .fbody.ses.tight .sets>.srow:not(.hd){min-height:44px}
 .fbody.ses.tight .num{height:40px;font-size:16px;border-radius:14px}
 .fbody.ses.tight .ck{width:40px;height:40px}
-.fbody.ses.tight textarea.note{min-height:48px;margin-top:6px;padding:10px 14px}
-.fbody.ses.tight .xact{grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px}
-.fbody.ses.tight .xact .btn{height:40px;padding:0 6px;font-size:12.5px;gap:5px}
-.fbody.ses.tight .xact .btn svg{width:16px;height:16px}
-.fbody.ses.tight .xact .btn .l{display:none}
-.fbody.ses.tight .xact .btn .s{display:inline}
+.fbody.ses.tight .addset{margin-top:4px}
 
-/* Cambiar ejercicio (arriba) y menú ⋯, apilados a la derecha del nombre */
-.xctl{display:flex;flex-direction:column;align-items:center;gap:4px;margin-right:-6px;align-self:center}
-.xswap{width:32px;height:32px;border-radius:50%;border:1px solid var(--line2);display:grid;place-items:center;color:var(--text);transition:transform .18s var(--spring),background .2s}
+/* Cambiar ejercicio y menú ⋯, en la fila del bloque */
+.xctl{display:flex;gap:6px;flex:none;margin-right:-2px}
+.xswap{width:30px;height:30px;border-radius:50%;border:1px solid var(--line2);display:grid;place-items:center;color:var(--text);transition:transform .18s var(--spring),background .2s}
 .xswap:active{transform:scale(.88);background:var(--s3)}
-.xswap svg{width:16px;height:16px;stroke-width:1.8}
+.xswap svg{width:15px;height:15px;stroke-width:1.8}
 
 /* Menú ⋯ con iconos en placas */
 .optl .opt{font-family:var(--sans);font-size:16px;font-weight:500;letter-spacing:-.005em;gap:14px;padding:10px 2px}
@@ -385,6 +410,7 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.7;stro
 .ck{width:44px;height:44px;border-radius:50%;border:1.5px solid var(--line2);display:grid;place-items:center;color:var(--dim);transition:background .25s,border-color .25s,color .25s}
 .ck svg{width:20px;height:20px;stroke-width:2.4}
 .srow.done .ck{background:#f3f3f1;border-color:#f3f3f1;color:#0a0a0b}
+.srow.done.fail .ck{background:transparent;border-color:rgba(255,255,255,.55);color:#fff}
 .srow.done.just .ck{animation:pop .45s var(--spring)}
 .srow.done .num{background:transparent;color:#fff}
 .srow.done .ix{color:#fff}
@@ -471,6 +497,11 @@ select.inp option{background:#1b1b1e}
 .sw.on{background:#f3f3f1}
 .sw.on::after{transform:translateX(20px);background:#0a0a0b}
 .setting{display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid var(--line);width:100%;text-align:left}
+.setting.col{display:block}
+.restpick{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px}
+.restpick button{height:38px;border-radius:999px;background:var(--s3);font-size:14px;font-weight:600;color:var(--muted);transition:background .2s,color .2s,transform .18s var(--spring)}
+.restpick button.on{background:#f3f3f1;color:#0a0a0b}
+.restpick button:active{transform:scale(.94)}
 .setting:last-child{border-bottom:0}
 .setting .grow{flex:1}
 .setting .t2{font-size:12.5px;color:var(--muted)}
@@ -480,14 +511,18 @@ select.inp option{background:#1b1b1e}
 
 /* Calendario */
 .cal-m{margin:6px 0 0}
-.cal-y{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:4px;min-height:44px}
+.cal-y{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:4px;min-height:34px}
 .cal-y>span{font-family:var(--serif);font-size:24px;color:var(--muted);letter-spacing:-.01em}
-.today-btn{display:inline-flex;align-items:center;gap:7px;height:40px;padding:0 15px 0 12px;border-radius:999px;background:#f3f3f1;color:#0a0a0b;font-size:14px;font-weight:600;animation:pop .45s var(--spring) both;transition:transform .18s var(--spring)}
+.today-btn{display:inline-flex;align-items:center;gap:5px;height:28px;padding:0 11px 0 8px;border-radius:999px;background:#f3f3f1;color:#0a0a0b;font-size:12px;font-weight:600;animation:pop .45s var(--spring) both;transition:transform .18s var(--spring)}
 .today-btn:active{transform:scale(.92)}
-.today-btn svg{width:17px;height:17px}
+.today-btn svg{width:13px;height:13px}
+.calsw{touch-action:pan-y;overflow:hidden}
+.cal.in-r{animation:calR .3s var(--ease) both}.cal.in-l{animation:calL .3s var(--ease) both}
+.cal-m.in-r,.cal-m.in-l{animation:fade .3s var(--ease) both}
+@keyframes calR{from{opacity:0;transform:translateX(60px)}}@keyframes calL{from{opacity:0;transform:translateX(-60px)}}
 .stat.wide{grid-column:1/-1}
-.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr)) 34px;gap:7px 5px;margin-top:4px;position:relative}
-.cal::after{content:"";position:absolute;right:0;width:34px;top:22px;bottom:-4px;border-radius:20px;background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.12));opacity:var(--sop,0);pointer-events:none}
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr)) 28px;gap:7px 5px;margin-top:4px;position:relative}
+.cal::after{content:"";position:absolute;right:0;width:28px;top:22px;bottom:-4px;border-radius:20px;background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.12));opacity:var(--sop,0);pointer-events:none}
 .cal>*{position:relative;z-index:1}
 .cal .dh{font-size:11px;color:var(--dim);text-align:center;font-weight:600;height:20px}
 .cal .c{aspect-ratio:1;border-radius:50%;display:grid;place-items:center;font-variant-numeric:tabular-nums;font-size:13.5px;font-weight:500;position:relative;background:var(--s3);color:var(--muted);transition:transform .2s var(--spring)}
@@ -500,11 +535,11 @@ select.inp option{background:#1b1b1e}
 .cal .c.today{box-shadow:0 0 0 2px var(--bg),0 0 0 3.5px #fff}
 .cal .c.sel{outline:1.5px dashed var(--muted);outline-offset:3px}
 .cal .c .more{position:absolute;top:-1px;right:-1px;width:9px;height:9px;border-radius:50%;background:#fff;border:2px solid var(--bg)}
-.cal .w{display:grid;place-items:center;font-size:10px;color:var(--dim);font-weight:600}
-.cal .w .okc{width:26px;height:26px;border-radius:50%;background:#f3f3f1;color:#0a0a0b;display:grid;place-items:center;animation:pop .5s var(--spring) both}
-.cal .w .okc svg{width:15px;height:15px;stroke-width:3}
+.cal .w{display:grid;place-items:center;font-size:9px;color:var(--dim);font-weight:600}
+.cal .w .okc{width:19px;height:19px;border-radius:50%;background:#f3f3f1;color:#0a0a0b;display:grid;place-items:center;animation:pop .5s var(--spring) both}
+.cal .w .okc svg{width:11px;height:11px;stroke-width:3.2}
 .cal .flame{grid-column:8;display:grid;place-items:center;color:#fff;animation:flick 2.4s ease-in-out infinite}
-.cal .flame svg{width:24px;height:24px;fill:rgba(255,255,255,.25)}
+.cal .flame svg{width:18px;height:18px;fill:rgba(255,255,255,.25)}
 @keyframes flick{50%{transform:scale(1.1) rotate(-3deg)}}
 .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:16px}
 .legend span{display:inline-flex;align-items:center;gap:5px}
@@ -560,6 +595,8 @@ code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;color:#fff
   .clock .tm{font-size:52px}
   .clock{margin-top:8px}
   .step .xn{font-size:26px}
+  .clock .chead .xn{font-size:27px}
+  .fhead .ftm{font-size:27px}
   .sug{margin-top:10px;padding:8px 12px}
   .sets{margin-top:8px}
   .num{height:40px} .ck{height:40px;width:40px}
@@ -569,11 +606,6 @@ code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;color:#fff
   .fbody.ses .sets>.srow:not(.hd){min-height:46px}
   .fbody.ses .num{height:42px;font-size:16px;border-radius:14px}
   .fbody.ses .ck{width:42px;height:42px}
-  .xg>div{padding:7px 2px}
-  .xact{grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px}
-  .xact .btn{height:40px;padding:0 6px;font-size:12.5px;gap:5px}
-  .xact .btn svg{width:16px;height:16px}
-  .xact .btn .l{display:none} .xact .btn .s{display:inline}
   .upnext{padding-top:10px}
 }
 @media (max-width:360px){ .srow{gap:4px;padding:4px 2px} .focus{padding-left:12px;padding-right:12px} .upnext{margin:0 -12px} }
@@ -624,6 +656,8 @@ code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;color:#fff
 button.ix{display:grid;place-items:center;height:100%;min-height:36px;border-radius:10px;transition:background .2s,color .2s}
 button.ix:active{background:var(--s3)}
 .srow .pv .rmb{font-size:9.5px;padding:2px 7px}
+.rmb.no{background:transparent;color:var(--muted);box-shadow:inset 0 0 0 1px rgba(255,255,255,.28)}
+.rmb.try{background:transparent;color:#fff;box-shadow:inset 0 0 0 1px rgba(255,255,255,.7)}
 </style>
 </head>
 <body>
@@ -821,6 +855,7 @@ const IC = {
   mach: '<svg class="i" viewBox="0 0 24 24"><path d="M5 3.5v17M19 3.5v17M5 6h14M12 6v4.5"/><rect x="9" y="10.5" width="6" height="7" rx="1"/></svg>',
   undo: '<svg class="i" viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>',
   x: '<svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg>',
+  doc: '<svg class="i" viewBox="0 0 24 24"><path d="M6.5 3.5h7l4 4v13h-11z"/><path d="M13.5 3.5v4h4M9.5 12h5M9.5 15.5h5"/></svg>',
   rm: '<svg class="i" viewBox="0 0 24 24"><path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 6H5.5a3 3 0 0 0 3 4M16 6h2.5a3 3 0 0 1-3 4M12 13v4M8.5 20h7"/></svg>',
   dot: '<svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2.6" fill="currentColor" stroke="none"/></svg>',
   play: '<svg viewBox="0 0 24 24" width="18" height="18"><path d="M8 5.5v13l10.5-6.5z" fill="currentColor"/></svg>',
@@ -990,7 +1025,7 @@ function placeholders(x, prev, sug) {
   x.sets.forEach((z, i) => { if (z.max) out[i] = { w: best1RM(exKey(x)) ? String(best1RM(exKey(x))) : '', r: '1', rir: '' }; });
   return out;
 }
-const best1RM = key => { let b = 0; for (const s of S.sessions) for (const x of s.ex) if (exKey(x) === key) for (const z of x.sets) if (z.max) b = Math.max(b, num(z.w)); return b; };
+const best1RM = key => { let b = 0; for (const s of S.sessions) for (const x of s.ex) if (exKey(x) === key) for (const z of x.sets) if (z.max && !z.fail) b = Math.max(b, num(z.w)); return b; };
 function basePlaceholders(x, prev, sug) {
   return x.sets.map((_, i) => {
     const base = prev ? (prev.sets[i] || prev.sets[prev.sets.length - 1]) : null;
@@ -1003,8 +1038,10 @@ function basePlaceholders(x, prev, sug) {
   });
 }
 // Series de un ejercicio en una línea: carga × reps, RIR y la marca de 1RM
-const setsLine = x => x.sets.map(z => setStr(z, x.metric) + (z.max ? ' <b class="rmb">1RM</b>' : '') + (has(z.rir) ? ` <span class="dim">@${z.rir}</span>` : '')).join(' · ');
-const setStr = (z, m) => m === 'wr' ? (num(z.w) ? `${fmt(num(z.w))}×${z.r}` : `${z.r} reps`) : m === 'time' ? `${z.r} s` : m === 'dist' ? `${fmt(num(z.w))} kg · ${z.r} m` : `${z.r}`;
+const setsLine = x => x.sets.map(z => setStr(z, x.metric) + (z.max ? ' ' + rmBadge(z) : '') + (has(z.rir) ? ` <span class="dim">@${z.rir}</span>` : '')).join(' · ');
+// Intento de 1RM: logrado (relleno) o fallido (contorno tachado); corto para la columna estrecha de la sesión
+const rmBadge = (z, short) => z.fail ? `<b class="rmb no">${short ? 'Fallido' : '1RM fallido'}</b>` : '<b class="rmb">1RM</b>';
+const setStr = (z, m) => m === 'wr' ? (z.fail ? `${fmt(num(z.w))} kg` : num(z.w) ? `${fmt(num(z.w))}×${z.r}` : `${z.r} reps`) : m === 'time' ? `${z.r} s` : m === 'dist' ? `${fmt(num(z.w))} kg · ${z.r} m` : `${z.r}`;
 
 /* =========================================================
    Render principal
@@ -1183,7 +1220,7 @@ function startSession(dayId, past) {
     key: uid(), rid: e.id, name: e.name, metric: e.metric, basic: !!e.basic, side: !!e.side, blk,
     t: { sets: e.sets, reps: e.reps, inc: e.inc ?? 2.5, rest: e.rest || 0 },
     sets: Array.from({ length: Math.max(1, e.sets[0]) }, () => ({ w: '', r: '', rir: '', done: false })),
-    note: '', showNote: false,
+    note: '',
   });
   S.draft = {
     id: uid(), dayId, start: Date.now(), date: past || ymd(new Date()), ...(past ? { past: true } : {}), rating: 0, note: '', step: 0,
@@ -1204,7 +1241,7 @@ function vSession() {
   const nextName = k => { const s = steps[k]; return !s ? '' : s.t === 'ex' ? lit(d.ex[s.i]) : s.t === 'end' ? 'Cierre y notas' : 'Calentamiento'; };
   const upNext = (k, btn) => `<span class="sq">${steps[k] && steps[k].t === 'ex' ? steps[k].i + 1 : IC.flag}</span>
     <div class="grow"><div class="t1">${esc(nextName(k))}</div><div class="t2">A continuación</div></div>${btn}`;
-  let head = '', goal = '', body = '', bar = '';
+  let head = '', body = '', bar = '';
   if (st.t === 'warm') {
     const wd = d.warmup.filter(Boolean).length;
     head = xHead(ring(44, wd / WARMUP.length, wd === WARMUP.length ? IC.check : `${wd}/${WARMUP.length}`, 'stico sm'), 'Entrar en calor', { blk: 'Calentamiento' });
@@ -1215,7 +1252,7 @@ function vSession() {
     bar = upNext(d.step + 1, `<button class="btn primary" data-act="stepGo" data-d="1">Empezar →</button>`);
   } else if (st.t === 'ex') {
     const x = d.ex[st.i], ci = x.sets.findIndex(z => !z.done);
-    ({ head, goal, body } = stepExercise(x, st.i));
+    ({ head, body } = stepExercise(x, st.i));
     if (ci >= 0) {
       const prev = IDX.last.get(exKey(x)), p = placeholders(x, prev, suggest(x, prev))[ci] || {}, z = x.sets[ci];
       const tgt = { w: has(z.w) ? z.w : p.w, r: has(z.r) ? z.r : p.r };
@@ -1235,31 +1272,37 @@ function vSession() {
         const dn = x.sets.filter(z => z.done), v = z => x.metric === 'wr' ? e1rm(num(z.w), num(z.r)) : num(z.r);
         if (!dn.length) return `<div class="erow no"><span class="bx"></span><span class="nm">${esc(lit(x))}</span><span class="r">sin marcar</span></div>`;
         const top = dn.reduce((a, z) => v(z) > v(a) ? z : a);
-        return `<div class="erow"><span class="bx">${IC.check}</span><span class="nm">${esc(lit(x))}</span><span class="r">${s.prs.some(p => p.key === exKey(x)) ? '<span class="badge">PR</span> ' : ''}${dn.length} ${dn.length === 1 ? 'serie' : 'series'} · <b>${esc(setStr(top, x.metric) + (x.metric === 'reps' ? ' reps' : ''))}</b></span></div>`;
+        return `<div class="erow"><span class="bx">${IC.check}</span><span class="nm">${esc(lit(x))}</span><span class="r">${s.prs.some(p => p.key === exKey(x)) ? '<span class="badge">PR</span> ' : ''}${dn.length} ${dn.length === 1 ? 'serie' : 'series'} · <b>${esc(setStr(top, x.metric) + (x.metric === 'reps' ? ' reps' : ''))}</b>${dn.filter(z => z.max).map(z => ' ' + rmBadge(z)).join('')}</span></div>`;
       }).join('')}</div>
       <textarea class="note fill" data-snote placeholder="Sensaciones, sueño, molestias…">${esc(d.note)}</textarea>`;
     bar = `<div class="grow"><div class="t1">${s.nSets} series</div><div class="t2">Valora y guarda la sesión</div></div><button class="btn primary" data-act="finish">Guardar</button>`;
   }
-  // El reloj nace ya en su estado (descanso o tiempo de sesión) para que no parpadee al repintar
+  // El reloj de arriba siempre cuenta la sesión; el descanso se ve según el estilo elegido en Ajustes
+  // (fila bajo el nombre, barra inferior o anillo en la serie). Nace ya en su estado para que no parpadee
   const now = Date.now(), ov = !!rest && rest.end <= now, left = rest ? (rest.end - now) / 1000 : 0;
-  const el = rest ? (ov ? '0:00' : fmtDur(Math.ceil(left))) : fmtDur((now - d.start) / 1000);
-  return `<div class="focus">
-    <div class="fhead"><button class="icon-btn glass" data-act="minimize" aria-label="Minimizar">${IC.chevd}</button><span class="sp"></span>
+  const el = fmtDur((now - d.start) / 1000), rt = rest ? (ov ? '0:00' : fmtDur(Math.ceil(left))) : '', rp = rest && !ov ? Math.max(0, Math.min(1, left / rest.total)) : 0;
+  const nocur = st.t !== 'ex' || d.ex[st.i].sets.every(z => z.done);
+  return `<div class="focus rest-${restUi()} ${rest ? 'resting' : ''} ${ov ? 'over' : ''} ${nocur ? 'nocur' : ''}" id="focus" style="--rp:${rp.toFixed(3)}">
+    <div class="fhead"><button class="icon-btn glass" data-act="minimize" aria-label="Minimizar">${IC.chevd}</button>
+      <div class="ftm ${el.length > 5 ? 'long' : ''}" id="clockTm">${el}</div>
       <button class="icon-btn glass" data-act="stepList" aria-label="Ejercicios de la sesión">${IC.sliders}</button>
       <button class="btn outline sm" data-act="finish">Terminar</button></div>
-    <div class="clock ${rest ? 'resting' : ''} ${ov ? 'over' : ''}" id="clock">
-      <div class="ctop"><div class="tm ${el.length > 5 ? 'long' : ''}" id="clockTm">${el}</div><div class="chead step ${anim}">${head}</div></div>
-      ${goal ? `<div class="step ${anim}">${goal}</div>` : ''}
+    <div class="clock" id="clock">
+      <div class="chead step ${anim}">${head}</div>
       <div class="rrow"><div>
-        <div class="sub"><span class="lb" id="clockSub" data-k="${rest ? esc((ov ? 'o' : 'r') + rest.label) : ''}">${rest ? `<b>${ov ? '¡A por ella!' : 'Descanso'}</b> · ${esc(rest.label)}` : ''}</span><span class="rctl"><button data-act="restAdj" data-n="-15">−15</button><button data-act="restAdj" data-n="15">+15</button><button data-act="restClose">Saltar</button></span></div>
-        <div class="rbar"><i id="clockBar" style="width:${rest && !ov ? Math.max(0, Math.min(100, left / rest.total * 100)) : 0}%"></i></div></div></div></div>
+        <div class="sub"><span class="rt big">${rt}</span><span class="lb" id="clockSub" data-k="${rest ? esc((ov ? 'o' : 'r') + rest.label) : ''}">${rest ? `<b>${ov ? '¡A por ella!' : 'Descanso'}</b> · ${esc(rest.label)}` : ''}</span><span class="rctl"><button data-act="restAdj" data-n="-15">−15</button><button data-act="restAdj" data-n="15">+15</button><button data-act="restClose">Saltar</button></span></div>
+        <div class="rbar"><i></i></div></div></div></div>
     <div class="dots">${steps.map((s, k) => `<i class="${k === d.step ? 'c' : stepDone(d, s) ? 'd' : ''}"></i>`).join('')}</div>
     <div class="fbody ses"><div class="step st-${st.t} ${anim}">${body}</div></div>
-    <div class="upnext">${bar}</div>
+    <div class="upnext">${bar}
+      <div class="urest"><i class="ufill"></i><div class="grow"><div class="t2">Descanso</div><div class="rt ut">${rt}</div></div>
+        <button class="ub" data-act="restAdj" data-n="-15">−15</button><button class="ub" data-act="restAdj" data-n="15">+15</button>
+        <button class="btn outline" data-act="restClose">Saltar</button></div></div>
   </div>`;
 }
-// Cabecera del paso junto al reloj: icono opcional, nombre y, si se pide, bloque, pauta y menú
-const xHead = (ic, name, o = {}) => `<div class="xhead">${ic}<div class="grow">${o.blk ? `<div class="blk">${o.blk}</div>` : ''}<div class="xn ${name.length > 22 ? 'long' : ''}">${esc(name)}</div>${o.meta ? `<div class="xm">${o.meta}</div>` : ''}</div>${o.more || ''}</div>`;
+const restUi = () => ({ row: 'row', bar: 'bar', set: 'set' })[S.settings.restUi] || 'bar';
+// Cabecera del paso: fila fina con el bloque y los botones; debajo, el nombre a todo lo ancho y la pauta pequeña a su derecha
+const xHead = (ic, name, o = {}) => `<div class="xhead">${o.blk || o.more ? `<div class="xeb"><span class="blk">${o.blk || ''}</span>${o.more || ''}</div>` : ''}<div class="xrow">${ic}<div class="xn ${name.length > 24 ? 'long' : ''}">${esc(name)}</div>${o.plan || ''}</div></div>`;
 
 // Resumen de la sesión en curso: series hechas, volumen y récords
 function draftStats(d) {
@@ -1269,14 +1312,16 @@ function draftStats(d) {
   const prs = doneEx.filter(x => x.metric === 'wr').map(x => ({ name: lit(x), key: exKey(x), now: bestE1(x.sets), before: bestBefore(exKey(x)) })).filter(p => p.before > 0 && p.now > p.before + 0.01);
   return { nSets, total, vol, prs, pending: total - nSets };
 }
-function toggleSet(xi, si) {
+function toggleSet(xi, si, res) {
   const d = S.draft, x = d.ex[xi], z = x.sets[si];
-  if (z.done) { z.done = false; save(); rerender(); return; }
+  if (z.done) { z.done = false; if (z.fail) { delete z.fail; z.r = '1'; } save(); rerender(); return; }
   const prev = IDX.last.get(exKey(x)), ph = placeholders(x, prev, suggest(x, prev))[si] || {};
   const fields = x.metric === 'wr' ? ['w', 'r'] : x.metric === 'dist' ? ['w', 'r'] : ['r'];
   for (const f of fields) if (!has(z[f]) && has(ph[f])) z[f] = String(ph[f]);
   if (!(num(z.r) > 0)) { toast('Introduce las ' + (x.metric === 'time' ? 'segundos' : x.metric === 'dist' ? 'metros' : 'repeticiones')); return; }
   if (z.max && !(num(z.w) > 0)) { toast('Introduce la carga del 1RM'); return; }
+  if (z.max && res == null) { sheetMaxRes(xi, si); return; }
+  if (z.max && !res) { z.fail = true; z.r = '0'; }
   z.done = true; ui.justSet = `${xi}-${si}`;
   if (navigator.vibrate && S.settings.vibrate) navigator.vibrate(18);
   const nextIdx = x.sets.findIndex(s => !s.done);
@@ -1289,6 +1334,17 @@ function toggleSet(xi, si) {
     const steps = sessionSteps(d), k = steps.findIndex(s => s.t === 'ex' && s.i === xi);
     if (k >= 0 && d.step === k) { d.step = k + 1; ui.stepAnim = 'in-r'; save(); rerender(); }
   }, 650);
+}
+
+// Al completar una serie de 1RM: ¿salió o no? El fallido se guarda con 0 reps y no cuenta como récord
+function sheetMaxRes(xi, si) {
+  const x = S.draft.ex[xi], z = x.sets[si];
+  openSheet(`<div class="eyebrow gold">Intento de 1RM · serie ${si + 1}</div><h2 style="margin:6px 0 4px">${fmt(num(z.w))} kg</h2>
+    <div class="muted" style="font-size:14px">${esc(lit(x))}</div>
+    <div class="stack" style="margin-top:18px">
+      <button class="btn primary block" data-act="maxRes" data-x="${xi}" data-s="${si}" data-ok="1">${IC.check} Lo logré</button>
+      <button class="btn ghost block" data-act="maxRes" data-x="${xi}" data-s="${si}" data-ok="0">${IC.x} Fallido</button>
+    </div>`);
 }
 
 function sheetFinish() {
@@ -1320,7 +1376,7 @@ function saveSession() {
   const rec = {
     id: d.id, dayId: d.dayId, dayName: day.name || 'Sesión', short: day.short || '', date: d.date, start: st, end: en,
     rating: d.rating || 0, note: (d.note || '').trim(),
-    ex: d.ex.map(x => ({ name: x.name, ...(x.alt ? { alt: x.alt } : {}), metric: x.metric, basic: x.basic, side: x.side, blk: x.blk, t: x.t, note: (x.note || '').trim(), sets: x.sets.filter(z => z.done).map(z => ({ w: z.w, r: z.r, rir: z.rir, ...(z.max ? { max: true } : {}) })) })).filter(x => x.sets.length),
+    ex: d.ex.map(x => ({ name: x.name, ...(x.alt ? { alt: x.alt } : {}), metric: x.metric, basic: x.basic, side: x.side, blk: x.blk, t: x.t, note: (x.note || '').trim(), sets: x.sets.filter(z => z.done).map(z => ({ w: z.w, r: z.r, rir: z.rir, ...(z.max ? { max: true } : {}), ...(z.fail ? { fail: true } : {}) })) })).filter(x => x.sets.length),
   };
   if (!rec.ex.length) { toast('Marca al menos una serie'); return; }
   // Reemplazos que no estaban en Ajustes: quedan como propuesta para añadirlos
@@ -1340,6 +1396,7 @@ function sheetExMenu(xi) {
       <button class="opt" data-act="exMove" data-x="${xi}" data-d="-1"><span class="ic">${IC.up}</span>Mover antes</button>
       <button class="opt" data-act="exMove" data-x="${xi}" data-d="1"><span class="ic">${IC.down}</span>Mover después</button>
       ${x.metric === 'wr' ? `<button class="opt" data-act="setMax" data-x="${xi}" data-s="${ci < 0 ? -1 : ci}"><span class="ic">${IC.rm}</span><span class="grow">${ci >= 0 && x.sets[ci].max ? `Quitar 1RM de la serie ${ci + 1}` : ci >= 0 ? `Serie ${ci + 1} como 1RM` : 'Añadir serie de 1RM'}<small>También puedes tocar el número de una serie</small></span></button>` : ''}
+      ${x.sets.length > 1 ? `<button class="opt" data-act="rmSet" data-x="${xi}"><span class="ic">${IC.minus}</span><span class="grow">Quitar una serie<small>Quedarán ${x.sets.length - 1}</small></span></button>` : ''}
       <button class="opt red" data-act="exRemove" data-x="${xi}"><span class="ic">${IC.trash}</span>Quitar de esta sesión</button>
     </div>`);
 }
@@ -1372,14 +1429,22 @@ function swapTo(xi, name, kind) {
   x.sets.forEach(z => { z.w = ''; z.r = ''; z.rir = ''; z.done = false; });
   save(); closeSheet(); rerender(); toast(alt ? `Cambiado a ${alt}` : `De vuelta a ${x.name}`);
 }
-function sheetHist(name, alt = '') {
+// Historial y nota del ejercicio en curso, juntos en una hoja: la nota se edita arriba y se guarda al escribir
+function sheetExNotes(xi) {
+  const x = S.draft.ex[xi], rows = histRows(x.name, x.alt || '');
+  openSheet(`<div class="eyebrow gold">${x.alt ? `Reemplazo de ${esc(x.name)}` : BLOCK_NAME[x.blk]}</div><h2 style="margin:6px 0 4px">${esc(lit(x))}</h2>
+    <label class="field"><span>Nota de hoy</span><textarea class="note" style="margin-top:0" data-xnote="${xi}" placeholder="Técnica, molestias, ajustes de máquina…">${esc(x.note)}</textarea></label>
+    <div class="field"><span>Historial</span></div>
+    ${rows.length ? `<div class="card lst">${rows.join('')}</div>` : `<div class="empty" style="margin-top:6px">Aún no hay registros de ${x.alt ? 'este reemplazo' : 'este ejercicio'}.</div>`}
+    ${rows.length ? `<button class="btn ghost block" style="margin-top:14px" data-act="exOpen" data-name="${esc(x.name)}" data-alt="${esc(x.alt || '')}">Ver progreso completo</button>` : ''}`);
+}
+function histRows(name, alt) {
   const rows = [], key = alt ? `${name} › ${alt}` : name;
   for (let i = IDX.sorted.length - 1; i >= 0 && rows.length < 8; i--) {
     const s = IDX.sorted[i], x = s.ex.find(e => exKey(e) === key);
     if (x) rows.push(`<div class="hist"><div class="row between"><b>${shortDate(s.date)}</b><span class="dim" style="font-size:12px">${x.metric === 'wr' && bestE1(x.sets) ? '1RM est. ' + fmt(bestE1(x.sets)) + ' kg' : ''}</span></div><div class="sets-t">${setsLine(x)}</div>${x.note ? `<div class="prev-note" style="margin-top:4px">${esc(x.note)}</div>` : ''}</div>`);
   }
-  openSheet(`<div class="eyebrow gold">${alt ? `Historial · en lugar de ${esc(name)}` : 'Historial'}</div><h2 style="margin:6px 0 12px">${esc(alt || name)}</h2>${rows.length ? `<div class="card lst">${rows.join('')}</div>` : `<div class="empty">Aún no hay registros de ${alt ? 'este reemplazo' : 'este ejercicio'}.</div>`}
-    ${rows.length ? `<button class="btn ghost block" style="margin-top:14px" data-act="exOpen" data-name="${esc(name)}" data-alt="${esc(alt)}">Ver progreso completo</button>` : ''}`);
+  return rows;
 }
 function sheetAddEx() {
   openSheet(`<div class="eyebrow gold">Añadir</div><h2 style="margin:6px 0 4px">Ejercicio extra</h2>
@@ -1436,13 +1501,15 @@ function sessionSteps(d) {
   return s;
 }
 
+// Anillo del descanso dentro del botón de la serie que toca (estilo «Serie»)
+const RING = '<span class="rring"><svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="22"/><circle class="fg" cx="24" cy="24" r="22" pathLength="100" stroke-dasharray="100"/></svg><b class="rt"></b></span>';
 function stepExercise(x, xi) {
   const prev = IDX.last.get(exKey(x)), sug = suggest(x, prev), ph = placeholders(x, prev, sug);
   const m = x.metric, ci = x.sets.findIndex(z => !z.done);
-  // Pauta del ejercicio en recuadros al pie: series, reps (o segundos/metros) y RIR
-  const lab = x.side ? { wr: 'Por lado', reps: 'Por lado', time: 'Seg. por lado', dist: 'm por lado' }[m] : { wr: 'Reps', reps: 'Reps', time: 'Segundos', dist: 'Metros' }[m];
-  const goal = [['Series', rng(x.t.sets)], [lab, rng(x.t.reps)], ...(m === 'wr' ? [['RIR', '≥ 1']] : [])];
-  const cols = { wr: ['#', 'Anterior', 'kg', 'Reps', 'RIR', ''], reps: ['#', 'Anterior', 'Reps', ''], time: ['#', 'Anterior', 'Seg', ''], dist: ['#', 'Anterior', 'kg', 'Metros', ''] }[m];
+  // Pauta pequeña a la derecha del nombre: series, reps (o segundos/metros) y RIR
+  const unit = { wr: 'reps', reps: 'reps', time: 's', dist: 'm' }[m] + (x.side ? '/lado' : '');
+  const plan = `<div class="xp"><div><b>${rng(x.t.sets)}</b> series</div><div><b>${rng(x.t.reps)}</b> ${unit}</div>${m === 'wr' ? '<div>RIR <b>≥1</b></div>' : ''}</div>`;
+  const cols = { wr: ['#', 'Anterior', 'kg', 'Reps', 'RIR'], reps: ['#', 'Anterior', 'Reps'], time: ['#', 'Anterior', 'Seg'], dist: ['#', 'Anterior', 'kg', 'Metros'] }[m];
   const inp = (si, f, val, p) => `<input class="num" type="text" inputmode="decimal" autocomplete="off" data-x="${xi}" data-s="${si}" data-f="${f}" value="${esc(val)}" placeholder="${esc(p ?? '')}">`;
   const rows = x.sets.map((z, si) => {
     const p = ph[si] || {}, pv = prev && prev.sets[si] ? setStr(prev.sets[si], m) : '—';
@@ -1451,31 +1518,20 @@ function stepExercise(x, xi) {
       : inp(si, 'r', z.r, p.r);
     const cls = z.done ? 'done' + (ui.justSet === `${xi}-${si}` ? ' just' : '') : si === ci ? 'cur' : 'fut';
     const ix = m === 'wr' ? `<button class="ix" data-act="setMax" data-x="${xi}" data-s="${si}" aria-label="Marcar serie ${si + 1} como 1RM">${si + 1}</button>` : `<span class="ix">${si + 1}</span>`;
-    return `<div class="srow ${m} ${cls} ${z.max ? 'max' : ''}">${ix}<span class="pv">${z.max ? '<b class="rmb">1RM</b>' : esc(pv)}</span>${cells}<button class="ck" data-act="toggleSet" data-x="${xi}" data-s="${si}" aria-label="Completar serie">${IC.check}</button></div>`;
+    return `<div class="srow ${m} ${cls} ${z.max ? 'max' : ''} ${z.fail ? 'fail' : ''}">${ix}<span class="pv">${!z.max ? esc(pv) : z.done ? rmBadge(z, 1) : '<b class="rmb try">1RM</b>'}</span>${cells}<button class="ck" data-act="toggleSet" data-x="${xi}" data-s="${si}" aria-label="Completar serie">${z.fail ? IC.x : IC.check}${si === ci ? RING : ''}</button></div>`;
   }).join('');
   ui.justSet = null;
   const sugHtml = sug ? `<div class="sug"><span class="arr">${sug.dir === 'up' ? '↑' : sug.dir === 'down' ? '↓' : '→'}</span><div><b>${sug.w ? `${fmt(sug.w)} kg × ${sug.r}` : `${sug.r} reps`}</b> <span class="w">sugerido</span><div class="w">${esc(sug.why)}</div></div></div>`
     : (!prev && m === 'wr' ? `<div class="sug"><span class="arr">i</span><div class="w">Primera vez: elige una carga con la que te queden 1–2 reps en reserva al llegar a ${x.t.reps[0]}.</div></div>` : '');
   return {
-    head: xHead('', lit(x), { blk: x.alt ? `${BLOCK_NAME[x.blk]} · reemplazo` : BLOCK_NAME[x.blk], more: `<div class="xctl"><button class="xswap ${x.alt ? 'on' : ''}" data-act="swapMenu" data-x="${xi}" aria-label="Cambiar ejercicio">${IC.swap}</button><button class="icon-btn xmore" data-act="exMenu" data-x="${xi}" aria-label="Opciones del ejercicio">${IC.more}</button></div>` }),
-    goal: goalHtml(goal),
+    head: xHead('', lit(x), { blk: x.alt ? `${BLOCK_NAME[x.blk]} · reemplazo` : BLOCK_NAME[x.blk], plan, more: `<span class="xctl"><button class="xswap ${x.alt ? 'on' : ''}" data-act="swapMenu" data-x="${xi}" aria-label="Cambiar ejercicio">${IC.swap}</button><button class="xswap" data-act="exMenu" data-x="${xi}" aria-label="Opciones del ejercicio">${IC.more}</button></span>` }),
+    // Historial y nota comparten un botón discreto en la cabecera de la tabla; añadir serie es un «+» bajo las series
     body: `${sugHtml}
     ${prev && prev.note ? `<div class="prev-note">Nota del ${shortDate(prev.date)}: “${esc(prev.note)}”</div>` : ''}
-    <div class="sets"><div class="srow ${m} hd">${cols.map(h => `<span>${h}</span>`).join('')}</div>${rows}</div>
-    ${noteOn(x) ? `<textarea class="note" data-xnote="${xi}" placeholder="Técnica, molestias, ajustes de máquina…">${esc(x.note)}</textarea>` : ''}
-    <div class="xact">
-      <button class="btn ghost" data-act="addSet" data-x="${xi}">${IC.plus}<span class="l">Añadir serie</span><span class="s">Serie</span></button>
-      <button class="btn ghost" data-act="rmSet" data-x="${xi}" ${x.sets.length < 2 ? 'disabled' : ''}>${IC.minus}<span class="l">Quitar serie</span><span class="s">Serie</span></button>
-      <button class="btn ghost" data-act="exHist" data-x="${xi}">${IC.hist}<span class="l">Ver historial</span><span class="s">Historial</span></button>
-      <button class="btn ghost" data-act="exNote" data-x="${xi}">${IC.edit}<span class="l">${noteOn(x) ? 'Ocultar nota' : x.note ? 'Ver nota' : 'Añadir nota'}</span><span class="s">Nota</span></button>
-    </div>`,
+    <div class="sets"><div class="srow ${m} hd">${cols.map(h => `<span>${h}</span>`).join('')}<button class="xnb ${x.note ? 'has' : ''}" data-act="exNotes" data-x="${xi}" aria-label="Historial y nota">${IC.doc}</button></div>${rows}
+      <button class="addset" data-act="addSet" data-x="${xi}" aria-label="Añadir serie">${IC.plus}</button></div>`,
   };
 }
-
-// La nota de un ejercicio se ve si se pidió o si ya tiene texto (salvo que se haya ocultado)
-const noteOn = x => x.showNote === true || (x.showNote !== false && !!x.note);
-// Pauta del ejercicio en una fila bajo el reloj: etiqueta y valor separados por filetes
-const goalHtml = goal => `<div class="xg" style="--n:${goal.length}">${goal.map(([l, v]) => `<div><span>${esc(l)}</span><b>${esc(v)}</b></div>`).join('')}</div>`;
 
 // Lista de la sesión (como la referencia): estado de cada paso, ir a él, opciones y cierre
 function sheetSesList() {
@@ -1552,15 +1608,13 @@ function vCal() {
   const cM = monthC.reduce((t, c) => t + num(c.m) + 2 * num(c.v), 0);
   const isCur = ym === today.slice(0, 7);
 
-  // Mes con el año debajo; las flechas y «Hoy» van en la fila del año para no chocar con meses largos
+  const anim = ui.calAnim || ''; ui.calAnim = '';
+  // Mes con el año debajo; se cambia de mes deslizando el calendario y «Hoy» vuelve al actual
   return `<div class="stg">
-  <h1 class="cal-m">${cap(MES[m.getMonth()])}</h1>
-  <div class="cal-y"><span>${m.getFullYear()}</span>
-    <div class="row" style="gap:6px">${isCur ? '' : `<button class="today-btn" data-act="calNav" data-n="0">${IC.dot} Hoy</button>`}
-    <button class="icon-btn glass" data-act="calNav" data-n="-1" aria-label="Mes anterior">${IC.back}</button>
-    <button class="icon-btn glass" data-act="calNav" data-n="1" aria-label="Mes siguiente" style="transform:scaleX(-1)">${IC.back}</button></div></div>
-  <div class="card" style="padding:14px 12px;margin-top:14px">
-    <div class="cal" style="--sop:${anyMet ? 1 : 0}">${cells}</div>
+  <h1 class="cal-m ${anim}">${cap(MES[m.getMonth()])}</h1>
+  <div class="cal-y"><span>${m.getFullYear()}</span>${isCur ? '' : `<button class="today-btn" data-act="calNav" data-n="0">${IC.dot} Hoy</button>`}</div>
+  <div class="card calsw" style="padding:14px 12px;margin-top:14px">
+    <div class="cal ${anim}" style="--sop:${anyMet ? 1 : 0}">${cells}</div>
     <div class="legend"><span>${IC.dumb} Torso</span><span>${IC.kb} Pierna</span><span>${IC.pulse} 4×4</span><span>${IC.bike} Zona 2</span><span>${IC.shoe} Caminata</span></div>
   </div>
 
@@ -1696,6 +1750,44 @@ addEventListener('pointerup', tabEnd, true); addEventListener('pointercancel', t
 // Un arrastre no cuenta como toque
 addEventListener('click', e => { if (Date.now() - TAB.block < 350 && e.target.closest('.seg.tabs, .tabp')) { e.stopImmediatePropagation(); e.preventDefault(); } }, true);
 
+// Calendario: deslizarlo cambia de mes (izquierda = siguiente); el nuevo entra desde el lado opuesto
+function calMove(n) {
+  const m = ui.calMonth, now = new Date(), cur = new Date(now.getFullYear(), now.getMonth(), 1);
+  const to = n === 0 ? cur : new Date(m.getFullYear(), m.getMonth() + n, 1);
+  if (n === 0) ui.calSel = ymd(now);
+  ui.calAnim = to > m ? 'in-r' : to < m ? 'in-l' : ''; ui.calMonth = to; render();
+}
+const CALS = { d: null, block: 0 };
+addEventListener('pointerdown', e => {
+  const card = e.target.closest('.calsw'); if (!card || e.button > 0) return;
+  CALS.d = { g: card.querySelector('.cal'), id: e.pointerId, x: e.clientX, y: e.clientY, on: false, w: card.clientWidth, lx: e.clientX, lt: e.timeStamp, v: 0 };
+}, true);
+addEventListener('pointermove', e => {
+  const d = CALS.d; if (!d || e.pointerId !== d.id) return;
+  const dx = e.clientX - d.x, dy = e.clientY - d.y;
+  if (!d.on) {
+    if (Math.abs(dy) > 10 && Math.abs(dy) > Math.abs(dx)) { CALS.d = null; return; }
+    if (Math.abs(dx) < 8) return;
+    d.on = true; d.x = e.clientX; d.g.style.transition = 'none';
+  }
+  const x = e.clientX - d.x;
+  if (e.timeStamp > d.lt) { d.v = .6 * d.v + .4 * (e.clientX - d.lx) / (e.timeStamp - d.lt); d.lx = e.clientX; d.lt = e.timeStamp; }
+  d.g.style.transform = `translateX(${x}px)`; d.g.style.opacity = String(1 - Math.min(.7, Math.abs(x) / d.w));
+}, true);
+const calEnd = e => {
+  const d = CALS.d; if (!d || e.pointerId !== d.id) return;
+  CALS.d = null; if (!d.on) return;
+  CALS.block = Date.now();
+  const x = e.clientX - d.x, fast = e.type === 'pointerup' && e.timeStamp - d.lt < 90 && Math.abs(d.v) > .4;
+  const n = Math.abs(x) > d.w * .22 || fast ? (x < 0 ? 1 : -1) : 0;
+  d.g.style.transition = 'transform .2s var(--ease), opacity .2s var(--ease)';
+  if (!n) { d.g.style.transform = ''; d.g.style.opacity = ''; return; }
+  d.g.style.transform = `translateX(${-n * d.w * .6}px)`; d.g.style.opacity = '0';
+  setTimeout(() => { if (ui.view === 'cal') calMove(n); }, 170);
+};
+addEventListener('pointerup', calEnd, true); addEventListener('pointercancel', calEnd, true);
+addEventListener('click', e => { if (Date.now() - CALS.block < 350 && e.target.closest('.calsw')) { e.stopImmediatePropagation(); e.preventDefault(); } }, true);
+
 const PROG_TABS = [['ex', 'Ejercicios'], ['wk', 'Semanas'], ['body', 'Cuerpo']];
 function vProg() {
   const cur = Math.max(0, PROG_TABS.findIndex(t => t[0] === ui.progTab));
@@ -1778,7 +1870,7 @@ function vExDetail() {
   const modes = m === 'wr' ? [['e1rm', '1RM est.'], ['top', 'Carga máx.'], ['vol', 'Volumen']] : [['best', 'Mejor']];
   if (!modes.some(z => z[0] === ui.chart)) ui.chart = modes[0][0];
   const val = (k, o) => ({
-    e1rm: bestE1(o.x.sets), top: Math.max(...o.x.sets.map(z => num(z.w))),
+    e1rm: bestE1(o.x.sets), top: Math.max(0, ...o.x.sets.filter(z => !z.fail).map(z => num(z.w))),
     vol: o.x.sets.reduce((a, z) => a + num(z.w) * num(z.r), 0), best: Math.max(...o.x.sets.map(z => num(z.r))),
   }[k]);
   const unit = k => ({ e1rm: ' kg', top: ' kg', vol: ' kg', best: ' ' + UNIT[m] }[k]);
@@ -1786,15 +1878,16 @@ function vExDetail() {
   let prs = '';
   if (m === 'wr') {
     // 1RM real: la carga más alta de una serie marcada como 1RM en la sesión
-    let bM = { v: 0 }, bW = { v: 0 }, bV = { v: 0 }, bR = { v: 0 };
+    let bM = { v: 0 }, bW = { v: 0 }, bV = { v: 0 }, bR = { v: 0 }, nF = 0;
     for (const o of ser) for (const z of o.x.sets) {
+      if (z.fail) { nF++; continue; }
       if (z.max && num(z.w) > bM.v) bM = { v: num(z.w), d: o.s.date };
       if (num(z.w) > bW.v || (num(z.w) === bW.v && num(z.r) > num(bW.z?.r))) bW = { v: num(z.w), d: o.s.date, z };
       if (num(z.r) > bR.v) bR = { v: num(z.r), d: o.s.date, z };
     }
     for (const o of ser) { const v = o.x.sets.reduce((a, z) => a + num(z.w) * num(z.r), 0); if (v > bV.v) bV = { v, d: o.s.date }; }
     prs = `<h3>Récords</h3><div class="prgrid">
-      <div class="prc"><div class="l">1RM real</div><div class="v">${bM.v ? fmt(bM.v) + ' kg' : '—'}</div><div class="d">${bM.d ? shortDate(bM.d) : 'Marca una serie como 1RM'}</div></div>
+      <div class="prc"><div class="l">1RM real</div><div class="v">${bM.v ? fmt(bM.v) + ' kg' : '—'}</div><div class="d">${bM.d ? shortDate(bM.d) : nF ? 'Sin intentos logrados' : 'Marca una serie como 1RM'}${nF ? ` · ${nF} fallido${nF > 1 ? 's' : ''}` : ''}</div></div>
       <div class="prc"><div class="l">Carga máxima</div><div class="v">${fmt(bW.v)} kg</div><div class="d">${bW.z ? setStr(bW.z, 'wr') + ' · ' + shortDate(bW.d) : ''}</div></div>
       <div class="prc"><div class="l">Más reps</div><div class="v">${bR.v}</div><div class="d">${bR.z ? setStr(bR.z, 'wr') + ' · ' + shortDate(bR.d) : ''}</div></div>
       <div class="prc"><div class="l">Volumen sesión</div><div class="v">${fmtK(bV.v)}</div><div class="d">${bV.d ? shortDate(bV.d) : ''}</div></div></div>`;
@@ -1831,6 +1924,8 @@ function vSet() {
     <div class="muted" style="font-size:12.5px;margin-top:8px">Con ella, el 4×4 muestra las pulsaciones objetivo de cada fase.</div></div>
   <h3>Durante el entrenamiento</h3><div class="card" style="padding:2px 16px">
     ${sw('autoRest', 'Temporizador automático', 'Arranca al marcar una serie')}
+    <div class="setting col"><div style="font-weight:600">Descanso en pantalla</div><div class="t2">Dónde ver lo que queda; el reloj de arriba sigue con la sesión</div>
+      <div class="restpick">${[['row', 'Fila'], ['bar', 'Barra'], ['set', 'Serie']].map(([k, l]) => `<button class="${restUi() === k ? 'on' : ''}" data-act="restUi" data-k="${k}">${l}</button>`).join('')}</div></div>
     ${sw('sound', 'Sonido al terminar descanso', '')}
     ${sw('vibrate', 'Vibración', '')}
     ${sw('wake', 'Mantener pantalla encendida', 'Mientras haya una sesión en curso')}</div>
@@ -2090,7 +2185,7 @@ let toastT; function toast(msg) { const t = $('#toast'); t.textContent = msg; t.
 function startRest(sec, label) { setRest({ end: Date.now() + sec * 1000, total: sec, label, fired: false }); unlockAudio(); tick(); }
 function tick() {
   tickTimer();
-  const now = Date.now(), el = $('#rest'), clk = ui.view === 'session' ? $('#clock') : null;
+  const now = Date.now(), el = $('#rest'), clk = ui.view === 'session' ? $('#focus') : null;
   const left = rest ? (rest.end - now) / 1000 : 0;
   if (rest && left <= 0) {
     if (!rest.fired) { rest.fired = true; saveSoon(); if (left > -3) alarm(); }
@@ -2099,12 +2194,17 @@ function tick() {
   const over = !!rest && left <= 0, pct = rest && !over ? `${Math.max(0, Math.min(100, left / rest.total * 100))}%` : '0%';
   const el2 = S.draft ? fmtDur((now - S.draft.start) / 1000) : '';
   const hb = $('#homeElapsed'); if (hb) hb.textContent = el2;
-  // En la sesión, el descanso vive en el reloj grande; fuera de ella, en una píldora
+  // En la sesión, el reloj de arriba sigue la sesión y el descanso se pinta en su sitio (fila, barra o anillo); fuera, en una píldora
   if (clk) {
     clk.classList.toggle('resting', !!rest); clk.classList.toggle('over', over);
-    const tm = $('#clockTm'), tt = rest ? (over ? '0:00' : fmtDur(Math.ceil(left))) : el2;
-    tm.textContent = tt; tm.classList.toggle('long', tt.length > 5);
-    $('#clockBar').style.width = pct;
+    const tm = $('#clockTm'); tm.textContent = el2; tm.classList.toggle('long', el2.length > 5);
+    if (rest) {
+      const rp = over ? 0 : Math.max(0, Math.min(1, left / rest.total)), tt = over ? '0:00' : fmtDur(Math.ceil(left));
+      clk.style.setProperty('--rp', rp.toFixed(3));
+      clk.querySelectorAll('.rt').forEach(e => { if (e.textContent !== tt) e.textContent = tt; });
+      clk.querySelectorAll('.rring .fg').forEach(c => c.setAttribute('stroke-dashoffset', ((1 - rp) * 100).toFixed(2)));
+    }
+    clk.classList.toggle('nocur', !clk.querySelector('.srow.cur'));
     // Fuera del descanso la fila se pliega; el rótulo se queda como estaba para que no cambie mientras se cierra
     const sub = $('#clockSub'), key = rest ? (over ? 'o' : 'r') + rest.label : sub.dataset.k;
     if (sub.dataset.k !== key) { sub.dataset.k = key; sub.innerHTML = `<b>${over ? '¡A por ella!' : 'Descanso'}</b> · ${esc(rest.label)}`; }
@@ -2169,7 +2269,6 @@ const A = {
   toggleSet: el => toggleSet(+el.dataset.x, +el.dataset.s),
   addSet: el => { const x = S.draft.ex[+el.dataset.x]; x.sets.push({ w: '', r: '', rir: '', done: false }); save(); closeSheet(); rerender(); toast(`${x.sets.length} series`); },
   rmSet: el => { const x = S.draft.ex[+el.dataset.x]; const i = x.sets.map(z => z.done).lastIndexOf(false); if (x.sets.length > 1) { x.sets.splice(i >= 0 ? i : x.sets.length - 1, 1); save(); closeSheet(); rerender(); toast(`${x.sets.length} series`); } },
-  exNote: el => { const x = S.draft.ex[+el.dataset.x]; x.showNote = !noteOn(x); save(); closeSheet(); rerender(); const t = document.querySelector(`[data-xnote="${el.dataset.x}"]`); if (t) t.focus(); },
   stepGo: el => { const d = S.draft, n = sessionSteps(d).length, k = Math.max(0, Math.min(n - 1, (d.step || 0) + +el.dataset.d)); if (k === d.step) return; ui.stepAnim = +el.dataset.d > 0 ? 'in-r' : 'in-l'; d.step = k; save(); rerender(); },
   stepTo: el => { const d = S.draft, k = +el.dataset.k; ui.stepAnim = k >= (d.step || 0) ? 'in-r' : 'in-l'; d.step = k; save(); closeSheet(); if (ui.view !== 'session') go('session'); else rerender(); },
   stepList: () => sheetSesList(),
@@ -2182,17 +2281,19 @@ const A = {
     <button class="opt red" data-act="timerDiscard"><span>${IC.trash}</span>Descartar</button>
     <div class="muted" style="font-size:12.5px;margin-top:12px">Suena y vibra al cambiar de fase. Con la pantalla bloqueada el teléfono puede silenciar el aviso, por eso la pantalla se mantiene encendida.${num(S.settings.fcmax) ? '' : ' Añade tu FC máxima en Ajustes para ver las pulsaciones objetivo.'}</div>`),
   exMenu: el => sheetExMenu(+el.dataset.x),
+  maxRes: el => { closeSheet(); toggleSet(+el.dataset.x, +el.dataset.s, el.dataset.ok === '1'); },
   setMax: el => {
     const x = S.draft.ex[+el.dataset.x]; let si = +el.dataset.s;
     if (si < 0) { x.sets.push({ w: '', r: '', rir: '', done: false }); si = x.sets.length - 1; }
-    const z = x.sets[si]; z.max = !z.max; if (!z.max) delete z.max;
+    const z = x.sets[si]; z.max = !z.max; if (!z.max) { delete z.max; if (z.fail) { delete z.fail; z.r = '1'; } }
     save(); closeSheet(); rerender(); toast(z.max ? `Serie ${si + 1}: intento de 1RM` : `Serie ${si + 1} vuelve a ser normal`);
   },
   swapMenu: el => sheetSwap(+el.dataset.x),
   swapTo: el => swapTo(+el.dataset.x, el.dataset.name, el.dataset.kind),
   swapCustom: el => swapTo(+el.dataset.x, $('#swapName').value, $('#swapKind').dataset.k),
   kindPick: el => { const p = el.parentNode; p.dataset.k = el.dataset.k; p.querySelectorAll('button').forEach(b => b.classList.toggle('on', b === el)); },
-  exHist: el => { const x = S.draft.ex[+el.dataset.x]; sheetHist(x.name, x.alt || ''); },
+  exNotes: el => sheetExNotes(+el.dataset.x),
+  restUi: el => { S.settings.restUi = el.dataset.k; save(); el.parentNode.querySelectorAll('button').forEach(b => b.classList.toggle('on', b === el)); },
   exMove: el => { const i = +el.dataset.x, j = i + +el.dataset.d, ex = S.draft.ex; if (j < 0 || j >= ex.length || ex[j].blk !== ex[i].blk) { toast('Ya está en el extremo del bloque'); return; } [ex[i], ex[j]] = [ex[j], ex[i]]; S.draft.step = (S.draft.step || 0) + (j - i); save(); closeSheet(); rerender(); },
   exRemove: el => { const x = S.draft.ex[+el.dataset.x]; if (x.sets.some(z => z.done) && !confirm('Este ejercicio tiene series marcadas. ¿Quitarlo?')) return; S.draft.ex.splice(+el.dataset.x, 1); save(); closeSheet(); rerender(); },
   addEx: () => sheetAddEx(),
@@ -2213,7 +2314,7 @@ const A = {
   closeSheet: () => closeSheet(),
   openSession: el => sheetSession(el.dataset.id),
   delSession: el => { if (!confirm('¿Eliminar esta sesión del historial? No se puede deshacer.')) return; S.sessions = S.sessions.filter(s => s.id !== el.dataset.id); save(); closeSheet(); rerender(); toast('Sesión eliminada'); },
-  calNav: el => { const n = +el.dataset.n, m = ui.calMonth; ui.calMonth = n === 0 ? null : new Date(m.getFullYear(), m.getMonth() + n, 1); if (n === 0) ui.calSel = ymd(new Date()); render(); },
+  calNav: el => calMove(+el.dataset.n),
   calDay: el => { ui.calSel = el.dataset.d; document.querySelectorAll('.cal .c.sel').forEach(c => c.classList.remove('sel')); el.classList.add('sel'); sheetCalDay(el.dataset.d); },
   addTraining: el => sheetAddTraining(el.dataset.d),
   trainDay: el => { const k = el.dataset.d; if (k === ymd(new Date())) startSession(el.dataset.day); else startSession(el.dataset.day, k); },
@@ -2291,7 +2392,7 @@ document.addEventListener('click', e => { const el = e.target.closest('[data-act
 document.addEventListener('input', e => {
   const el = e.target;
   if (el.dataset.f && el.dataset.x != null && S.draft) { const z = S.draft.ex[+el.dataset.x]?.sets[+el.dataset.s]; if (z) { z[el.dataset.f] = el.value.replace(',', '.'); saveSoon(); } }
-  else if (el.dataset.xnote != null && S.draft) { S.draft.ex[+el.dataset.xnote].note = el.value; saveSoon(); }
+  else if (el.dataset.xnote != null && S.draft) { S.draft.ex[+el.dataset.xnote].note = el.value; saveSoon(); $('.xnb')?.classList.toggle('has', !!el.value.trim()); }
   else if (el.hasAttribute('data-snote') && S.draft) { S.draft.note = el.value; saveSoon(); }
   else if (el.dataset.setf) { S.settings[el.dataset.setf] = el.value.replace(/[^0-9]/g, ''); saveSoon(); }
   else if (el.dataset.dayf && ui.editDay) { const v = el.value.trim(); if (v) { S.routine.days[ui.editDay][el.dataset.dayf] = el.dataset.dayf === 'short' ? v.toUpperCase() : v; saveSoon(); } }
