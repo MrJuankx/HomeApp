@@ -247,18 +247,18 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.7;stro
 .fbody.ses>.step>*{flex:none}
 
 /* Barra superior: el reloj de la sesión va entre ⌄ y los ajustes y no se detiene al descansar */
-.fhead .ftm{flex:1;min-width:0;text-align:center;font-size:30px;font-weight:600;letter-spacing:-.045em;line-height:1;font-variant-numeric:tabular-nums;white-space:nowrap}
-.fhead .ftm.long{font-size:25px}
+.fhead .ftm{flex:1;min-width:0;text-align:center;font-size:12.5px;font-weight:600;letter-spacing:.16em;color:var(--muted);line-height:1;font-variant-numeric:tabular-nums;white-space:nowrap}
 
 /* Cabecera del paso: bloque y botones en una fila fina; el nombre a todo lo ancho y la pauta pequeña a su derecha */
 .chead .xhead{display:block}
 .xeb{display:flex;align-items:center;gap:8px;min-height:30px}
 .step .xeb .blk{flex:1;min-width:0;font-size:10.5px;letter-spacing:.16em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .xrow{display:flex;align-items:center;gap:14px;margin-top:2px}
+.xrow.bl{align-items:baseline;gap:12px}
 .clock .chead .xn{flex:1;min-width:0;font-size:30px;line-height:1.04;margin:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .clock .chead .xn.long{font-size:25px}
-.xp{flex:none;font-size:12px;line-height:1.5;color:var(--muted);white-space:nowrap;padding-left:12px;border-left:1px solid var(--line2)}
-.xp b{color:var(--text);font-weight:600;font-size:13px;font-variant-numeric:tabular-nums}
+.xp{flex:none;font-size:12.5px;color:var(--muted);white-space:nowrap}
+.xp b{color:var(--text);font-weight:600;font-size:14px;font-variant-numeric:tabular-nums}
 .chead .stico .n svg{width:18px;height:18px}
 .chead .donec{width:44px;height:44px;box-shadow:0 0 0 3px var(--s3)}
 .chead .donec svg{width:20px;height:20px}
@@ -323,15 +323,11 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.7;stro
 .srow.hd .xnb:active{background:var(--s3)}
 .xnb svg{width:17px;height:17px;stroke-width:1.7}
 .xnb.has::after{content:"";position:absolute;top:2px;right:5px;width:6px;height:6px;border-radius:50%;background:#fff;box-shadow:0 0 0 2px var(--bg)}
-.addset{flex:none;align-self:flex-start;width:28px;height:28px;margin:6px 0 0 3px;border-radius:50%;border:1px dashed rgba(255,255,255,.28);display:grid;place-items:center;color:var(--muted);transition:transform .18s var(--spring),background .2s}
-.addset:active{transform:scale(.88);background:var(--s3)}
-.addset svg{width:14px;height:14px;stroke-width:2}
 .fbody.ses.tight .sug{margin-top:8px;padding:7px 12px}
 .fbody.ses.tight .sets{margin-top:6px}
 .fbody.ses.tight .sets>.srow:not(.hd){min-height:44px}
 .fbody.ses.tight .num{height:40px;font-size:16px;border-radius:14px}
 .fbody.ses.tight .ck{width:40px;height:40px}
-.fbody.ses.tight .addset{margin-top:4px}
 
 /* Cambiar ejercicio y menú ⋯, en la fila del bloque */
 .xctl{display:flex;gap:6px;flex:none;margin-right:-2px}
@@ -410,7 +406,7 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.7;stro
 .ck{width:44px;height:44px;border-radius:50%;border:1.5px solid var(--line2);display:grid;place-items:center;color:var(--dim);transition:background .25s,border-color .25s,color .25s}
 .ck svg{width:20px;height:20px;stroke-width:2.4}
 .srow.done .ck{background:#f3f3f1;border-color:#f3f3f1;color:#0a0a0b}
-.srow.done.fail .ck{background:transparent;border-color:rgba(255,255,255,.55);color:#fff}
+.num.ro{display:grid;place-items:center;color:var(--muted)}
 .srow.done.just .ck{animation:pop .45s var(--spring)}
 .srow.done .num{background:transparent;color:#fff}
 .srow.done .ix{color:#fff}
@@ -427,6 +423,14 @@ textarea.note:focus{border-color:var(--line2)}
 .warm.on .lbl{text-decoration:line-through;text-decoration-color:var(--dim)}
 
 /* Lista de la sesión (como la referencia) */
+/* Ajustes de la sesión: series del ejercicio en curso con − y + */
+.setstep{display:flex;align-items:center;gap:10px;padding:12px 14px;margin-bottom:8px;border-radius:20px;background:var(--s2)}
+.setstep .grow{flex:1;min-width:0}
+.setstep .t1{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.setstep .t2{font-size:12.5px;color:var(--muted)}
+.setstep>b{min-width:22px;text-align:center;font-size:20px;font-weight:600;font-variant-numeric:tabular-nums}
+.setstep .icon-btn{width:40px;height:40px}
+.setstep .icon-btn[disabled]{opacity:.35}
 .slist .srowl{display:flex;align-items:center;gap:14px;padding:10px 0;width:100%;text-align:left;transition:opacity .2s}
 .slist .srowl:active{opacity:.55}
 .slist .srowl .grow{flex:1;min-width:0}
@@ -510,9 +514,10 @@ select.inp option{background:#1b1b1e}
 .ctype button.on{background:#f3f3f1;color:#0a0a0b}
 
 /* Calendario */
-.cal-m{margin:6px 0 0}
-.cal-y{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:4px;min-height:34px}
-.cal-y>span{font-family:var(--serif);font-size:24px;color:var(--muted);letter-spacing:-.01em}
+.cal-h{display:flex;align-items:center;gap:8px}
+.cal-h .cal-m{flex:1;min-width:0;margin:6px 0 0}
+.cal-y{flex:none;height:28px;display:inline-flex;align-items:center;padding:0 11px;margin-top:6px;border-radius:999px;border:1px solid var(--line2);font-size:12.5px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums;letter-spacing:.04em}
+.cal-h .today-btn{margin-top:6px}
 .today-btn{display:inline-flex;align-items:center;gap:5px;height:28px;padding:0 11px 0 8px;border-radius:999px;background:#f3f3f1;color:#0a0a0b;font-size:12px;font-weight:600;animation:pop .45s var(--spring) both;transition:transform .18s var(--spring)}
 .today-btn:active{transform:scale(.92)}
 .today-btn svg{width:13px;height:13px}
@@ -521,7 +526,7 @@ select.inp option{background:#1b1b1e}
 .cal-m.in-r,.cal-m.in-l{animation:fade .3s var(--ease) both}
 @keyframes calR{from{opacity:0;transform:translateX(60px)}}@keyframes calL{from{opacity:0;transform:translateX(-60px)}}
 .stat.wide{grid-column:1/-1}
-.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr)) 28px;gap:7px 5px;margin-top:4px;position:relative}
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr)) 40px;gap:7px 5px;margin-top:4px;position:relative}
 .cal::after{content:"";position:absolute;right:0;width:28px;top:22px;bottom:-4px;border-radius:20px;background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.12));opacity:var(--sop,0);pointer-events:none}
 .cal>*{position:relative;z-index:1}
 .cal .dh{font-size:11px;color:var(--dim);text-align:center;font-weight:600;height:20px}
@@ -535,6 +540,7 @@ select.inp option{background:#1b1b1e}
 .cal .c.today{box-shadow:0 0 0 2px var(--bg),0 0 0 3.5px #fff}
 .cal .c.sel{outline:1.5px dashed var(--muted);outline-offset:3px}
 .cal .c .more{position:absolute;top:-1px;right:-1px;width:9px;height:9px;border-radius:50%;background:#fff;border:2px solid var(--bg)}
+.cal .w,.cal .flame,.cal .dh:nth-child(8){justify-self:end;width:28px}
 .cal .w{display:grid;place-items:center;font-size:9px;color:var(--dim);font-weight:600}
 .cal .w .okc{width:19px;height:19px;border-radius:50%;background:#f3f3f1;color:#0a0a0b;display:grid;place-items:center;animation:pop .5s var(--spring) both}
 .cal .w .okc svg{width:11px;height:11px;stroke-width:3.2}
@@ -596,7 +602,6 @@ code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;color:#fff
   .clock{margin-top:8px}
   .step .xn{font-size:26px}
   .clock .chead .xn{font-size:27px}
-  .fhead .ftm{font-size:27px}
   .sug{margin-top:10px;padding:8px 12px}
   .sets{margin-top:8px}
   .num{height:40px} .ck{height:40px;width:40px}
@@ -656,7 +661,7 @@ code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;color:#fff
 button.ix{display:grid;place-items:center;height:100%;min-height:36px;border-radius:10px;transition:background .2s,color .2s}
 button.ix:active{background:var(--s3)}
 .srow .pv .rmb{font-size:9.5px;padding:2px 7px}
-.rmb.no{background:transparent;color:var(--muted);box-shadow:inset 0 0 0 1px rgba(255,255,255,.28)}
+.rmb.no{background:transparent;color:var(--text);box-shadow:inset 0 0 0 1px rgba(255,255,255,.4)}
 .rmb.try{background:transparent;color:#fff;box-shadow:inset 0 0 0 1px rgba(255,255,255,.7)}
 </style>
 </head>
@@ -803,10 +808,10 @@ const WARMUP = [
 ];
 const BLOCKS = [
   ['ath', 'Bloque atlético', 'Máxima intención · 60–90 s de pausa · nunca hasta la fatiga'],
-  ['main', 'PHUL', 'Todas las series con RIR ≥ 1'],
+  ['main', 'Principal', 'Todas las series con RIR ≥ 1'],
   ['health', 'Salud articular', 'Molestia muscular sí; dolor articular agudo, no'],
 ];
-const BLOCK_NAME = { ath: 'Atlético', main: 'PHUL', health: 'Salud articular' };
+const BLOCK_NAME = { ath: 'Atlético', main: 'Principal', health: 'Salud articular' };
 const UNIT = { wr: 'reps', reps: 'reps', time: 's', dist: 'm' };
 const METRIC_NAME = { wr: 'Carga × repeticiones', reps: 'Solo repeticiones', time: 'Tiempo (s)', dist: 'Carga × distancia (m)' };
 const DEFAULT_REST = { ath: 75, main: 120, health: 60 };
@@ -855,7 +860,7 @@ const IC = {
   mach: '<svg class="i" viewBox="0 0 24 24"><path d="M5 3.5v17M19 3.5v17M5 6h14M12 6v4.5"/><rect x="9" y="10.5" width="6" height="7" rx="1"/></svg>',
   undo: '<svg class="i" viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>',
   x: '<svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg>',
-  doc: '<svg class="i" viewBox="0 0 24 24"><path d="M6.5 3.5h7l4 4v13h-11z"/><path d="M13.5 3.5v4h4M9.5 12h5M9.5 15.5h5"/></svg>',
+  note: '<svg class="i" viewBox="0 0 24 24"><path d="M13 3H6.5A1.5 1.5 0 0 0 5 4.5v15A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V12"/><path d="M3 7.5h4M3 12h4M3 16.5h4"/><path d="M20.3 4.7a1.9 1.9 0 0 0-2.7-2.7l-5.3 5.3-.8 3.5 3.5-.8z"/></svg>',
   rm: '<svg class="i" viewBox="0 0 24 24"><path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 6H5.5a3 3 0 0 0 3 4M16 6h2.5a3 3 0 0 1-3 4M12 13v4M8.5 20h7"/></svg>',
   dot: '<svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2.6" fill="currentColor" stroke="none"/></svg>',
   play: '<svg viewBox="0 0 24 24" width="18" height="18"><path d="M8 5.5v13l10.5-6.5z" fill="currentColor"/></svg>',
@@ -1039,8 +1044,8 @@ function basePlaceholders(x, prev, sug) {
 }
 // Series de un ejercicio en una línea: carga × reps, RIR y la marca de 1RM
 const setsLine = x => x.sets.map(z => setStr(z, x.metric) + (z.max ? ' ' + rmBadge(z) : '') + (has(z.rir) ? ` <span class="dim">@${z.rir}</span>` : '')).join(' · ');
-// Intento de 1RM: logrado (relleno) o fallido (contorno tachado); corto para la columna estrecha de la sesión
-const rmBadge = (z, short) => z.fail ? `<b class="rmb no">${short ? 'Fallido' : '1RM fallido'}</b>` : '<b class="rmb">1RM</b>';
+// 1RM: logrado (relleno) o que quedó en intento (contorno); corto para la columna estrecha de la sesión
+const rmBadge = (z, short) => z.fail ? `<b class="rmb no">${short ? 'Intento' : 'Intento de 1RM'}</b>` : '<b class="rmb">1RM</b>';
 const setStr = (z, m) => m === 'wr' ? (z.fail ? `${fmt(num(z.w))} kg` : num(z.w) ? `${fmt(num(z.w))}×${z.r}` : `${z.r} reps`) : m === 'time' ? `${z.r} s` : m === 'dist' ? `${fmt(num(z.w))} kg · ${z.r} m` : `${z.r}`;
 
 /* =========================================================
@@ -1302,7 +1307,7 @@ function vSession() {
 }
 const restUi = () => ({ row: 'row', bar: 'bar', set: 'set' })[S.settings.restUi] || 'bar';
 // Cabecera del paso: fila fina con el bloque y los botones; debajo, el nombre a todo lo ancho y la pauta pequeña a su derecha
-const xHead = (ic, name, o = {}) => `<div class="xhead">${o.blk || o.more ? `<div class="xeb"><span class="blk">${o.blk || ''}</span>${o.more || ''}</div>` : ''}<div class="xrow">${ic}<div class="xn ${name.length > 24 ? 'long' : ''}">${esc(name)}</div>${o.plan || ''}</div></div>`;
+const xHead = (ic, name, o = {}) => `<div class="xhead">${o.blk || o.more ? `<div class="xeb"><span class="blk">${o.blk || ''}</span>${o.more || ''}</div>` : ''}<div class="xrow ${o.plan ? 'bl' : ''}">${ic}<div class="xn ${name.length > 24 ? 'long' : ''}">${esc(name)}</div>${o.plan || ''}</div></div>`;
 
 // Resumen de la sesión en curso: series hechas, volumen y récords
 function draftStats(d) {
@@ -1336,14 +1341,14 @@ function toggleSet(xi, si, res) {
   }, 650);
 }
 
-// Al completar una serie de 1RM: ¿salió o no? El fallido se guarda con 0 reps y no cuenta como récord
+// Al completar una serie de 1RM: ¿salió? Si no, queda como intento (0 reps): se ve en el historial pero no cuenta como récord
 function sheetMaxRes(xi, si) {
   const x = S.draft.ex[xi], z = x.sets[si];
-  openSheet(`<div class="eyebrow gold">Intento de 1RM · serie ${si + 1}</div><h2 style="margin:6px 0 4px">${fmt(num(z.w))} kg</h2>
+  openSheet(`<div class="eyebrow gold">1RM · serie ${si + 1}</div><h2 style="margin:6px 0 4px">${fmt(num(z.w))} kg</h2>
     <div class="muted" style="font-size:14px">${esc(lit(x))}</div>
     <div class="stack" style="margin-top:18px">
       <button class="btn primary block" data-act="maxRes" data-x="${xi}" data-s="${si}" data-ok="1">${IC.check} Lo logré</button>
-      <button class="btn ghost block" data-act="maxRes" data-x="${xi}" data-s="${si}" data-ok="0">${IC.x} Fallido</button>
+      <button class="btn ghost block" data-act="maxRes" data-x="${xi}" data-s="${si}" data-ok="0">Quedó en intento</button>
     </div>`);
 }
 
@@ -1396,7 +1401,6 @@ function sheetExMenu(xi) {
       <button class="opt" data-act="exMove" data-x="${xi}" data-d="-1"><span class="ic">${IC.up}</span>Mover antes</button>
       <button class="opt" data-act="exMove" data-x="${xi}" data-d="1"><span class="ic">${IC.down}</span>Mover después</button>
       ${x.metric === 'wr' ? `<button class="opt" data-act="setMax" data-x="${xi}" data-s="${ci < 0 ? -1 : ci}"><span class="ic">${IC.rm}</span><span class="grow">${ci >= 0 && x.sets[ci].max ? `Quitar 1RM de la serie ${ci + 1}` : ci >= 0 ? `Serie ${ci + 1} como 1RM` : 'Añadir serie de 1RM'}<small>También puedes tocar el número de una serie</small></span></button>` : ''}
-      ${x.sets.length > 1 ? `<button class="opt" data-act="rmSet" data-x="${xi}"><span class="ic">${IC.minus}</span><span class="grow">Quitar una serie<small>Quedarán ${x.sets.length - 1}</small></span></button>` : ''}
       <button class="opt red" data-act="exRemove" data-x="${xi}"><span class="ic">${IC.trash}</span>Quitar de esta sesión</button>
     </div>`);
 }
@@ -1449,7 +1453,7 @@ function histRows(name, alt) {
 function sheetAddEx() {
   openSheet(`<div class="eyebrow gold">Añadir</div><h2 style="margin:6px 0 4px">Ejercicio extra</h2>
     <label class="field"><span>Nombre</span><input class="inp" id="newExName" placeholder="Ej. Plancha, Face pull…"></label>
-    <label class="field"><span>Bloque</span><select class="inp" id="newExBlk"><option value="main">PHUL</option><option value="ath">Atlético</option><option value="health">Salud articular</option></select></label>
+    <label class="field"><span>Bloque</span><select class="inp" id="newExBlk"><option value="main">Principal</option><option value="ath">Atlético</option><option value="health">Salud articular</option></select></label>
     <label class="field"><span>Registro</span><select class="inp" id="newExMetric">${Object.entries(METRIC_NAME).map(([k, v]) => `<option value="${k}">${v}</option>`).join('')}</select></label>
     <div class="pair"><label class="field"><span>Series</span><input class="inp" id="newExSets" inputmode="numeric" value="3"></label><label class="field"><span>Reps / valor</span><input class="inp" id="newExReps" inputmode="numeric" value="10"></label></div>
     <button class="btn primary block" style="margin-top:16px" data-act="addExConfirm">Añadir</button>`);
@@ -1506,11 +1510,12 @@ const RING = '<span class="rring"><svg viewBox="0 0 48 48"><circle cx="24" cy="2
 function stepExercise(x, xi) {
   const prev = IDX.last.get(exKey(x)), sug = suggest(x, prev), ph = placeholders(x, prev, sug);
   const m = x.metric, ci = x.sets.findIndex(z => !z.done);
-  // Pauta pequeña a la derecha del nombre: series, reps (o segundos/metros) y RIR
-  const unit = { wr: 'reps', reps: 'reps', time: 's', dist: 'm' }[m] + (x.side ? '/lado' : '');
-  const plan = `<div class="xp"><div><b>${rng(x.t.sets)}</b> series</div><div><b>${rng(x.t.reps)}</b> ${unit}</div>${m === 'wr' ? '<div>RIR <b>≥1</b></div>' : ''}</div>`;
+  // Pauta en una línea a la derecha del nombre: series × reps (o segundos/metros) y RIR
+  const unit = { wr: '', reps: '', time: ' s', dist: ' m' }[m] + (x.side ? '/lado' : '');
+  const plan = `<div class="xp"><b>${rng(x.t.sets)}</b> × <b>${rng(x.t.reps)}</b>${unit}${m === 'wr' ? ' · RIR <b>≥1</b>' : ''}</div>`;
   const cols = { wr: ['#', 'Anterior', 'kg', 'Reps', 'RIR'], reps: ['#', 'Anterior', 'Reps'], time: ['#', 'Anterior', 'Seg'], dist: ['#', 'Anterior', 'kg', 'Metros'] }[m];
-  const inp = (si, f, val, p) => `<input class="num" type="text" inputmode="decimal" autocomplete="off" data-x="${xi}" data-s="${si}" data-f="${f}" value="${esc(val)}" placeholder="${esc(p ?? '')}">`;
+  const inp = (si, f, val, p) => x.sets[si].fail && f !== 'w' ? '<span class="num ro">–</span>'
+    : `<input class="num" type="text" inputmode="decimal" autocomplete="off" data-x="${xi}" data-s="${si}" data-f="${f}" value="${esc(val)}" placeholder="${esc(p ?? '')}">`;
   const rows = x.sets.map((z, si) => {
     const p = ph[si] || {}, pv = prev && prev.sets[si] ? setStr(prev.sets[si], m) : '—';
     const cells = m === 'wr' ? inp(si, 'w', z.w, p.w) + inp(si, 'r', z.r, p.r) + inp(si, 'rir', z.rir, '–')
@@ -1518,18 +1523,17 @@ function stepExercise(x, xi) {
       : inp(si, 'r', z.r, p.r);
     const cls = z.done ? 'done' + (ui.justSet === `${xi}-${si}` ? ' just' : '') : si === ci ? 'cur' : 'fut';
     const ix = m === 'wr' ? `<button class="ix" data-act="setMax" data-x="${xi}" data-s="${si}" aria-label="Marcar serie ${si + 1} como 1RM">${si + 1}</button>` : `<span class="ix">${si + 1}</span>`;
-    return `<div class="srow ${m} ${cls} ${z.max ? 'max' : ''} ${z.fail ? 'fail' : ''}">${ix}<span class="pv">${!z.max ? esc(pv) : z.done ? rmBadge(z, 1) : '<b class="rmb try">1RM</b>'}</span>${cells}<button class="ck" data-act="toggleSet" data-x="${xi}" data-s="${si}" aria-label="Completar serie">${z.fail ? IC.x : IC.check}${si === ci ? RING : ''}</button></div>`;
+    return `<div class="srow ${m} ${cls} ${z.max ? 'max' : ''} ${z.fail ? 'fail' : ''}">${ix}<span class="pv">${!z.max ? esc(pv) : z.done ? rmBadge(z, 1) : '<b class="rmb try">1RM</b>'}</span>${cells}<button class="ck" data-act="toggleSet" data-x="${xi}" data-s="${si}" aria-label="Completar serie">${IC.check}${si === ci ? RING : ''}</button></div>`;
   }).join('');
   ui.justSet = null;
   const sugHtml = sug ? `<div class="sug"><span class="arr">${sug.dir === 'up' ? '↑' : sug.dir === 'down' ? '↓' : '→'}</span><div><b>${sug.w ? `${fmt(sug.w)} kg × ${sug.r}` : `${sug.r} reps`}</b> <span class="w">sugerido</span><div class="w">${esc(sug.why)}</div></div></div>`
     : (!prev && m === 'wr' ? `<div class="sug"><span class="arr">i</span><div class="w">Primera vez: elige una carga con la que te queden 1–2 reps en reserva al llegar a ${x.t.reps[0]}.</div></div>` : '');
   return {
     head: xHead('', lit(x), { blk: x.alt ? `${BLOCK_NAME[x.blk]} · reemplazo` : BLOCK_NAME[x.blk], plan, more: `<span class="xctl"><button class="xswap ${x.alt ? 'on' : ''}" data-act="swapMenu" data-x="${xi}" aria-label="Cambiar ejercicio">${IC.swap}</button><button class="xswap" data-act="exMenu" data-x="${xi}" aria-label="Opciones del ejercicio">${IC.more}</button></span>` }),
-    // Historial y nota comparten un botón discreto en la cabecera de la tabla; añadir serie es un «+» bajo las series
+    // Nota e historial comparten un botón discreto en la cabecera de la tabla; añadir y quitar series, en los ajustes de la sesión
     body: `${sugHtml}
     ${prev && prev.note ? `<div class="prev-note">Nota del ${shortDate(prev.date)}: “${esc(prev.note)}”</div>` : ''}
-    <div class="sets"><div class="srow ${m} hd">${cols.map(h => `<span>${h}</span>`).join('')}<button class="xnb ${x.note ? 'has' : ''}" data-act="exNotes" data-x="${xi}" aria-label="Historial y nota">${IC.doc}</button></div>${rows}
-      <button class="addset" data-act="addSet" data-x="${xi}" aria-label="Añadir serie">${IC.plus}</button></div>`,
+    <div class="sets"><div class="srow ${m} hd">${cols.map(h => `<span>${h}</span>`).join('')}<button class="xnb ${x.note ? 'has' : ''}" data-act="exNotes" data-x="${xi}" aria-label="Nota e historial">${IC.note}</button></div>${rows}</div>`,
   };
 }
 
@@ -1537,7 +1541,11 @@ function stepExercise(x, xi) {
 function sheetSesList() {
   const d = S.draft, steps = sessionSteps(d), day = S.routine.days[d.dayId];
   const done = `<span class="donec">${IC.check}</span>`;
+  const cx = steps[d.step]?.t === 'ex' ? d.ex[steps[d.step].i] : null, ci = cx ? steps[d.step].i : -1;
   openSheet(`<div class="eyebrow">En curso · ${fmtDur((Date.now() - d.start) / 1000)}</div><h2 style="margin:6px 0 10px">${esc(day?.name || 'Sesión')}</h2>
+  ${cx ? `<div class="setstep"><div class="grow"><div class="t1">${esc(lit(cx))}</div><div class="t2">Series de este ejercicio</div></div>
+    <button class="icon-btn glass" data-act="rmSet" data-x="${ci}" aria-label="Quitar una serie" ${cx.sets.length < 2 ? 'disabled' : ''}>${IC.minus}</button><b>${cx.sets.length}</b>
+    <button class="icon-btn glass" data-act="addSet" data-x="${ci}" aria-label="Añadir una serie">${IC.plus}</button></div>` : ''}
   <div class="slist">${steps.map((s, k) => {
     let ic, nm, sub, more = '';
     if (s.t === 'warm') {
@@ -1609,10 +1617,9 @@ function vCal() {
   const isCur = ym === today.slice(0, 7);
 
   const anim = ui.calAnim || ''; ui.calAnim = '';
-  // Mes con el año debajo; se cambia de mes deslizando el calendario y «Hoy» vuelve al actual
+  // Mes con el año en un óvalo al extremo derecho; se cambia de mes deslizando el calendario y «Hoy» vuelve al actual
   return `<div class="stg">
-  <h1 class="cal-m ${anim}">${cap(MES[m.getMonth()])}</h1>
-  <div class="cal-y"><span>${m.getFullYear()}</span>${isCur ? '' : `<button class="today-btn" data-act="calNav" data-n="0">${IC.dot} Hoy</button>`}</div>
+  <div class="cal-h"><h1 class="cal-m ${anim}">${cap(MES[m.getMonth()])}</h1>${isCur ? '' : `<button class="today-btn" data-act="calNav" data-n="0">${IC.dot} Hoy</button>`}<span class="cal-y">${m.getFullYear()}</span></div>
   <div class="card calsw" style="padding:14px 12px;margin-top:14px">
     <div class="cal ${anim}" style="--sop:${anyMet ? 1 : 0}">${cells}</div>
     <div class="legend"><span>${IC.dumb} Torso</span><span>${IC.kb} Pierna</span><span>${IC.pulse} 4×4</span><span>${IC.bike} Zona 2</span><span>${IC.shoe} Caminata</span></div>
@@ -1878,16 +1885,16 @@ function vExDetail() {
   let prs = '';
   if (m === 'wr') {
     // 1RM real: la carga más alta de una serie marcada como 1RM en la sesión
-    let bM = { v: 0 }, bW = { v: 0 }, bV = { v: 0 }, bR = { v: 0 }, nF = 0;
+    let bM = { v: 0 }, bW = { v: 0 }, bV = { v: 0 }, bR = { v: 0 }, tF = 0;
     for (const o of ser) for (const z of o.x.sets) {
-      if (z.fail) { nF++; continue; }
+      if (z.fail) { tF = Math.max(tF, num(z.w)); continue; }
       if (z.max && num(z.w) > bM.v) bM = { v: num(z.w), d: o.s.date };
       if (num(z.w) > bW.v || (num(z.w) === bW.v && num(z.r) > num(bW.z?.r))) bW = { v: num(z.w), d: o.s.date, z };
       if (num(z.r) > bR.v) bR = { v: num(z.r), d: o.s.date, z };
     }
     for (const o of ser) { const v = o.x.sets.reduce((a, z) => a + num(z.w) * num(z.r), 0); if (v > bV.v) bV = { v, d: o.s.date }; }
     prs = `<h3>Récords</h3><div class="prgrid">
-      <div class="prc"><div class="l">1RM real</div><div class="v">${bM.v ? fmt(bM.v) + ' kg' : '—'}</div><div class="d">${bM.d ? shortDate(bM.d) : nF ? 'Sin intentos logrados' : 'Marca una serie como 1RM'}${nF ? ` · ${nF} fallido${nF > 1 ? 's' : ''}` : ''}</div></div>
+      <div class="prc"><div class="l">1RM real</div><div class="v">${bM.v ? fmt(bM.v) + ' kg' : '—'}</div><div class="d">${bM.d ? shortDate(bM.d) : tF ? 'Aún en intentos' : 'Marca una serie como 1RM'}${tF > bM.v ? ` · intento a ${fmt(tF)} kg` : ''}</div></div>
       <div class="prc"><div class="l">Carga máxima</div><div class="v">${fmt(bW.v)} kg</div><div class="d">${bW.z ? setStr(bW.z, 'wr') + ' · ' + shortDate(bW.d) : ''}</div></div>
       <div class="prc"><div class="l">Más reps</div><div class="v">${bR.v}</div><div class="d">${bR.z ? setStr(bR.z, 'wr') + ' · ' + shortDate(bR.d) : ''}</div></div>
       <div class="prc"><div class="l">Volumen sesión</div><div class="v">${fmtK(bV.v)}</div><div class="d">${bV.d ? shortDate(bV.d) : ''}</div></div></div>`;
@@ -2267,8 +2274,9 @@ const A = {
     if (r) r.outerHTML = ring(44, n / WARMUP.length, n === WARMUP.length ? IC.check : `${n}/${WARMUP.length}`, 'stico sm');
   },
   toggleSet: el => toggleSet(+el.dataset.x, +el.dataset.s),
-  addSet: el => { const x = S.draft.ex[+el.dataset.x]; x.sets.push({ w: '', r: '', rir: '', done: false }); save(); closeSheet(); rerender(); toast(`${x.sets.length} series`); },
-  rmSet: el => { const x = S.draft.ex[+el.dataset.x]; const i = x.sets.map(z => z.done).lastIndexOf(false); if (x.sets.length > 1) { x.sets.splice(i >= 0 ? i : x.sets.length - 1, 1); save(); closeSheet(); rerender(); toast(`${x.sets.length} series`); } },
+  // Desde los ajustes de la sesión: la hoja sigue abierta para poder tocar varias veces
+  addSet: el => { const x = S.draft.ex[+el.dataset.x]; x.sets.push({ w: '', r: '', rir: '', done: false }); save(); rerender(); sheetSesList(); },
+  rmSet: el => { const x = S.draft.ex[+el.dataset.x]; const i = x.sets.map(z => z.done).lastIndexOf(false); if (x.sets.length > 1) { x.sets.splice(i >= 0 ? i : x.sets.length - 1, 1); save(); rerender(); sheetSesList(); } },
   stepGo: el => { const d = S.draft, n = sessionSteps(d).length, k = Math.max(0, Math.min(n - 1, (d.step || 0) + +el.dataset.d)); if (k === d.step) return; ui.stepAnim = +el.dataset.d > 0 ? 'in-r' : 'in-l'; d.step = k; save(); rerender(); },
   stepTo: el => { const d = S.draft, k = +el.dataset.k; ui.stepAnim = k >= (d.step || 0) ? 'in-r' : 'in-l'; d.step = k; save(); closeSheet(); if (ui.view !== 'session') go('session'); else rerender(); },
   stepList: () => sheetSesList(),
@@ -2286,7 +2294,7 @@ const A = {
     const x = S.draft.ex[+el.dataset.x]; let si = +el.dataset.s;
     if (si < 0) { x.sets.push({ w: '', r: '', rir: '', done: false }); si = x.sets.length - 1; }
     const z = x.sets[si]; z.max = !z.max; if (!z.max) { delete z.max; if (z.fail) { delete z.fail; z.r = '1'; } }
-    save(); closeSheet(); rerender(); toast(z.max ? `Serie ${si + 1}: intento de 1RM` : `Serie ${si + 1} vuelve a ser normal`);
+    save(); closeSheet(); rerender(); toast(z.max ? `Serie ${si + 1}: 1RM` : `Serie ${si + 1} vuelve a ser normal`);
   },
   swapMenu: el => sheetSwap(+el.dataset.x),
   swapTo: el => swapTo(+el.dataset.x, el.dataset.name, el.dataset.kind),
