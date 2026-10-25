@@ -48,8 +48,6 @@ input,textarea,select{font:inherit;color:var(--text);font-size:16px}
 #bgfx .grain{position:absolute;inset:0;opacity:.13;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.95' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
 
 /* Adornos: estallido y esfera de semitono */
-.burst{position:absolute;pointer-events:none;color:rgba(255,255,255,.85);animation:spin 60s linear infinite}
-.burst line{stroke:currentColor;stroke-width:1;stroke-linecap:round}
 @keyframes spin{to{transform:rotate(360deg)}}
 .halftone{position:absolute;pointer-events:none;border-radius:50%;background:radial-gradient(circle,#fff 32%,transparent 36%) 0 0/7px 7px;-webkit-mask-image:radial-gradient(circle at 45% 40%,#000 0%,rgba(0,0,0,.75) 30%,rgba(0,0,0,.25) 55%,transparent 70%);mask-image:radial-gradient(circle at 45% 40%,#000 0%,rgba(0,0,0,.75) 30%,rgba(0,0,0,.25) 55%,transparent 70%);animation:breathe 7s ease-in-out infinite;will-change:transform}
 @keyframes breathe{50%{transform:scale(1.07)}}
@@ -172,7 +170,6 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.7;stro
 
 /* Inicio */
 .hhead{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;position:relative}
-.hhead .burst{right:4px;top:-6px;width:96px;height:96px;opacity:.5}
 .hhead>div{position:relative}
 .greet{font-family:var(--serif);font-weight:400;font-size:46px;line-height:.96;letter-spacing:-.025em;margin:8px 0 22px}
 .info{display:flex;flex-wrap:wrap;gap:4px 16px;margin:14px 0 20px;font-size:13px;color:var(--muted)}
@@ -683,6 +680,11 @@ button.ix:active{background:var(--s3)}
 .guidel details.guide b{color:var(--text);font-weight:600}
 .guidel .refs li{font-size:12.5px}
 .guidel .jr{color:var(--text)}
+
+/* Grafo de Wolfram fijo al fondo de las pantallas principales */
+.wg{position:fixed;z-index:0;pointer-events:none;width:560px;height:560px;top:0;right:max(0px,(100vw - 540px) / 2);opacity:0;transition:opacity .5s var(--ease);-webkit-mask-image:radial-gradient(circle at 100% 0,#000 45%,transparent 92%);mask-image:radial-gradient(circle at 100% 0,#000 45%,transparent 92%)}
+.wg.on{opacity:1}
+.wgbtn{display:block;margin:26px auto 0;padding:8px 12px;font-size:10px;font-weight:500;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);opacity:.6}
 </style>
 </head>
 <body>
@@ -906,12 +908,7 @@ const IC = {
   pause: '<svg viewBox="0 0 24 24" width="18" height="18"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z" fill="currentColor"/></svg>',
   flag: '<svg class="i" viewBox="0 0 24 24"><path d="M5.5 21V4M5.5 4.5h11l-2 4 2 4h-11"/></svg>',
 };
-// Adornos editoriales: estallido de líneas y esfera de semitono
-const BURST = (() => {
-  let l = '';
-  for (let i = 0; i < 36; i++) { const a = i * Math.PI / 18, r0 = i % 3 ? 22 : 12; l += `<line x1="${(50 + Math.cos(a) * r0).toFixed(1)}" y1="${(50 + Math.sin(a) * r0).toFixed(1)}" x2="${(50 + Math.cos(a) * 49).toFixed(1)}" y2="${(50 + Math.sin(a) * 49).toFixed(1)}"/>`; }
-  return `<svg class="burst" viewBox="0 0 100 100" aria-hidden="true">${l}</svg>`;
-})();
+// Adorno editorial: esfera de semitono
 const HALFTONE = '<div class="halftone" aria-hidden="true"></div>';
 // Anillo de progreso (fracción 0–1) con contenido en el centro
 function ring(size, frac, inner = '', cls = '') {
@@ -1189,6 +1186,7 @@ function render() {
   const app = $('#app');
   const full = ui.view === 'session' || ui.view === 'timer';
   app.className = (ui.view === 'session' ? 'in-session' : ui.view === 'timer' ? 'in-timer' : '') + (ui.enter ? ' enter' : '');
+  document.body.dataset.view = ui.view;
   app.innerHTML = (V[ui.view] || vHome)();
   if (ui.view === 'session') fitSession();
   if (ui.enter) { ui.enter = false; clearTimeout(render.t); render.t = setTimeout(() => app.classList.remove('enter'), 900); }
@@ -1291,7 +1289,7 @@ function vHome() {
     <div class="pair"><button class="btn primary sm" data-act="dlStart">Empezar</button><button class="btn ghost sm" data-act="dlLater">Ahora no</button></div></div>` : '';
 
   return `<div class="stg">
-  <div class="hhead">${BURST}<div class="greet">${greet[0]}<br>${greet[1]}.</div></div>
+  <div class="hhead"><div class="greet">${greet[0]}<br>${greet[1]}.</div></div>
   ${S.timer ? `<button class="live-banner press" data-act="timerOpen"><span class="dot"></span><span style="flex:1;text-align:left">4×4 en curso · <span id="homeTimer"></span></span>${IC.chev.replace('chev', '')}</button>` : ''}
   ${dlCard}
   ${S.draft ? `<button class="live-banner press" data-act="resume"><span class="dot"></span><span style="flex:1;text-align:left">Sesión en curso · ${esc(S.routine.days[S.draft.dayId]?.name || '')}${S.draft.past ? ` · ${shortDate(S.draft.date)}` : ''}</span><span class="num-f" id="homeElapsed"></span>${IC.chev.replace('chev', '')}</button>` : ''}
@@ -2677,6 +2675,541 @@ if (installState === 'checking') Promise.all(['manifest.json', 'icono-192.png', 
 render();
 if (S.draft || S.timer) wake(true);
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(() => {});
+</script>
+<script type="text/plain" id="wg-src">/* Modelo de Wolfram: reescritura de hipergrafos + incrustación resorte-eléctrica.
+   evolve(): aplica la regla en pasos de generación (orden estándar: en cada
+   generación se aplica un conjunto máximo de coincidencias que no se solapan,
+   recorriendo las aristas de la más antigua a la más reciente).
+   layout(): incrustación resorte-eléctrica (Hu, 2005) con Barnes–Hut. */
+const WG = (() => {
+  function evolve(rule, init, gens, maxEdges = 1e9, start) {
+    const [lhs, rhs] = rule;
+    let edges = init.map(e => e.slice());
+    let next = start != null ? start : 1 + init.reduce((m, e) => Math.max(m, ...e), 0);
+    const lhsVars = new Set(lhs.flat());
+    const fresh = [...new Set(rhs.flat())].filter(v => !lhsVars.has(v));
+    for (let g = 0; g < gens; g++) {
+      // índice: vértice -> aristas que lo contienen
+      const inc = new Map();
+      edges.forEach((e, i) => e.forEach(v => { if (!inc.has(v)) inc.set(v, []); inc.get(v).push(i); }));
+      const used = new Uint8Array(edges.length);
+      const out = [];
+      const bind = new Map(), pick = [];
+      const tryMatch = k => {
+        if (k === lhs.length) return true;
+        const pat = lhs[k];
+        // candidatas: si alguna variable ya está ligada, solo aristas incidentes
+        let cand = null;
+        for (const x of pat) if (bind.has(x)) { cand = inc.get(bind.get(x)) || []; break; }
+        if (!cand) cand = edges.map((_, i) => i);
+        for (const i of cand) {
+          if (used[i] || pick.includes(i)) continue;
+          const e = edges[i];
+          if (e.length !== pat.length) continue;
+          const added = [];
+          let ok = true;
+          for (let j = 0; j < pat.length; j++) {
+            const x = pat[j], v = e[j];
+            if (bind.has(x)) { if (bind.get(x) !== v) { ok = false; break; } }
+            else { bind.set(x, v); added.push(x); }
+          }
+          // variables distintas deben ligarse a vértices... no se exige (como en WolframModel)
+          if (ok) { pick.push(i); if (tryMatch(k + 1)) return true; pick.pop(); }
+          added.forEach(x => bind.delete(x));
+        }
+        return false;
+      };
+      let applied = 0;
+      for (let i = 0; i < edges.length; i++) {
+        if (used[i]) continue;
+        // la arista más antigua sin usar debe ser la primera del emparejamiento
+        const pat = lhs[0], e = edges[i];
+        if (e.length !== pat.length) continue;
+        bind.clear(); pick.length = 0;
+        let ok = true;
+        for (let j = 0; j < pat.length; j++) {
+          const x = pat[j], v = e[j];
+          if (bind.has(x)) { if (bind.get(x) !== v) { ok = false; break; } } else bind.set(x, v);
+        }
+        if (!ok) continue;
+        pick.push(i);
+        if (!tryMatch(1)) continue;
+        pick.forEach(p => used[p] = 1);
+        fresh.forEach(x => bind.set(x, next++));
+        rhs.forEach(r => out.push(r.map(x => bind.get(x))));
+        applied++;
+      }
+      if (!applied) break;
+      const kept = edges.filter((_, i) => !used[i]);
+      edges = kept.concat(out);
+      if (edges.length > maxEdges) break;
+    }
+    edges.next = next;
+    return edges;
+  }
+
+
+  // Evolución que devuelve el estado de cada generación
+  function history(rule, init, gens, maxEdges) {
+    const H = [init.map(e => e.slice())];
+    let next;
+    for (let g = 1; g <= gens; g++) {
+      const e = evolve(rule, H[H.length - 1], 1, Infinity, next);
+      next = e.next;
+      if (e.length === H[H.length - 1].length && e.every((x, i) => x === H[H.length - 1][i])) break;
+      H.push(e);
+      if (e.length >= maxEdges) break;
+    }
+    return H;
+  }
+
+  // Incrustación por generaciones: cada generación parte de las posiciones de la anterior
+  // (los vértices nuevos nacen junto a sus vecinos), lo que evita nudos y cruces largos.
+  function growLayout(H, opts = {}) {
+    const rnd = mulberry(opts.seed || 7);
+    let pos = new Map();
+    for (let gi = 0; gi < H.length; gi++) {
+      const edges = H[gi];
+      const ids = [], idx = new Map();
+      const v = x => { if (!idx.has(x)) { idx.set(x, ids.length); ids.push(x); } return idx.get(x); };
+      const links = [];
+      edges.forEach(e => { for (let j = 0; j + 1 < e.length; j++) links.push([v(e[j]), v(e[j + 1])]); });
+      const n = ids.length, x = new Float64Array(n), y = new Float64Array(n), known = new Uint8Array(n);
+      ids.forEach((id, i) => { const p = pos.get(id); if (p) { x[i] = p[0]; y[i] = p[1]; known[i] = 1; } });
+      // vértices nuevos: en el promedio de sus vecinos conocidos
+      for (let pass = 0; pass < 4; pass++) {
+        const sx = new Float64Array(n), sy = new Float64Array(n), c = new Uint16Array(n);
+        links.forEach(([a, b]) => { if (known[a] && !known[b]) { sx[b] += x[a]; sy[b] += y[a]; c[b]++; } if (known[b] && !known[a]) { sx[a] += x[b]; sy[a] += y[b]; c[a]++; } });
+        for (let i = 0; i < n; i++) if (!known[i] && c[i]) { x[i] = sx[i] / c[i] + (rnd() - .5) * .3; y[i] = sy[i] / c[i] + (rnd() - .5) * .3; known[i] = 2; }
+      }
+      for (let i = 0; i < n; i++) if (!known[i]) { x[i] = (rnd() - .5); y[i] = (rnd() - .5); }
+      const last = gi === H.length - 1;
+      const p = layout({ n, links }, { x, y, iters: last ? (opts.finalIters || 300) : (opts.iters || 60), step: gi ? .3 : 1 });
+      pos = new Map(ids.map((id, i) => [id, [p.x[i], p.y[i]]]));
+      if (last) return { n, links, x: p.x, y: p.y };
+    }
+  }
+
+  // Grafo a partir de hiperaristas: cada hiperarista {a,b,c} une vértices consecutivos.
+  function toGraph(edges) {
+    const id = new Map(), L = [];
+    const v = x => { if (!id.has(x)) id.set(x, id.size); return id.get(x); };
+    edges.forEach(e => { for (let j = 0; j + 1 < e.length; j++) L.push([v(e[j]), v(e[j + 1])]); if (e.length === 1) v(e[0]); });
+    return { n: id.size, links: L };
+  }
+
+  function layout(g, opts = {}) {
+    const n = g.n, iters = opts.iters || 400, K = 1, C = 0.2, theta = 1.2;
+    const rnd = mulberry(opts.seed || 7);
+    const x = opts.x || new Float64Array(n), y = opts.y || new Float64Array(n);
+    if (!opts.x) for (let i = 0; i < n; i++) { x[i] = (rnd() - .5) * Math.sqrt(n); y[i] = (rnd() - .5) * Math.sqrt(n); }
+    const adj = Array.from({ length: n }, () => []);
+    g.links.forEach(([a, b]) => { if (a !== b) { adj[a].push(b); adj[b].push(a); } });
+    let step = (opts.step || Math.sqrt(n) * 0.5), prog = 0, Eold = Infinity;
+    const fx = new Float64Array(n), fy = new Float64Array(n);
+    for (let it = 0; it < iters; it++) {
+      const tree = quad(x, y, n);
+      let E = 0;
+      for (let i = 0; i < n; i++) {
+        let ax = 0, ay = 0;
+        // repulsión eléctrica  -C K^2 / d
+        const st = [tree];
+        while (st.length) {
+          const nd = st.pop();
+          if (!nd || nd.m === 0) continue;
+          const dx = x[i] - nd.cx, dy = y[i] - nd.cy, d2 = dx * dx + dy * dy;
+          if (nd.leaf !== undefined) {
+            if (nd.leaf === i) continue;
+            if (d2 > 1e-9) { const f = C * K * K / d2 * nd.m; ax += dx * f; ay += dy * f; }
+            else { ax += (rnd() - .5) * .01; ay += (rnd() - .5) * .01; }
+          } else if (nd.s * nd.s < theta * theta * d2) {
+            const f = C * K * K / d2 * nd.m; ax += dx * f; ay += dy * f;
+          } else st.push(...nd.k);
+        }
+        // atracción de resorte  d^2 / K
+        for (const j of adj[i]) {
+          const dx = x[j] - x[i], dy = y[j] - y[i], d = Math.hypot(dx, dy);
+          ax += dx * d / K; ay += dy * d / K;
+        }
+        fx[i] = ax; fy[i] = ay;
+      }
+      for (let i = 0; i < n; i++) {
+        const f = Math.hypot(fx[i], fy[i]) || 1;
+        x[i] += step * fx[i] / f; y[i] += step * fy[i] / f;
+        E += f * f;
+      }
+      // control adaptativo del paso (Hu 2005)
+      if (E < Eold) { if (++prog >= 5) { prog = 0; step /= 0.9; } } else { prog = 0; step *= 0.9; }
+      Eold = E;
+    }
+    return { x, y };
+  }
+
+  function quad(x, y, n) {
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    for (let i = 0; i < n; i++) { x0 = Math.min(x0, x[i]); y0 = Math.min(y0, y[i]); x1 = Math.max(x1, x[i]); y1 = Math.max(y1, y[i]); }
+    const s = Math.max(x1 - x0, y1 - y0) + 1e-6;
+    const root = { x0, y0, s, m: 0, cx: 0, cy: 0 };
+    const ins = (nd, i, depth) => {
+      if (nd.m === 0 && !nd.k) { nd.leaf = i; nd.m = 1; nd.cx = x[i]; nd.cy = y[i]; return; }
+      if (nd.leaf !== undefined) {
+        const j = nd.leaf; delete nd.leaf;
+        nd.k = [0, 1, 2, 3].map(q => ({ x0: nd.x0 + (q & 1) * nd.s / 2, y0: nd.y0 + (q >> 1) * nd.s / 2, s: nd.s / 2, m: 0, cx: 0, cy: 0 }));
+        if (depth < 40) sub(nd, j, depth); else { nd.k[0].m++; }
+      }
+      nd.cx = (nd.cx * nd.m + x[i]) / (nd.m + 1); nd.cy = (nd.cy * nd.m + y[i]) / (nd.m + 1); nd.m++;
+      if (depth < 40) sub(nd, i, depth);
+    };
+    const sub = (nd, i, depth) => {
+      const q = (x[i] >= nd.x0 + nd.s / 2 ? 1 : 0) + (y[i] >= nd.y0 + nd.s / 2 ? 2 : 0);
+      ins(nd.k[q], i, depth + 1);
+    };
+    for (let i = 0; i < n; i++) ins(root, i, 0);
+    return root;
+  }
+
+  function mulberry(a) { return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+
+  return { evolve, history, growLayout, toGraph, layout, mulberry };
+})();
+</script>
+<script>/* Modelo de Wolfram: reescritura de hipergrafos + incrustación resorte-eléctrica.
+   evolve(): aplica la regla en pasos de generación (orden estándar: en cada
+   generación se aplica un conjunto máximo de coincidencias que no se solapan,
+   recorriendo las aristas de la más antigua a la más reciente).
+   layout(): incrustación resorte-eléctrica (Hu, 2005) con Barnes–Hut. */
+const WG = (() => {
+  function evolve(rule, init, gens, maxEdges = 1e9, start) {
+    const [lhs, rhs] = rule;
+    let edges = init.map(e => e.slice());
+    let next = start != null ? start : 1 + init.reduce((m, e) => Math.max(m, ...e), 0);
+    const lhsVars = new Set(lhs.flat());
+    const fresh = [...new Set(rhs.flat())].filter(v => !lhsVars.has(v));
+    for (let g = 0; g < gens; g++) {
+      // índice: vértice -> aristas que lo contienen
+      const inc = new Map();
+      edges.forEach((e, i) => e.forEach(v => { if (!inc.has(v)) inc.set(v, []); inc.get(v).push(i); }));
+      const used = new Uint8Array(edges.length);
+      const out = [];
+      const bind = new Map(), pick = [];
+      const tryMatch = k => {
+        if (k === lhs.length) return true;
+        const pat = lhs[k];
+        // candidatas: si alguna variable ya está ligada, solo aristas incidentes
+        let cand = null;
+        for (const x of pat) if (bind.has(x)) { cand = inc.get(bind.get(x)) || []; break; }
+        if (!cand) cand = edges.map((_, i) => i);
+        for (const i of cand) {
+          if (used[i] || pick.includes(i)) continue;
+          const e = edges[i];
+          if (e.length !== pat.length) continue;
+          const added = [];
+          let ok = true;
+          for (let j = 0; j < pat.length; j++) {
+            const x = pat[j], v = e[j];
+            if (bind.has(x)) { if (bind.get(x) !== v) { ok = false; break; } }
+            else { bind.set(x, v); added.push(x); }
+          }
+          // variables distintas deben ligarse a vértices... no se exige (como en WolframModel)
+          if (ok) { pick.push(i); if (tryMatch(k + 1)) return true; pick.pop(); }
+          added.forEach(x => bind.delete(x));
+        }
+        return false;
+      };
+      let applied = 0;
+      for (let i = 0; i < edges.length; i++) {
+        if (used[i]) continue;
+        // la arista más antigua sin usar debe ser la primera del emparejamiento
+        const pat = lhs[0], e = edges[i];
+        if (e.length !== pat.length) continue;
+        bind.clear(); pick.length = 0;
+        let ok = true;
+        for (let j = 0; j < pat.length; j++) {
+          const x = pat[j], v = e[j];
+          if (bind.has(x)) { if (bind.get(x) !== v) { ok = false; break; } } else bind.set(x, v);
+        }
+        if (!ok) continue;
+        pick.push(i);
+        if (!tryMatch(1)) continue;
+        pick.forEach(p => used[p] = 1);
+        fresh.forEach(x => bind.set(x, next++));
+        rhs.forEach(r => out.push(r.map(x => bind.get(x))));
+        applied++;
+      }
+      if (!applied) break;
+      const kept = edges.filter((_, i) => !used[i]);
+      edges = kept.concat(out);
+      if (edges.length > maxEdges) break;
+    }
+    edges.next = next;
+    return edges;
+  }
+
+
+  // Evolución que devuelve el estado de cada generación
+  function history(rule, init, gens, maxEdges) {
+    const H = [init.map(e => e.slice())];
+    let next;
+    for (let g = 1; g <= gens; g++) {
+      const e = evolve(rule, H[H.length - 1], 1, Infinity, next);
+      next = e.next;
+      if (e.length === H[H.length - 1].length && e.every((x, i) => x === H[H.length - 1][i])) break;
+      H.push(e);
+      if (e.length >= maxEdges) break;
+    }
+    return H;
+  }
+
+  // Incrustación por generaciones: cada generación parte de las posiciones de la anterior
+  // (los vértices nuevos nacen junto a sus vecinos), lo que evita nudos y cruces largos.
+  function growLayout(H, opts = {}) {
+    const rnd = mulberry(opts.seed || 7);
+    let pos = new Map();
+    for (let gi = 0; gi < H.length; gi++) {
+      const edges = H[gi];
+      const ids = [], idx = new Map();
+      const v = x => { if (!idx.has(x)) { idx.set(x, ids.length); ids.push(x); } return idx.get(x); };
+      const links = [];
+      edges.forEach(e => { for (let j = 0; j + 1 < e.length; j++) links.push([v(e[j]), v(e[j + 1])]); });
+      const n = ids.length, x = new Float64Array(n), y = new Float64Array(n), known = new Uint8Array(n);
+      ids.forEach((id, i) => { const p = pos.get(id); if (p) { x[i] = p[0]; y[i] = p[1]; known[i] = 1; } });
+      // vértices nuevos: en el promedio de sus vecinos conocidos
+      for (let pass = 0; pass < 4; pass++) {
+        const sx = new Float64Array(n), sy = new Float64Array(n), c = new Uint16Array(n);
+        links.forEach(([a, b]) => { if (known[a] && !known[b]) { sx[b] += x[a]; sy[b] += y[a]; c[b]++; } if (known[b] && !known[a]) { sx[a] += x[b]; sy[a] += y[b]; c[a]++; } });
+        for (let i = 0; i < n; i++) if (!known[i] && c[i]) { x[i] = sx[i] / c[i] + (rnd() - .5) * .3; y[i] = sy[i] / c[i] + (rnd() - .5) * .3; known[i] = 2; }
+      }
+      for (let i = 0; i < n; i++) if (!known[i]) { x[i] = (rnd() - .5); y[i] = (rnd() - .5); }
+      const last = gi === H.length - 1;
+      const p = layout({ n, links }, { x, y, iters: last ? (opts.finalIters || 300) : (opts.iters || 60), step: gi ? .3 : 1 });
+      pos = new Map(ids.map((id, i) => [id, [p.x[i], p.y[i]]]));
+      if (last) return { n, links, x: p.x, y: p.y };
+    }
+  }
+
+  // Grafo a partir de hiperaristas: cada hiperarista {a,b,c} une vértices consecutivos.
+  function toGraph(edges) {
+    const id = new Map(), L = [];
+    const v = x => { if (!id.has(x)) id.set(x, id.size); return id.get(x); };
+    edges.forEach(e => { for (let j = 0; j + 1 < e.length; j++) L.push([v(e[j]), v(e[j + 1])]); if (e.length === 1) v(e[0]); });
+    return { n: id.size, links: L };
+  }
+
+  function layout(g, opts = {}) {
+    const n = g.n, iters = opts.iters || 400, K = 1, C = 0.2, theta = 1.2;
+    const rnd = mulberry(opts.seed || 7);
+    const x = opts.x || new Float64Array(n), y = opts.y || new Float64Array(n);
+    if (!opts.x) for (let i = 0; i < n; i++) { x[i] = (rnd() - .5) * Math.sqrt(n); y[i] = (rnd() - .5) * Math.sqrt(n); }
+    const adj = Array.from({ length: n }, () => []);
+    g.links.forEach(([a, b]) => { if (a !== b) { adj[a].push(b); adj[b].push(a); } });
+    let step = (opts.step || Math.sqrt(n) * 0.5), prog = 0, Eold = Infinity;
+    const fx = new Float64Array(n), fy = new Float64Array(n);
+    for (let it = 0; it < iters; it++) {
+      const tree = quad(x, y, n);
+      let E = 0;
+      for (let i = 0; i < n; i++) {
+        let ax = 0, ay = 0;
+        // repulsión eléctrica  -C K^2 / d
+        const st = [tree];
+        while (st.length) {
+          const nd = st.pop();
+          if (!nd || nd.m === 0) continue;
+          const dx = x[i] - nd.cx, dy = y[i] - nd.cy, d2 = dx * dx + dy * dy;
+          if (nd.leaf !== undefined) {
+            if (nd.leaf === i) continue;
+            if (d2 > 1e-9) { const f = C * K * K / d2 * nd.m; ax += dx * f; ay += dy * f; }
+            else { ax += (rnd() - .5) * .01; ay += (rnd() - .5) * .01; }
+          } else if (nd.s * nd.s < theta * theta * d2) {
+            const f = C * K * K / d2 * nd.m; ax += dx * f; ay += dy * f;
+          } else st.push(...nd.k);
+        }
+        // atracción de resorte  d^2 / K
+        for (const j of adj[i]) {
+          const dx = x[j] - x[i], dy = y[j] - y[i], d = Math.hypot(dx, dy);
+          ax += dx * d / K; ay += dy * d / K;
+        }
+        fx[i] = ax; fy[i] = ay;
+      }
+      for (let i = 0; i < n; i++) {
+        const f = Math.hypot(fx[i], fy[i]) || 1;
+        x[i] += step * fx[i] / f; y[i] += step * fy[i] / f;
+        E += f * f;
+      }
+      // control adaptativo del paso (Hu 2005)
+      if (E < Eold) { if (++prog >= 5) { prog = 0; step /= 0.9; } } else { prog = 0; step *= 0.9; }
+      Eold = E;
+    }
+    return { x, y };
+  }
+
+  function quad(x, y, n) {
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    for (let i = 0; i < n; i++) { x0 = Math.min(x0, x[i]); y0 = Math.min(y0, y[i]); x1 = Math.max(x1, x[i]); y1 = Math.max(y1, y[i]); }
+    const s = Math.max(x1 - x0, y1 - y0) + 1e-6;
+    const root = { x0, y0, s, m: 0, cx: 0, cy: 0 };
+    const ins = (nd, i, depth) => {
+      if (nd.m === 0 && !nd.k) { nd.leaf = i; nd.m = 1; nd.cx = x[i]; nd.cy = y[i]; return; }
+      if (nd.leaf !== undefined) {
+        const j = nd.leaf; delete nd.leaf;
+        nd.k = [0, 1, 2, 3].map(q => ({ x0: nd.x0 + (q & 1) * nd.s / 2, y0: nd.y0 + (q >> 1) * nd.s / 2, s: nd.s / 2, m: 0, cx: 0, cy: 0 }));
+        if (depth < 40) sub(nd, j, depth); else { nd.k[0].m++; }
+      }
+      nd.cx = (nd.cx * nd.m + x[i]) / (nd.m + 1); nd.cy = (nd.cy * nd.m + y[i]) / (nd.m + 1); nd.m++;
+      if (depth < 40) sub(nd, i, depth);
+    };
+    const sub = (nd, i, depth) => {
+      const q = (x[i] >= nd.x0 + nd.s / 2 ? 1 : 0) + (y[i] >= nd.y0 + nd.s / 2 ? 2 : 0);
+      ins(nd.k[q], i, depth + 1);
+    };
+    for (let i = 0; i < n; i++) ins(root, i, 0);
+    return root;
+  }
+
+  function mulberry(a) { return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+
+  return { evolve, history, growLayout, toGraph, layout, mulberry };
+})();
+</script>
+<script>/* Grafo de Wolfram al fondo de las pantallas principales (Inicio, Calendario, Evolución, Configuración) */
+(() => {
+  // Reglas leídas de los iconos de la galería de Wolfram Physics (firma 2₂ → 4₂); cada apertura usa la siguiente
+  const RULES = [
+    [[[1, 2], [2, 3]], [[2, 4], [2, 4], [4, 3], [4, 1]]], // {{x,y},{y,z}} → {{y,w},{y,w},{w,z},{w,x}}
+    [[[2, 1], [3, 1]], [[1, 4], [4, 1], [2, 4], [4, 3]]], // {{y,x},{z,x}} → {{x,w},{w,x},{y,w},{w,z}}
+    [[[1, 2], [1, 3]], [[2, 4], [2, 4], [3, 4], [1, 4]]], // {{x,y},{x,z}} → {{y,w},{y,w},{z,w},{x,w}}
+    [[[2, 1], [3, 1]], [[4, 1], [4, 2], [4, 3], [2, 3]]], // {{y,x},{z,x}} → {{w,x},{w,y},{w,z},{y,z}}
+    [[[1, 3], [2, 3]], [[2, 3], [1, 4], [3, 4], [4, 2]]], // {{x,z},{y,z}} → {{y,z},{x,w},{z,w},{w,y}}
+    [[[1, 2], [2, 3]], [[2, 3], [4, 2], [3, 4], [1, 4]]], // {{x,y},{y,z}} → {{y,z},{w,y},{z,w},{x,w}}
+    [[[1, 3], [2, 3]], [[2, 3], [1, 4], [4, 3], [4, 2]]], // {{x,z},{y,z}} → {{y,z},{x,w},{w,z},{w,y}}
+  ];
+  const INIT = [[0, 0], [0, 0]], GENS = 14, MAX_EDGES = 1000, SIZE = 560, D = 230,
+    COLOR = 'rgba(255,222,128,.32)', LIT = '#ffe08a', LIT_GLOW = 'rgba(255,220,120,.5)';
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  let ruleIx = 0;
+  try { ruleIx = (+localStorage.getItem('home.wg') + 1 || 0) % RULES.length; localStorage.setItem('home.wg', ruleIx); } catch (_) {}
+
+  const cv = document.createElement('canvas');
+  cv.className = 'wg'; cv.setAttribute('aria-hidden', 'true');
+  const ctx = cv.getContext('2d');
+  let N = null, born = 0;
+
+  // Evolución de la regla + incrustación resorte-eléctrica, en un Worker
+  let job = 0;
+  function compute() {
+    const rule = RULES[ruleIx], id = ++job;
+    const prepare = d => { if (id === job) show(d); };
+    const local = () => WG.growLayout(WG.history(rule, INIT, GENS, MAX_EDGES));
+    const src = document.getElementById('wg-src').textContent + `
+      onmessage = e => {
+        const { rule, init, gens, max } = e.data;
+        const g = WG.growLayout(WG.history(rule, init, gens, max));
+        postMessage({ n: g.n, links: g.links, x: g.x, y: g.y });
+      };`;
+    try {
+      const w = new Worker(URL.createObjectURL(new Blob([src], { type: 'text/javascript' })));
+      w.onmessage = e => { w.terminate(); prepare(e.data); };
+      w.onerror = () => { w.terminate(); setTimeout(() => prepare(local()), 30); };
+      w.postMessage({ rule, init: INIT, gens: GENS, max: MAX_EDGES });
+    } catch (_) { setTimeout(() => prepare(local()), 30); }
+  }
+
+  function show(d) {
+    const n = d.n;
+    let x = Float64Array.from(d.x), y = Float64Array.from(d.y);
+    // Eje principal (PCA): un grafo ovalado se gira para quedar acostado
+    let mx = 0, my = 0;
+    for (let i = 0; i < n; i++) { mx += x[i]; my += y[i]; }
+    mx /= n; my /= n;
+    let sxx = 0, syy = 0, sxy = 0;
+    for (let i = 0; i < n; i++) { const u = x[i] - mx, v = y[i] - my; sxx += u * u; syy += v * v; sxy += u * v; }
+    const th = .5 * Math.atan2(2 * sxy, sxx - syy), c = Math.cos(th), si = Math.sin(th);
+    const l1 = (sxx + syy) / 2 + Math.hypot((sxx - syy) / 2, sxy), l2 = (sxx + syy) / 2 - Math.hypot((sxx - syy) / 2, sxy);
+    const oval = Math.sqrt(l1 / Math.max(l2, 1e-9)) > 1.3;
+    if (oval) for (let i = 0; i < n; i++) { const u = x[i] - mx, v = y[i] - my; x[i] = u * c + v * si; y[i] = -u * si + v * c; }
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    for (let i = 0; i < n; i++) { x0 = Math.min(x0, x[i]); x1 = Math.max(x1, x[i]); y0 = Math.min(y0, y[i]); y1 = Math.max(y1, y[i]); }
+    let s, ox, oy;
+    if (oval) {
+      // Ovalado: ocupa el hueco rectangular a la derecha del saludo (se sale un poco por la derecha)
+      s = Math.min(290 / (x1 - x0), 170 / (y1 - y0));
+      const w = (x1 - x0) * s, h = (y1 - y0) * s;
+      // borde izquierdo justo después del saludo; el lienzo empieza 148 px fuera de la pantalla
+      ox = SIZE - 412 + 172; oy = Math.max(8, 100 - h / 2);
+    } else {
+      // Redondo: el lado mayor mide D px, junto al saludo y pegado a la esquina superior derecha
+      s = D / Math.max(x1 - x0, y1 - y0);
+      const w = (x1 - x0) * s, h = (y1 - y0) * s;
+      ox = SIZE - w * .76 - 55; oy = -h * .1 + 25;
+    }
+    const rnd = WG.mulberry(11 + ruleIx);
+    const G = { n, links: d.links, bx: Float32Array.from(x, v => ox + (v - x0) * s), by: Float32Array.from(y, v => oy + (v - y0) * s), lit: [] };
+    // Unos pocos nodos se encienden y apagan despacio, como los días entrenados en Constancia
+    for (let i = 0; i < n; i++) if (rnd() < .07) G.lit.push({ i, p: rnd() * 6.283, f: .45 + rnd() * .5 });
+    N = G; born = performance.now(); base = null;
+  }
+
+  // Capa base (aristas y vértices) pintada una vez; encima, los nodos encendidos
+  let base = null, lastT = 0;
+  function paintBase(dpr) {
+    base = document.createElement('canvas'); base.width = base.height = SIZE * dpr;
+    const b = base.getContext('2d'); b.setTransform(dpr, 0, 0, dpr, 0, 0);
+    b.strokeStyle = b.fillStyle = COLOR; b.lineWidth = .75;
+    b.beginPath();
+    for (const [p, q] of N.links) { b.moveTo(N.bx[p], N.by[p]); b.lineTo(N.bx[q], N.by[q]); }
+    b.stroke();
+    b.beginPath();
+    for (let i = 0; i < N.n; i++) { b.moveTo(N.bx[i] + 1.3, N.by[i]); b.arc(N.bx[i], N.by[i], 1.3, 0, 6.2832); }
+    b.fill();
+  }
+  function frame(now) {
+    requestAnimationFrame(frame);
+    if (!N || document.hidden || !cv.classList.contains('on') || now - lastT < 33) return;
+    lastT = now;
+    const dpr = Math.min(2.5, devicePixelRatio || 1);
+    if (cv.width !== SIZE * dpr) { cv.width = cv.height = SIZE * dpr; base = null; }
+    if (!base) paintBase(dpr);
+    const fade = reduce ? 1 : Math.min(1, (now - born) / 1400), t = reduce ? 0 : now / 1000;
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    ctx.globalAlpha = fade;
+    ctx.drawImage(base, 0, 0);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.fillStyle = LIT; ctx.shadowColor = LIT_GLOW; ctx.shadowBlur = 6;
+    for (const L of N.lit) {
+      // encendido suave: pasa la mitad del ciclo apagado y se ilumina despacio
+      const k = Math.max(0, Math.sin(t * L.f * .5 + L.p)), on = k * k * (3 - 2 * k);
+      if (on < .02) continue;
+      ctx.globalAlpha = fade * on;
+      ctx.beginPath(); ctx.arc(N.bx[L.i], N.by[L.i], 2.6, 0, 6.2832); ctx.fill();
+    }
+    ctx.shadowBlur = 0; ctx.globalAlpha = 1;
+  }
+
+  // Capa fija detrás de la página; visible solo en las pantallas principales
+  document.body.appendChild(cv);
+  // Botón discreto al final del Inicio: pasa a la siguiente regla
+  const next = () => {
+    ruleIx = (ruleIx + 1) % RULES.length;
+    try { localStorage.setItem('home.wg', ruleIx); } catch (_) {}
+    compute();
+  };
+  const MAIN = ['home', 'cal', 'prog', 'set'];
+  const sync = () => {
+    cv.classList.toggle('on', MAIN.includes(document.body.dataset.view));
+    const home = document.querySelector('#app .stg .hhead');
+    if (home && !document.getElementById('wgbtn')) {
+      const b = document.createElement('button');
+      b.id = 'wgbtn'; b.className = 'wgbtn press'; b.type = 'button'; b.textContent = 'Otro grafo';
+      b.addEventListener('click', next);
+      home.parentNode.appendChild(b);
+    }
+  };
+  new MutationObserver(sync).observe(document.getElementById('app'), { childList: true });
+  sync();
+  compute();
+  requestAnimationFrame(frame);
+})();
 </script>
 </body>
 </html>
