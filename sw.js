@@ -1,6 +1,6 @@
 /* Service worker: guarda la app en el teléfono para que funcione sin conexión.
    Al publicar una versión nueva, sube VERSION para que el teléfono la descargue. */
-const VERSION = 'home-v13';
+const VERSION = 'home-v14';
 const FILES = ['./', './index.html', './manifest.json', './icono.svg', './icono-180.png', './icono-192.png', './icono-512.png', './icono-maskable.png', './icono-mono.png'];
 
 self.addEventListener('install', e => {
