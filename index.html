@@ -310,8 +310,8 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.7;stro
 .rest-set.resting.over .srow.cur .ck{border-color:#fff;color:#fff;animation:nudge 1s ease-in-out infinite}
 
 /* Pauta del ejercicio al pie; las series ocupan el centro y se reparten el alto */
-.fbody.ses .sets{flex:1 1 auto;display:flex;flex-direction:column;justify-content:center;margin-top:10px}
-.fbody.ses .sets>.srow:not(.hd){flex:1 1 0;min-height:54px;max-height:84px}
+.fbody.ses .sets{flex:1 1 auto;display:flex;flex-direction:column;justify-content:center;gap:10px;margin-top:10px}
+.fbody.ses .sets>.srow:not(.hd){flex:1 1 0;min-height:54px;max-height:86px}
 .fbody.ses .srow.wr{grid-template-columns:22px minmax(0,1fr) minmax(54px,68px) minmax(46px,58px) minmax(40px,48px) 48px}
 .fbody.ses .srow.reps,.fbody.ses .srow.time{grid-template-columns:22px minmax(0,1fr) 88px 48px}
 .fbody.ses .srow.dist{grid-template-columns:22px minmax(0,1fr) minmax(54px,68px) minmax(54px,68px) 48px}
@@ -324,7 +324,7 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.7;stro
 .xnb svg{width:17px;height:17px;stroke-width:1.7}
 .xnb.has::after{content:"";position:absolute;top:2px;right:5px;width:6px;height:6px;border-radius:50%;background:#fff;box-shadow:0 0 0 2px var(--bg)}
 .fbody.ses.tight .sug{margin-top:8px;padding:7px 12px}
-.fbody.ses.tight .sets{margin-top:6px}
+.fbody.ses.tight .sets{margin-top:6px;gap:4px}
 .fbody.ses.tight .sets>.srow:not(.hd){min-height:44px}
 .fbody.ses.tight .num{height:40px;font-size:16px;border-radius:14px}
 .fbody.ses.tight .ck{width:40px;height:40px}
@@ -436,6 +436,8 @@ textarea.note:focus{border-color:var(--line2)}
 .slist .srowl .grow{flex:1;min-width:0}
 .slist .srowl .t1{font-size:17px;font-weight:600;letter-spacing:-.01em}
 .slist .srowl .t2{font-size:13px;color:var(--muted)}
+.slist .srowl.done .t1{color:var(--muted);font-weight:500}
+.slist .srowl.done .t2{color:var(--dim)}
 .slist .srowl.cur .t1::after{content:" ·  ahora";font-weight:400;color:var(--muted);font-size:13px}
 .slist .stico{width:52px;height:52px}
 .sq{width:48px;height:48px;border-radius:12px;background:var(--s3);border:1px solid var(--line);margin:2px;flex:none;display:grid;place-items:center;color:var(--muted);font-size:14px;font-weight:600}
@@ -1558,7 +1560,7 @@ function sheetSesList() {
       nm = lit(x); sub = x.alt ? `En lugar de ${esc(x.name)}` : `${x.sets.length} × ${rng(x.t.reps)} ${UNIT[x.metric]} · ${BLOCK_NAME[x.blk]}`;
       more = `<button class="icon-btn" data-act="exMenu" data-x="${s.i}" aria-label="Opciones de ${esc(nm)}">${IC.more}</button>`;
     } else { ic = `<span class="sq">${IC.check}</span>`; nm = 'Cierre y notas'; sub = 'Valoración y guardado'; }
-    return `<div class="srowl ${k === d.step ? 'cur' : ''}" role="button" data-act="stepTo" data-k="${k}">${ic}<div class="grow"><div class="t1">${esc(nm)}</div><div class="t2">${sub}</div></div>${more}</div>`;
+    return `<div class="srowl ${k === d.step ? 'cur' : ''} ${s.t !== 'end' && stepDone(d, s) ? 'done' : ''}" role="button" data-act="stepTo" data-k="${k}">${ic}<div class="grow"><div class="t1">${esc(nm)}</div><div class="t2">${sub}</div></div>${more}</div>`;
   }).join('')}
     <div class="srowl" role="button" data-act="addEx"><span class="sq">${IC.plus}</span><div class="grow"><div class="t1">Añadir ejercicios</div></div></div></div>
   <div style="margin-top:10px;border-top:1px solid var(--line)"><button class="opt" data-act="finish">Terminar sesión</button><button class="opt red" data-act="discard">Descartar sesión</button></div>`);
