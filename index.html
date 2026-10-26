@@ -675,6 +675,10 @@ button.ix:active{background:var(--s3)}
 .srow .pv .rmb{font-size:9.5px;padding:2px 7px}
 .rmb.no{background:transparent;color:var(--text);box-shadow:inset 0 0 0 1px rgba(255,255,255,.4)}
 .rmb.try{background:transparent;color:#fff;box-shadow:inset 0 0 0 1px rgba(255,255,255,.7)}
+/* Serie al fallo: marca gris con borde discontinuo, distinta del 1RM (relleno) y del intento (contorno) */
+.rmb.af{background:rgba(255,255,255,.14);color:#fff;box-shadow:inset 0 0 0 1px rgba(255,255,255,.55)}
+.rmb.af.try{background:transparent;box-shadow:none;outline:1px dashed rgba(255,255,255,.7);outline-offset:-1px}
+.srow.af.cur{background:rgba(255,255,255,.1)}
 
 /* Progresión: aviso de descarga en Inicio, semanas del bloque y guía */
 .dlcard{padding:18px;border-radius:var(--r);background:var(--card);border:1px solid var(--line2);margin:0 0 12px}
@@ -1165,8 +1169,9 @@ function suggest(x, prev, dl = inDeload()) {
     return { w, r: Math.min(b, minR + st), dir: 'same', why: `Misma carga: suma ${st} m` };
   }
   // Carga × repeticiones: doble progresión con el RIR como freno o acelerador
-  const rirs = t.work.filter(z => has(z.rir)).map(z => num(z.rir));
-  const fail = rirs.some(v => v < 1), easy = rirs.length === t.work.length && rirs.every(v => v >= 3);
+  // Las series al fallo buscadas cuentan por sus reps, pero su RIR 0 no frena la subida
+  const rw = t.work.filter(z => !z.af), rirs = rw.filter(z => has(z.rir)).map(z => num(z.rir));
+  const fail = rirs.some(v => v < 1), easy = rw.length > 0 && rirs.length === rw.length && rirs.every(v => v >= 3);
   const full = t.work.length >= x.t.sets[0], body = !(inc > 0 && w > 0);
   if (all(b) && full && !fail) {
     const big = all(b + 2) || easy;
@@ -1209,8 +1214,10 @@ function basePlaceholders(x, prev, sug) {
   });
 }
 // Series de un ejercicio en una línea: carga × reps, RIR y la marca de 1RM
-const setsLine = x => x.sets.map(z => setStr(z, x.metric) + (z.max ? ' ' + rmBadge(z) : '') + (has(z.rir) ? ` <span class="dim">@${z.rir}</span>` : '')).join(' · ');
+const setsLine = x => x.sets.map(z => setStr(z, x.metric) + (z.max ? ' ' + rmBadge(z) : z.af ? ' ' + AF_BADGE : '') + (has(z.rir) && !z.af ? ` <span class="dim">@${z.rir}</span>` : '')).join(' · ');
 // 1RM: logrado (relleno) o que quedó en intento (contorno); corto para la columna estrecha de la sesión
+// Serie llevada al fallo a propósito: se guarda con af y RIR 0
+const AF_BADGE = '<b class="rmb af">Fallo</b>';
 const rmBadge = (z, short) => z.fail ? `<b class="rmb no">${short ? 'Intento' : 'Intento de 1RM'}</b>` : '<b class="rmb">1RM</b>';
 const setStr = (z, m) => m === 'wr' ? (z.fail ? `${fmt(num(z.w))} kg` : num(z.w) ? `${fmt(num(z.w))}×${z.r}` : `${z.r} reps`) : m === 'time' ? `${z.r} s` : m === 'dist' ? `${fmt(num(z.w))} kg · ${z.r} m` : `${z.r}`;
 
@@ -1438,7 +1445,7 @@ function vSession() {
       const prev = IDX.last.get(exKey(x)), p = placeholders(x, prev, suggest(x, prev))[ci] || {}, z = x.sets[ci];
       const tgt = { w: has(z.w) ? z.w : p.w, r: has(z.r) ? z.r : p.r };
       const goal = !has(tgt.r) ? '' : x.metric === 'wr' ? (num(tgt.w) ? `${fmt(num(tgt.w))} kg × ${tgt.r}` : `${tgt.r} reps`) : x.metric === 'time' ? `${tgt.r} s` : x.metric === 'dist' ? `${fmt(num(tgt.w))} kg · ${tgt.r} m` : `${tgt.r} reps`;
-      bar = `<div class="grow"><div class="t1">Serie ${ci + 1} de ${x.sets.length}${z.max ? ' · 1RM' : ''}</div><div class="t2">${goal ? esc(goal) + ' · ' : ''}descanso ${fmtDur(restOf(x))}</div></div>
+      bar = `<div class="grow"><div class="t1">Serie ${ci + 1} de ${x.sets.length}${z.max ? ' · 1RM' : z.af ? ' · al fallo' : ''}</div><div class="t2">${z.af ? 'Hasta no poder otra · ' : goal ? esc(goal) + ' · ' : ''}descanso ${fmtDur(restOf(x))}</div></div>
         <button class="btn primary" data-act="toggleSet" data-x="${st.i}" data-s="${ci}">${IC.check.replace('class="i"', 'class="i" style="width:20px;height:20px;stroke-width:2.4"')} Hecha</button>`;
     } else bar = upNext(d.step + 1, `<button class="btn primary" data-act="stepGo" data-d="1">Siguiente →</button>`);
   } else {
@@ -1453,7 +1460,7 @@ function vSession() {
         const dn = x.sets.filter(z => z.done), v = z => x.metric === 'wr' ? e1rm(num(z.w), num(z.r)) : num(z.r);
         if (!dn.length) return `<div class="erow no"><span class="bx"></span><span class="nm">${esc(lit(x))}</span><span class="r">sin marcar</span></div>`;
         const top = dn.reduce((a, z) => v(z) > v(a) ? z : a);
-        return `<div class="erow"><span class="bx">${IC.check}</span><span class="nm">${esc(lit(x))}</span><span class="r">${s.prs.some(p => p.key === exKey(x)) ? '<span class="badge">PR</span> ' : ''}${dn.length} ${dn.length === 1 ? 'serie' : 'series'} · <b>${esc(setStr(top, x.metric) + (x.metric === 'reps' ? ' reps' : ''))}</b>${dn.filter(z => z.max).map(z => ' ' + rmBadge(z)).join('')}</span></div>`;
+        return `<div class="erow"><span class="bx">${IC.check}</span><span class="nm">${esc(lit(x))}</span><span class="r">${s.prs.some(p => p.key === exKey(x)) ? '<span class="badge">PR</span> ' : ''}${dn.length} ${dn.length === 1 ? 'serie' : 'series'} · <b>${esc(setStr(top, x.metric) + (x.metric === 'reps' ? ' reps' : ''))}</b>${dn.filter(z => z.max).map(z => ' ' + rmBadge(z)).join('')}${dn.some(z => z.af) ? ' ' + AF_BADGE : ''}</span></div>`;
       }).join('')}</div>
       <textarea class="note fill" data-snote placeholder="Sensaciones, sueño, molestias…">${esc(d.note)}</textarea>`;
     bar = `<div class="grow"><div class="t1">${s.nSets} series</div><div class="t2">Valora y guarda la sesión</div></div><button class="btn primary" data-act="finish">Guardar</button>`;
@@ -1493,6 +1500,19 @@ function draftStats(d) {
   const prs = doneEx.filter(x => x.metric === 'wr').map(x => ({ name: lit(x), key: exKey(x), now: bestE1(x.sets), before: bestBefore(exKey(x)) })).filter(p => p.before > 0 && p.now > p.before + 0.01);
   return { nSets, total, vol, prs, pending: total - nSets };
 }
+// Tipo de una serie: normal (null), 1RM ('max') o al fallo ('af'); si = -1 añade una serie nueva
+function setKind(xi, si, k) {
+  const x = S.draft.ex[xi];
+  if (si < 0) { x.sets.push({ w: '', r: '', rir: '', done: false }); si = x.sets.length - 1; }
+  const z = x.sets[si];
+  if (k && z[k] && !(k === 'max' && z.af)) k = null; // desde el menú, volver a elegir el mismo tipo lo quita
+  if (z.fail) { delete z.fail; z.r = '1'; }
+  if (z.max && k !== 'max') delete z.max;
+  if (z.af && k !== 'af') { delete z.af; if (!z.done && z.rir === '0') z.rir = ''; }
+  if (k) z[k] = true;
+  save(); closeSheet(); rerender();
+  toast(k === 'max' ? `Serie ${si + 1}: 1RM` : k === 'af' ? `Serie ${si + 1}: al fallo` : `Serie ${si + 1} vuelve a ser normal`);
+}
 function toggleSet(xi, si, res) {
   const d = S.draft, x = d.ex[xi], z = x.sets[si];
   if (z.done) { z.done = false; if (z.fail) { delete z.fail; z.r = '1'; } save(); rerender(); return; }
@@ -1503,6 +1523,7 @@ function toggleSet(xi, si, res) {
   if (z.max && !(num(z.w) > 0)) { toast('Introduce la carga del 1RM'); return; }
   if (z.max && res == null) { sheetMaxRes(xi, si); return; }
   if (z.max && !res) { z.fail = true; z.r = '0'; }
+  if (z.af) z.rir = '0';
   z.done = true; ui.justSet = `${xi}-${si}`;
   if (navigator.vibrate && S.settings.vibrate) navigator.vibrate(18);
   const nextIdx = x.sets.findIndex(s => !s.done);
@@ -1557,7 +1578,7 @@ function saveSession() {
   const rec = {
     id: d.id, dayId: d.dayId, dayName: day.name || 'Sesión', short: day.short || '', date: d.date, start: st, end: en,
     rating: d.rating || 0, note: (d.note || '').trim(), ...(d.deload ? { deload: true } : {}),
-    ex: d.ex.map(x => ({ name: x.name, ...(x.alt ? { alt: x.alt } : {}), metric: x.metric, basic: x.basic, side: x.side, blk: x.blk, t: x.t, note: (x.note || '').trim(), sets: x.sets.filter(z => z.done).map(z => ({ w: z.w, r: z.r, rir: z.rir, ...(z.max ? { max: true } : {}), ...(z.fail ? { fail: true } : {}) })) })).filter(x => x.sets.length),
+    ex: d.ex.map(x => ({ name: x.name, ...(x.alt ? { alt: x.alt } : {}), metric: x.metric, basic: x.basic, side: x.side, blk: x.blk, t: x.t, note: (x.note || '').trim(), sets: x.sets.filter(z => z.done).map(z => ({ w: z.w, r: z.r, rir: z.rir, ...(z.max ? { max: true } : {}), ...(z.fail ? { fail: true } : {}), ...(z.af ? { af: true } : {}) })) })).filter(x => x.sets.length),
   };
   if (!rec.ex.length) { toast('Marca al menos una serie'); return; }
   // Reemplazos que no estaban en Ajustes: quedan como propuesta para añadirlos
@@ -1576,7 +1597,8 @@ function sheetExMenu(xi) {
     <div class="optl">
       <button class="opt" data-act="exMove" data-x="${xi}" data-d="-1"><span class="ic">${IC.up}</span>Mover antes</button>
       <button class="opt" data-act="exMove" data-x="${xi}" data-d="1"><span class="ic">${IC.down}</span>Mover después</button>
-      ${x.metric === 'wr' ? `<button class="opt" data-act="setMax" data-x="${xi}" data-s="${ci < 0 ? -1 : ci}"><span class="ic">${IC.rm}</span><span class="grow">${ci >= 0 && x.sets[ci].max ? `Quitar 1RM de la serie ${ci + 1}` : ci >= 0 ? `Serie ${ci + 1} como 1RM` : 'Añadir serie de 1RM'}<small>También puedes tocar el número de una serie</small></span></button>` : ''}
+      ${x.metric === 'wr' ? `<button class="opt" data-act="setMax" data-x="${xi}" data-s="${ci < 0 ? -1 : ci}"><span class="ic">${IC.rm}</span><span class="grow">${ci >= 0 && x.sets[ci].max ? `Quitar 1RM de la serie ${ci + 1}` : ci >= 0 ? `Serie ${ci + 1} como 1RM` : 'Añadir serie de 1RM'}<small>También puedes tocar el número de una serie</small></span></button>
+      <button class="opt" data-act="setAf" data-x="${xi}" data-s="${ci < 0 ? -1 : ci}"><span class="ic">${IC.flame}</span><span class="grow">${ci >= 0 && x.sets[ci].af ? `Quitar «al fallo» de la serie ${ci + 1}` : ci >= 0 ? `Serie ${ci + 1} al fallo` : 'Añadir serie al fallo'}<small>Se guarda con RIR 0 y una marca propia</small></span></button>` : ''}
       <button class="opt red" data-act="exRemove" data-x="${xi}"><span class="ic">${IC.trash}</span>Quitar de esta sesión</button>
     </div>`);
 }
@@ -1696,12 +1718,12 @@ function stepExercise(x, xi) {
     : `<input class="num" type="text" inputmode="decimal" autocomplete="off" data-x="${xi}" data-s="${si}" data-f="${f}" value="${esc(val)}" placeholder="${esc(p ?? '')}">`;
   const rows = x.sets.map((z, si) => {
     const p = ph[si] || {}, pv = prev && prev.sets[si] ? setStr(prev.sets[si], m) : '—';
-    const cells = m === 'wr' ? inp(si, 'w', z.w, p.w) + inp(si, 'r', z.r, p.r) + inp(si, 'rir', z.rir, '–')
+    const cells = m === 'wr' ? inp(si, 'w', z.w, p.w) + inp(si, 'r', z.r, p.r) + (z.af ? '<span class="num ro">0</span>' : inp(si, 'rir', z.rir, '–'))
       : m === 'dist' ? inp(si, 'w', z.w, p.w) + inp(si, 'r', z.r, p.r)
       : inp(si, 'r', z.r, p.r);
     const cls = z.done ? 'done' + (ui.justSet === `${xi}-${si}` ? ' just' : '') : si === ci ? 'cur' : 'fut';
-    const ix = m === 'wr' ? `<button class="ix" data-act="setMax" data-x="${xi}" data-s="${si}" aria-label="Marcar serie ${si + 1} como 1RM">${si + 1}</button>` : `<span class="ix">${si + 1}</span>`;
-    return `<div class="srow ${m} ${cls} ${z.max ? 'max' : ''} ${z.fail ? 'fail' : ''}">${ix}<span class="pv">${!z.max ? esc(pv) : z.done ? rmBadge(z, 1) : '<b class="rmb try">1RM</b>'}</span>${cells}<button class="ck" data-act="toggleSet" data-x="${xi}" data-s="${si}" aria-label="Completar serie">${IC.check}${si === ci ? RING : ''}</button></div>`;
+    const ix = m === 'wr' ? `<button class="ix" data-act="setMode" data-x="${xi}" data-s="${si}" aria-label="Cambiar el tipo de la serie ${si + 1}: 1RM o al fallo">${si + 1}</button>` : `<span class="ix">${si + 1}</span>`;
+    return `<div class="srow ${m} ${cls} ${z.max ? 'max' : ''} ${z.fail ? 'fail' : ''} ${z.af ? 'af' : ''}">${ix}<span class="pv">${z.af ? (z.done ? AF_BADGE : '<b class="rmb af try">Al fallo</b>') : !z.max ? esc(pv) : z.done ? rmBadge(z, 1) : '<b class="rmb try">1RM</b>'}</span>${cells}<button class="ck" data-act="toggleSet" data-x="${xi}" data-s="${si}" aria-label="Completar serie">${IC.check}${si === ci ? RING : ''}</button></div>`;
   }).join('');
   ui.justSet = null;
   const sugHtml = sug ? `<div class="sug ${sug.dir}"><span class="arr">${SUG_ARR[sug.dir]}</span><div><b>${esc(sugText(sug, m))}</b> <span class="w">sugerido</span><div class="w">${esc(sug.why)}</div></div></div>`
@@ -2148,7 +2170,8 @@ const GUIDE = [
     <li><b>↓ Baja ~5 %</b> si alguna serie quedó 2 o más repeticiones por debajo de a. Según Epley, <code>1RM ≈ w·(1 + r/30)</code>: cada repetición vale ~3 % del 1RM, así que faltar 2 equivale a un exceso de 5–7 %.</li></ul>
     <p>Δ por defecto: +5 kg en sentadilla, peso muerto y prensa; +2,5 kg en press y remos; 1–2 kg en aislamiento. Son saltos del 2–10 % de la carga, el rango del ACSM (2009). Puedes cambiarlos al editar el día. La carga sugerida aparece en cada serie: si escribes otra, las siguientes series siguen la tuya.</p>`],
   ['2 · Esfuerzo: RIR 1–2', `<p><b>RIR</b> (repeticiones en reserva) es cuántas más podrías haber hecho con buena técnica (escala de Zourdos 2016 y Helms 2016). El objetivo es terminar cada serie con <b>1–2 en reserva</b>: nunca al fallo, como pide PHUL. Acercarse al fallo favorece la hipertrofia, pero la fuerza mejora igual con algo de margen (Robinson 2024).</p>
-    <p>Anota el RIR cuando puedas: con él la app decide si subes uno o dos saltos, o si repites. Sin RIR, decide solo con las repeticiones.</p>`],
+    <p>Anota el RIR cuando puedas: con él la app decide si subes uno o dos saltos, o si repites. Sin RIR, decide solo con las repeticiones.</p>
+    <p><b>Serie al fallo:</b> toca dos veces el número de una serie (o usa ⋯) para hacerla hasta no poder otra con buena técnica. Se guarda con RIR 0 y la marca <b>Fallo</b>. Sus repeticiones cuentan para la progresión, pero ese RIR 0 no frena la subida, porque fue buscado. Úsala con moderación, mejor en la última serie de un ejercicio de aislamiento: ir al fallo no da más hipertrofia que quedarse a 1–2 reps (Refalo 2023).</p>`],
   ['3 · Series por bloque', `<p>El entrenamiento va por <b>bloques</b> de 6 semanas (4–8, se elige en Ajustes) seguidos de una semana de descarga. En el <b>primer bloque</b> cada ejercicio empieza con el mínimo de su rango de series, porque PHUL pide empezar con poco volumen. <b>Desde el segundo</b>, con el máximo: más series semanales producen más hipertrofia, aunque no más fuerza (Schoenfeld 2017, 2019). Con la rutina completa, los músculos grandes reciben unas 10–20 series semanales. Puedes desactivarlo en Ajustes y siempre puedes añadir o quitar series en la sesión.</p>`],
   ['4 · Estancamiento', `<p>Un ejercicio está <b>estancado</b> cuando haces 3 sesiones seguidas con la misma carga sin sumar repeticiones. Entonces la app propone <b>bajar un 10 % y volver a subir</b>. Si se estancan <b>dos básicos</b> a la vez, en Inicio te propone adelantar la descarga: el estancamiento es uno de los motivos más usados por los entrenadores para descargar (Rogerson 2024). Si se repite en bloques seguidos, revisa sueño y comida antes que la rutina.</p>`],
   ['5 · Descargas', `<p>Al terminar el bloque, Inicio te ofrece una <b>semana de descarga</b>: 7 días con <b>la mitad de las series</b>, <b>~10 % menos de carga</b> y <b>RIR ≥ 3</b>. Sirve para disipar la fatiga física y mental y llegar mejor al bloque siguiente (definición del consenso Delphi de Bell 2023). Los entrenadores descargan de media cada 5–6 semanas, unos 7 días, y sobre todo reducen series y esfuerzo (Rogerson 2024). Una semana así no hace perder músculo (Coleman 2024).</p>
@@ -2172,6 +2195,7 @@ const GUIDE = [
     <li>Zourdos MC et al. (2016). Novel resistance training–specific RPE scale measuring repetitions in reserve. <span class="jr">J Strength Cond Res</span> 30(1):267–275.</li>
     <li>Helms ER et al. (2016). Application of the repetitions in reserve-based RPE scale for resistance training. <span class="jr">Strength Cond J</span> 38(4):42–49.</li>
     <li>Robinson ZP et al. (2024). Exploring the dose–response relationship between estimated resistance training proximity to failure, strength gain, and muscle hypertrophy. <span class="jr">Sports Med</span> 54(9):2209–2231.</li>
+    <li>Refalo MC, Helms ER, Trexler ET, Hamilton DL, Fyfe JJ (2023). Influence of resistance training proximity-to-failure on skeletal muscle hypertrophy: a systematic review with meta-analysis. <span class="jr">Sports Med</span> 53(3):649–665.</li>
     <li>Bell L et al. (2023). Integrating deloading into strength and physique sports training programmes: an international Delphi consensus. <span class="jr">Sports Med Open</span> 9:87.</li>
     <li>Rogerson D et al. (2024). Deloading practices in strength and physique sports: a cross-sectional survey. <span class="jr">Sports Med Open</span> 10:26.</li>
     <li>Coleman M et al. (2024). Gaining more from doing less? The effects of a one-week deload period during supervised resistance training. <span class="jr">PeerJ</span> 12:e16777.</li>
@@ -2535,12 +2559,10 @@ const A = {
     <div class="muted" style="font-size:12.5px;margin-top:12px">Suena y vibra al cambiar de fase. Con la pantalla bloqueada el teléfono puede silenciar el aviso, por eso la pantalla se mantiene encendida.${num(S.settings.fcmax) ? '' : ' Añade tu FC máxima en Ajustes para ver las pulsaciones objetivo.'}</div>`),
   exMenu: el => sheetExMenu(+el.dataset.x),
   maxRes: el => { closeSheet(); toggleSet(+el.dataset.x, +el.dataset.s, el.dataset.ok === '1'); },
-  setMax: el => {
-    const x = S.draft.ex[+el.dataset.x]; let si = +el.dataset.s;
-    if (si < 0) { x.sets.push({ w: '', r: '', rir: '', done: false }); si = x.sets.length - 1; }
-    const z = x.sets[si]; z.max = !z.max; if (!z.max) { delete z.max; if (z.fail) { delete z.fail; z.r = '1'; } }
-    save(); closeSheet(); rerender(); toast(z.max ? `Serie ${si + 1}: 1RM` : `Serie ${si + 1} vuelve a ser normal`);
-  },
+  setMax: el => setKind(+el.dataset.x, +el.dataset.s, 'max'),
+  setAf: el => setKind(+el.dataset.x, +el.dataset.s, 'af'),
+  // Tocar el número de la serie: normal → 1RM → al fallo → normal
+  setMode: el => { const z = S.draft.ex[+el.dataset.x].sets[+el.dataset.s]; setKind(+el.dataset.x, +el.dataset.s, z.max ? 'af' : z.af ? null : 'max'); },
   swapMenu: el => sheetSwap(+el.dataset.x),
   swapTo: el => swapTo(+el.dataset.x, el.dataset.name, el.dataset.kind),
   swapCustom: el => swapTo(+el.dataset.x, $('#swapName').value, $('#swapKind').dataset.k),
