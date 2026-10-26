@@ -639,6 +639,8 @@ code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;color:#fff
 .optl.altl .icon-btn.sm{flex:none;color:var(--muted)}
 .ctype.k2{grid-template-columns:1fr 1fr}
 .ctype.k2 button{height:40px}
+.ctype.k3{grid-template-columns:repeat(3,1fr)}
+.ctype.k3 button{height:40px}
 .xswap.on{background:#f3f3f1;color:#0a0a0b;border-color:transparent}
 .alt-of{display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:1px}
 .altsug{padding:14px 0;border-bottom:1px solid var(--line)}
@@ -1407,7 +1409,8 @@ function startSession(dayId, past) {
   const mk = (e, blk) => ({
     key: uid(), rid: e.id, name: e.name, metric: e.metric, basic: !!e.basic, side: !!e.side, blk,
     t: { sets: e.sets, reps: e.reps, inc: e.inc ?? 2.5, rest: e.rest || 0 },
-    sets: Array.from({ length: plannedSets(e, dl) }, () => ({ w: '', r: '', rir: '', done: false })),
+    sets: Array.from({ length: plannedSets(e, dl) }, (_, i, n = plannedSets(e, dl)) => ({ w: '', r: '', rir: '', done: false,
+      ...(!dl && e.metric === 'wr' && e.special && SP_KIND[e.special.k] && i === (e.special.at === 'first' ? 0 : n - 1) ? { [e.special.k]: true } : {}) })),
     note: '',
   });
   S.draft = {
@@ -2233,7 +2236,7 @@ function vEditDay() {
     <div class="pair"><label class="field"><span>Código</span><input class="inp" data-dayf="short" maxlength="3" value="${esc(d.short)}"></label><label class="field"><span>Día sugerido</span><input class="inp" data-dayf="weekday" value="${esc(d.weekday)}"></label></div>
     <div class="pair"><label class="field"><span>Zona</span>${sel('zone', ['Torso', 'Pierna', 'Cuerpo completo', 'Otro'])}</label><label class="field"><span>Tipo</span>${sel('kind', ['Potencia', 'Hipertrofia', 'Fuerza', 'Otro'])}</label></div>
   </div>
-  ${BLOCKS.map(([b, n]) => `<h3>${n}</h3><div class="card" style="padding:2px 16px">${d[b].map((e, i, l) => `<div class="list-item" role="button" data-act="editEx" data-b="${b}" data-i="${i}"><div class="grow"><div class="t1">${esc(e.name)}${e.basic ? '<span class="tag">Básico</span>' : ''}</div><div class="t2">${rng(e.sets)} × ${rng(e.reps)} ${UNIT[e.metric]}${e.side ? ' por lado' : ''}${e.metric === 'wr' || e.metric === 'dist' ? ` · +${fmt(e.inc)} kg` : ''} · ${fmtDur(e.rest || DEFAULT_REST[b])}</div></div>${arrows('moveEx', `data-b="${b}"`, i, l.length)}</div>`).join('') || '<div class="empty">Sin ejercicios</div>'}
+  ${BLOCKS.map(([b, n]) => `<h3>${n}</h3><div class="card" style="padding:2px 16px">${d[b].map((e, i, l) => `<div class="list-item" role="button" data-act="editEx" data-b="${b}" data-i="${i}"><div class="grow"><div class="t1">${esc(e.name)}${e.basic ? '<span class="tag">Básico</span>' : ''}${e.metric === 'wr' && e.special && SP_KIND[e.special.k] ? `<span class="tag" title="${e.special.at === 'first' ? 'Primera' : 'Última'} serie">${SP_KIND[e.special.k]}</span>` : ''}</div><div class="t2">${rng(e.sets)} × ${rng(e.reps)} ${UNIT[e.metric]}${e.side ? ' por lado' : ''}${e.metric === 'wr' || e.metric === 'dist' ? ` · +${fmt(e.inc)} kg` : ''} · ${fmtDur(e.rest || DEFAULT_REST[b])}</div></div>${arrows('moveEx', `data-b="${b}"`, i, l.length)}</div>`).join('') || '<div class="empty">Sin ejercicios</div>'}
     <button class="list-item" data-act="editEx" data-b="${b}" data-i="-1"><span>${IC.plus}</span><span class="grow" style="font-weight:600">Añadir ejercicio</span></button></div>`).join('')}
   <div class="muted" style="font-size:12.5px;margin-top:12px">Toca un ejercicio para editar su pauta y sus reemplazos. Las flechas cambian el orden de los ejercicios. Los cambios aplican a las próximas sesiones; el historial se agrupa por nombre del ejercicio.</div>
   <button class="btn danger block" style="margin-top:22px" data-act="delDay" data-day="${d.id}">${IC.trash} Eliminar este día</button></div>`;
@@ -2271,16 +2274,24 @@ function altAddFromForm() {
   ui.altEdit = ui.altEdit.filter(a => a.name.toLowerCase() !== name.toLowerCase()); ui.altEdit.push({ name, kind });
   inp.value = ''; $('#fAlts').innerHTML = altRows(); return true;
 }
+// Serie especial de un ejercicio de la rutina: { k: 'max' | 'af', at: 'first' | 'last' }
+const SP_KIND = { '': 'Ninguna', max: '1RM', af: 'Fallo' };
+const SP_AT = { first: 'Primera serie', last: 'Última serie' };
+const pick = (id, opts, on) => `<div class="ctype k${Object.keys(opts).length}" id="${id}" data-k="${on}">${Object.entries(opts).map(([k, l]) => `<button class="${k === on ? 'on' : ''}" data-act="kindPick" data-k="${k}">${l}</button>`).join('')}</div>`;
 function sheetEditEx(b, i) {
   const d = S.routine.days[ui.editDay];
   const e = i >= 0 ? d[b][i] : E(uid(), '', [3, 3], [8, 12], { metric: b === 'main' ? 'wr' : 'reps' });
   ui.altEdit = clone(normAlts(e.alts));
   openSheet(`<div class="eyebrow gold">${BLOCK_NAME[b]}</div><h2 style="margin:6px 0 0">${i >= 0 ? 'Editar ejercicio' : 'Nuevo ejercicio'}</h2>
     <label class="field"><span>Nombre</span><input class="inp" id="fName" value="${esc(e.name)}" placeholder="Nombre"></label>
-    <label class="field"><span>Registro</span><select class="inp" id="fMetric">${Object.entries(METRIC_NAME).map(([k, v]) => `<option value="${k}" ${e.metric === k ? 'selected' : ''}>${v}</option>`).join('')}</select></label>
+    <label class="field"><span>Registro</span><select class="inp" id="fMetric" onchange="$('#fSpWrap').style.display = this.value === 'wr' ? '' : 'none'">${Object.entries(METRIC_NAME).map(([k, v]) => `<option value="${k}" ${e.metric === k ? 'selected' : ''}>${v}</option>`).join('')}</select></label>
     <div class="pair"><label class="field"><span>Series mín.</span><input class="inp" id="fS0" inputmode="numeric" value="${e.sets[0]}"></label><label class="field"><span>Series máx.</span><input class="inp" id="fS1" inputmode="numeric" value="${e.sets[1]}"></label></div>
     <div class="pair"><label class="field"><span>Rango mín. (a)</span><input class="inp" id="fR0" inputmode="numeric" value="${e.reps[0]}"></label><label class="field"><span>Rango máx. (b)</span><input class="inp" id="fR1" inputmode="numeric" value="${e.reps[1]}"></label></div>
     <div class="pair"><label class="field"><span>Incremento kg</span><input class="inp" id="fInc" inputmode="decimal" value="${e.inc}"></label><label class="field"><span>Descanso (s)</span><input class="inp" id="fRest" inputmode="numeric" value="${e.rest || DEFAULT_REST[b]}"></label></div>
+    <div class="field" id="fSpWrap" style="${e.metric === 'wr' ? '' : 'display:none'}"><span>Serie especial</span>
+      ${pick('fSp', SP_KIND, e.special?.k || '')}
+      <div style="margin-top:6px">${pick('fSpAt', SP_AT, e.special?.at || 'last')}</div>
+      <small class="dim" style="display:block;margin-top:6px;font-size:12px">Cada sesión empieza con esa serie marcada. En la descarga no se aplica.</small></div>
     <div class="field"><span>Reemplazos</span></div>
     <div class="optl altl" id="fAlts">${altRows()}</div>
     <input class="inp" id="fAltName" placeholder="Añadir reemplazo" autocomplete="off" style="margin-top:10px">
@@ -2633,6 +2644,7 @@ const A = {
     if (s1 < s0) [s0, s1] = [s1, s0]; if (r1 < r0) [r0, r1] = [r1, r0];
     const base = i >= 0 ? d[b][i] : { id: uid() };
     const e = { ...base, name, metric: $('#fMetric').value, sets: [s0, s1], reps: [r0, r1], inc: Math.max(0, num($('#fInc').value)), rest: Math.max(0, parseInt($('#fRest').value) || 0), alts: (altAddFromForm(), clone(ui.altEdit)), basic: $('#fBasic').classList.contains('on'), side: $('#fSide').classList.contains('on') };
+    const sp = $('#fSp').dataset.k; if (sp && e.metric === 'wr') e.special = { k: sp, at: $('#fSpAt').dataset.k || 'last' }; else delete e.special;
     if (i >= 0) d[b][i] = e; else d[b].push(e);
     save(); closeSheet(); rerender(); toast('Rutina actualizada');
   },
