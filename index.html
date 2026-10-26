@@ -1723,7 +1723,7 @@ function stepExercise(x, xi) {
       : inp(si, 'r', z.r, p.r);
     const cls = z.done ? 'done' + (ui.justSet === `${xi}-${si}` ? ' just' : '') : si === ci ? 'cur' : 'fut';
     const ix = m === 'wr' ? `<button class="ix" data-act="setMode" data-x="${xi}" data-s="${si}" aria-label="Cambiar el tipo de la serie ${si + 1}: 1RM o al fallo">${si + 1}</button>` : `<span class="ix">${si + 1}</span>`;
-    return `<div class="srow ${m} ${cls} ${z.max ? 'max' : ''} ${z.fail ? 'fail' : ''} ${z.af ? 'af' : ''}">${ix}<span class="pv">${z.af ? (z.done ? AF_BADGE : '<b class="rmb af try">Al fallo</b>') : !z.max ? esc(pv) : z.done ? rmBadge(z, 1) : '<b class="rmb try">1RM</b>'}</span>${cells}<button class="ck" data-act="toggleSet" data-x="${xi}" data-s="${si}" aria-label="Completar serie">${IC.check}${si === ci ? RING : ''}</button></div>`;
+    return `<div class="srow ${m} ${cls} ${z.max ? 'max' : ''} ${z.fail ? 'fail' : ''} ${z.af ? 'af' : ''}">${ix}<span class="pv">${z.af ? (z.done ? AF_BADGE : '<b class="rmb af try">Fallo</b>') : !z.max ? esc(pv) : z.done ? rmBadge(z, 1) : '<b class="rmb try">1RM</b>'}</span>${cells}<button class="ck" data-act="toggleSet" data-x="${xi}" data-s="${si}" aria-label="Completar serie">${IC.check}${si === ci ? RING : ''}</button></div>`;
   }).join('');
   ui.justSet = null;
   const sugHtml = sug ? `<div class="sug ${sug.dir}"><span class="arr">${SUG_ARR[sug.dir]}</span><div><b>${esc(sugText(sug, m))}</b> <span class="w">sugerido</span><div class="w">${esc(sug.why)}</div></div></div>`
