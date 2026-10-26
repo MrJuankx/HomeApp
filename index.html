@@ -228,12 +228,13 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.7;stro
 .focus{position:fixed;inset:0;z-index:2;display:flex;flex-direction:column;max-width:560px;margin:0 auto;padding:calc(var(--st) + 10px) 18px 0}
 .fhead{display:flex;align-items:center;gap:10px}
 .fhead .sp{flex:1}
-.clock{margin-top:14px}
+.clock{margin-top:28px}
 .clock .tm{font-size:64px;font-weight:600;letter-spacing:-.05em;line-height:1;font-variant-numeric:tabular-nums;transition:color .3s}
 .clock .sub{font-size:14px;color:var(--muted);margin-top:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .clock .sub b{color:var(--text);font-weight:600}
 .clock .sub span.lb{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:1}
 .dots{display:flex;gap:4px;margin:14px 0 0}
+.focus .dots{margin-top:30px}
 .dots>i{flex:1;height:3px;border-radius:3px;background:rgba(255,255,255,.12);transition:background .4s}
 .dots>i.d{background:rgba(255,255,255,.55)}
 .dots>i.c{background:#fff}
@@ -247,10 +248,15 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.7;stro
 .fhead .ftm{flex:1;min-width:0;text-align:center;font-size:12.5px;font-weight:600;letter-spacing:.16em;color:var(--muted);line-height:1;font-variant-numeric:tabular-nums;white-space:nowrap}
 
 /* Cabecera del paso: bloque y botones en una fila fina; el nombre a todo lo ancho y la pauta pequeña a su derecha */
-.chead .xhead{display:block}
+.chead .xhead{display:block;padding-left:8px}
 .xeb{display:flex;align-items:center;gap:8px;min-height:30px}
 .step .xeb .blk{flex:1;min-width:0;font-size:10.5px;letter-spacing:.16em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.xrow{display:flex;align-items:center;gap:14px;margin-top:2px}
+.xrow{display:flex;align-items:center;gap:14px;margin-top:12px}
+/* Círculo antes del nombre: el arco avanza con las series hechas; dentro, el rango de reps y el RIR */
+.xr .n{display:flex;flex-direction:column;align-items:center;line-height:1;text-align:center}
+.xr .n b{font-size:16px;font-weight:600;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.xr .n small{font-size:9px;font-weight:600;letter-spacing:.06em;color:var(--muted);margin-top:4px;white-space:nowrap}
+.xr .n small i{font-style:normal;color:var(--text)}
 .xrow.bl{align-items:baseline;gap:12px}
 .clock .chead .xn{flex:1;min-width:0;font-size:30px;line-height:1.04;margin:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .clock .chead .xn.long{font-size:25px}
@@ -308,6 +314,10 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.7;stro
 
 /* Pauta del ejercicio al pie; las series ocupan el centro y se reparten el alto */
 .fbody.ses .sets{flex:1 1 auto;display:flex;flex-direction:column;justify-content:center;gap:10px;margin-top:10px}
+.fbody.ses .sug~.sets{justify-content:flex-start}
+.fbody.ses .sug~.sets::before{content:"";flex:.5 1 0;max-height:12px}
+.fbody.ses>.st-ex>.sug{margin-top:22px}
+.fbody.ses .sug~.sets::after{content:"";flex:1 1 0}
 .fbody.ses .sets>.srow:not(.hd){flex:1 1 0;min-height:54px;max-height:86px}
 .fbody.ses .srow.wr{grid-template-columns:22px minmax(0,1fr) minmax(54px,68px) minmax(46px,58px) minmax(40px,48px) 48px}
 .fbody.ses .srow.reps,.fbody.ses .srow.time{grid-template-columns:22px minmax(0,1fr) 88px 48px}
@@ -601,7 +611,7 @@ code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;color:#fff
 /* Pantallas bajas o estrechas: la sesión cabe sin deslizar */
 @media (max-height:740px){
   .clock .tm{font-size:52px}
-  .clock{margin-top:8px}
+  .clock{margin-top:18px}
   .step .xn{font-size:26px}
   .clock .chead .xn{font-size:27px}
   .sug{margin-top:10px;padding:8px 12px}
@@ -739,6 +749,7 @@ const DEF_ALTS = {
   'Aperturas con mancuernas': alt3('Aperturas en máquina', 'Aperturas con banda', 'Cruce de poleas'),
   'Remo sentado en polea': alt3('Remo en máquina con pecho apoyado', 'Remo con banda', 'Remo en barra T'),
   'Remo a una mano con mancuerna': alt3('Remo con pecho apoyado en banco inclinado', 'Remo invertido', 'Remo a una mano en polea'),
+  'Aperturas inversas en máquina': alt3('Pájaros con pecho apoyado en banco inclinado', 'Pájaros con mancuernas', 'Aperturas inversas en polea'),
   'Elevaciones laterales': alt3('Elevaciones laterales sentado', 'Elevaciones laterales con banda', 'Elevaciones laterales en máquina'),
   'Curl inclinado con mancuernas': alt3('Curl sentado con mancuernas', 'Curl con banda', 'Curl en polea baja'),
   'Extensión de tríceps en polea': alt3('Patada de tríceps con mancuerna', 'Extensión de tríceps por encima de la cabeza con mancuerna', 'Fondos en máquina'),
@@ -765,8 +776,13 @@ const ALT_V2 = {
 const OLD_ALTS = new Set(['Remo Pendlay', 'Dominadas', 'Curl con barra Z', 'Extensión de tríceps en polea', 'Peso muerto rumano', 'Curl nórdico', 'Gemelos en prensa', 'Flexiones pliométricas', 'Sentadilla goblet', 'Curl femoral']);
 const E = (id, name, sets, reps, o = {}) => ({ id, name, sets, reps, metric: 'wr', basic: false, inc: 2.5, rest: 0, side: false, alts: clone(DEF_ALTS[name] || []), ...o });
 
+// Deltoides posterior en los dos días de torso: el contractor inverso lo activa mucho más que remos y jalones (Botton 2013; Franke 2015)
+const REAR = id => E(id, 'Aperturas inversas en máquina', [2, 3], [10, 15], { inc: 2, rest: 90 });
+// Tras este ejercicio va el deltoide posterior al añadirlo a una rutina guardada
+const REAR_AFTER = { tp: 'Press militar', th: 'Elevaciones laterales' };
 const DEFAULT_ROUTINE = {
   altsV: 2,
+  rearV: 1,
   order: ['tp', 'pp', 'th', 'ph'],
   days: {
     tp: { id: 'tp', name: 'Torso potencia', short: 'TP', zone: 'Torso', kind: 'Potencia', weekday: 'Lunes',
@@ -780,6 +796,7 @@ const DEFAULT_ROUTINE = {
         E('tp3', 'Remo inclinado con barra', [3, 4], [3, 5], { basic: true, rest: 180 }),
         E('tp4', 'Jalón al pecho', [3, 4], [6, 10], { rest: 120 }),
         E('tp5', 'Press militar', [2, 3], [5, 8], { rest: 150 }),
+        REAR('tp8'),
         E('tp6', 'Curl con barra', [2, 3], [6, 10], { inc: 1, rest: 90 }),
         E('tp7', 'Press francés', [2, 3], [6, 10], { inc: 1, rest: 90 }),
       ],
@@ -804,6 +821,7 @@ const DEFAULT_ROUTINE = {
         E('th3', 'Remo sentado en polea', [3, 4], [8, 12], { rest: 120 }),
         E('th4', 'Remo a una mano con mancuerna', [3, 4], [8, 12], { inc: 2, rest: 90 }),
         E('th5', 'Elevaciones laterales', [3, 4], [8, 12], { inc: 1, rest: 90 }),
+        REAR('th8'),
         E('th6', 'Curl inclinado con mancuernas', [3, 4], [8, 12], { inc: 1, rest: 90 }),
         E('th7', 'Extensión de tríceps en polea', [3, 4], [8, 12], { rest: 90 }),
       ],
@@ -827,15 +845,29 @@ const DEFAULT_ROUTINE = {
   },
 };
 
-const WARMUP = [
-  'Bici o remo suave · 2–3 min',
-  'Cuerda · 2 × 1 min',
-  'Balanceos de pierna · 10 por lado',
-  'Rotaciones torácicas en cuadrupedia · 8 por lado',
-  'Sentadilla profunda con pausa · 2 × 5',
-  'Rotaciones externas con banda · 15',
-  'Series de aproximación · 40 / 60 / 80 %',
-];
+// Calentamiento general y luego específico de la zona del día, con series de aproximación al final (Fradkin 2010; McCrary 2015)
+const WARMUP = {
+  Torso: [
+    'Remo o bici de brazos suave · 2–3 min',
+    'Rotaciones torácicas en cuadrupedia · 8 por lado',
+    'Pase de hombros con banda o palo · 10',
+    'Separaciones con banda · 15',
+    'Rotaciones externas con banda · 15 por lado',
+    'Flexiones escapulares · 10',
+    'Series de aproximación · 40 / 60 / 80 %',
+  ],
+  Pierna: [
+    'Bici suave · 3 min',
+    'Cuerda · 2 × 1 min',
+    'Balanceos de pierna · 10 por lado',
+    'Movilidad de tobillo en pared · 10 por lado',
+    'Puente de glúteo · 12',
+    'Sentadilla profunda con pausa · 2 × 5',
+    'Series de aproximación · 40 / 60 / 80 %',
+  ],
+};
+const dayZone = (day, name = '') => day && /^(Torso|Pierna)$/.test(day.zone) ? day.zone : /pierna|inferior|lower/i.test(day?.name || name) ? 'Pierna' : 'Torso';
+const warmOf = d => WARMUP[dayZone(S.routine.days[d.dayId])];
 const BLOCKS = [
   ['ath', 'Bloque atlético', 'Máxima intención · 60–90 s de pausa · nunca hasta la fatiga'],
   ['main', 'Principal', 'RIR 1–2 en cada serie, nunca al fallo'],
@@ -951,6 +983,7 @@ function load() {
       s.altNo = Array.isArray(s.altNo) ? s.altNo : [];
       if (!s.routine.altsV) seedAlts(s.routine);
       if (s.routine.altsV === 1) altsV2(s.routine);
+      if (!s.routine.rearV) addRear(s.routine);
       if (!s.prog || !s.prog.start) s.prog = freshProg(s.sessions);
       return s;
     }
@@ -974,6 +1007,15 @@ function altsV2(r) {
     e.alts = out;
   }
   r.altsV = 2;
+}
+// Una sola vez: añade el deltoide posterior a los días de torso de la rutina guardada, tras el ejercicio que le toca
+function addRear(r) {
+  for (const [id, after] of Object.entries(REAR_AFTER)) {
+    const d = r.days[id]; if (!d || !Array.isArray(d.main) || d.main.some(e => e.name === REAR(id).name || e.id === id + '8')) continue;
+    const i = d.main.findIndex(e => e.name === after);
+    d.main.splice(i < 0 ? d.main.length : i + 1, 0, REAR(id + '8'));
+  }
+  r.rearV = 1;
 }
 const normAlts = l => (Array.isArray(l) ? l : []).map(a => typeof a === 'string' ? { name: a, kind: 'own' } : a).filter(a => a && a.name);
 let S = load();
@@ -1363,7 +1405,7 @@ function startSession(dayId, past) {
   });
   S.draft = {
     id: uid(), dayId, start: Date.now(), date: past || ymd(new Date()), ...(past ? { past: true } : {}), ...(dl ? { deload: true } : {}), rating: 0, note: '', step: 0,
-    warmup: S.settings.warmup ? WARMUP.map(() => false) : null,
+    warmup: S.settings.warmup ? WARMUP[dayZone(day)].map(() => false) : null,
     ex: [
       ...(S.settings.athletic ? day.ath.map(e => mk(e, 'ath')) : []),
       ...day.main.map(e => mk(e, 'main')),
@@ -1382,9 +1424,9 @@ function vSession() {
     <div class="grow"><div class="t1">${esc(nextName(k))}</div><div class="t2">A continuación</div></div>${btn}`;
   let head = '', body = '', bar = '';
   if (st.t === 'warm') {
-    const wd = d.warmup.filter(Boolean).length;
-    head = xHead(ring(44, wd / WARMUP.length, wd === WARMUP.length ? IC.check : `${wd}/${WARMUP.length}`, 'stico sm'), 'Entrar en calor', { blk: 'Calentamiento' });
-    body = `<div class="wlist">${WARMUP.map((w, i) => {
+    const wl = warmOf(d), wd = d.warmup.filter(Boolean).length, wn = d.warmup.length;
+    head = xHead(ring(44, wd / wn, wd === wn ? IC.check : `${wd}/${wn}`, 'stico sm'), 'Entrar en calor', { blk: `Calentamiento · ${dayZone(S.routine.days[d.dayId]) === 'Pierna' ? 'tren inferior' : 'tren superior'}` });
+    body = `<div class="wlist">${wl.slice(0, wn).map((w, i) => {
       const [a, ...b] = w.split(' · ');
       return `<button class="warm ${d.warmup[i] ? 'on' : ''}" data-act="warm" data-i="${i}"><span class="bx">${IC.check}</span><span class="lbl">${esc(a)}${b.length ? `<small>${esc(b.join(' · '))}</small>` : ''}</span><span class="wi">${pad(i + 1)}</span></button>`;
     }).join('')}</div>`;
@@ -1440,7 +1482,7 @@ function vSession() {
   </div>`;
 }
 const restUi = () => ({ row: 'row', bar: 'bar', set: 'set' })[S.settings.restUi] || 'bar';
-// Cabecera del paso: fila fina con el bloque y los botones; debajo, el nombre a todo lo ancho y la pauta pequeña a su derecha
+// Cabecera del paso: fila fina con el bloque y los botones; debajo, el círculo con la pauta y el nombre
 const xHead = (ic, name, o = {}) => `<div class="xhead">${o.blk || o.more ? `<div class="xeb"><span class="blk">${o.blk || ''}</span>${o.more || ''}</div>` : ''}<div class="xrow ${o.plan ? 'bl' : ''}">${ic}<div class="xn ${name.length > 24 ? 'long' : ''}">${esc(name)}</div>${o.plan || ''}</div></div>`;
 
 // Resumen de la sesión en curso: series hechas, volumen y récords
@@ -1644,10 +1686,11 @@ const RING = '<span class="rring"><svg viewBox="0 0 48 48"><circle cx="24" cy="2
 function stepExercise(x, xi) {
   const prev = IDX.last.get(exKey(x)), sug = suggest(x, prev), ph = placeholders(x, prev, sug);
   const m = x.metric, ci = x.sets.findIndex(z => !z.done);
-  // Pauta en una línea a la derecha del nombre: series × reps (o segundos/metros) y RIR
+  // Pauta en el círculo antes del nombre: rango de reps (o segundos/metros) y RIR; el arco cuenta las series hechas
   const unit = { wr: '', reps: '', time: ' s', dist: ' m' }[m] + (x.side ? '/lado' : '');
   const dl = !!S.draft.deload;
-  const plan = `<div class="xp"><b>${x.sets.length}</b> × <b>${rng(x.t.reps)}</b>${unit}${m === 'wr' ? ` · RIR <b>${dl ? '≥3' : '1–2'}</b>` : ''}</div>`;
+  const nd = x.sets.filter(z => z.done).length;
+  const ic = ring(60, nd / x.sets.length, `<b>${rng(x.t.reps)}</b><small>${m === 'wr' ? `RIR <i>${dl ? '≥3' : '1–2'}</i>` : esc((unit.trim() || 'reps'))}</small>`, 'xr');
   const cols = { wr: ['#', 'Anterior', 'kg', 'Reps', 'RIR'], reps: ['#', 'Anterior', 'Reps'], time: ['#', 'Anterior', 'Seg'], dist: ['#', 'Anterior', 'kg', 'Metros'] }[m];
   const inp = (si, f, val, p) => x.sets[si].fail && f !== 'w' ? '<span class="num ro">–</span>'
     : `<input class="num" type="text" inputmode="decimal" autocomplete="off" data-x="${xi}" data-s="${si}" data-f="${f}" value="${esc(val)}" placeholder="${esc(p ?? '')}">`;
@@ -1664,7 +1707,7 @@ function stepExercise(x, xi) {
   const sugHtml = sug ? `<div class="sug ${sug.dir}"><span class="arr">${SUG_ARR[sug.dir]}</span><div><b>${esc(sugText(sug, m))}</b> <span class="w">sugerido</span><div class="w">${esc(sug.why)}</div></div></div>`
     : (!prev && m === 'wr' ? `<div class="sug"><span class="arr">i</span><div class="w">Primera vez: elige una carga con la que te queden 1–2 reps en reserva al llegar a ${x.t.reps[0]}.</div></div>` : '');
   return {
-    head: xHead('', lit(x), { blk: BLOCK_NAME[x.blk] + (x.alt ? ' · reemplazo' : '') + (dl ? ' · descarga' : ''), plan, more: `<span class="xctl"><button class="xswap ${x.alt ? 'on' : ''}" data-act="swapMenu" data-x="${xi}" aria-label="Cambiar ejercicio">${IC.swap}</button><button class="xswap" data-act="exMenu" data-x="${xi}" aria-label="Opciones del ejercicio">${IC.more}</button></span>` }),
+    head: xHead(ic, lit(x), { blk: BLOCK_NAME[x.blk] + (x.alt ? ' · reemplazo' : '') + (dl ? ' · descarga' : ''), more: `<span class="xctl"><button class="xswap ${x.alt ? 'on' : ''}" data-act="swapMenu" data-x="${xi}" aria-label="Cambiar ejercicio">${IC.swap}</button><button class="xswap" data-act="exMenu" data-x="${xi}" aria-label="Opciones del ejercicio">${IC.more}</button></span>` }),
     // Nota e historial comparten un botón discreto en la cabecera de la tabla; añadir y quitar series, en los ajustes de la sesión
     body: `${sugHtml}
     ${prev && prev.note ? `<div class="prev-note">Nota del ${shortDate(prev.date)}: “${esc(prev.note)}”</div>` : ''}
@@ -1685,8 +1728,9 @@ function sheetSesList() {
     let ic, nm, sub, more = '';
     if (s.t === 'warm') {
       const n = d.warmup.filter(Boolean).length;
-      ic = n === WARMUP.length ? done : n ? ring(52, n / WARMUP.length, `${n}/${WARMUP.length}`) : `<span class="sq">${IC.flag}</span>`;
-      nm = 'Calentamiento'; sub = `${n}/${WARMUP.length} pasos · 8–10 min`;
+      const wn = d.warmup.length;
+      ic = n === wn ? done : n ? ring(52, n / wn, `${n}/${wn}`) : `<span class="sq">${IC.flag}</span>`;
+      nm = 'Calentamiento'; sub = `${n}/${wn} pasos · 8–10 min`;
     } else if (s.t === 'ex') {
       const x = d.ex[s.i], n = x.sets.filter(z => z.done).length;
       ic = n === x.sets.length ? done : n ? ring(52, n / x.sets.length, `${n}/${x.sets.length}`) : `<span class="sq">${s.i + 1}</span>`;
@@ -2068,7 +2112,7 @@ function vSet() {
     <button class="setting" data-act="${B.deload ? 'dlEnd' : 'dlStart'}"><div class="grow"><div style="font-weight:600">${B.deload ? 'Terminar la descarga' : 'Empezar descarga ahora'}</div><div class="t2">${B.deload ? 'Empieza hoy el bloque siguiente' : '7 días: mitad de series, −10 % de carga, RIR ≥ 3'}</div></div>${IC.chev}</button>
     <button class="setting" data-act="guide"><div class="grow"><div style="font-weight:600">Cómo funciona la progresión</div><div class="t2">Reglas, descargas y fuentes</div></div>${IC.chev}</button></div>
   <h3>Bloques de la sesión</h3><div class="card" style="padding:2px 16px">
-    ${sw('warmup', 'Calentamiento', 'Lista de 8–10 min antes del bloque atlético')}
+    ${sw('warmup', 'Calentamiento', '8–10 min para el tren superior o el inferior, según el día')}
     ${sw('athletic', 'Bloque atlético', 'Saltos y lanzamientos antes de cargar')}
     ${sw('health', 'Salud articular', 'Copenhagen, cargas, equilibrio al final')}</div>
   <h3>Cardio</h3><div class="card">
@@ -2094,6 +2138,7 @@ function vSet() {
 // Guía de la progresión: qué decide la app, por qué y con qué fuentes
 const GUIDE = [
   ['La meta', `<p>Todo en Home apunta a una meta: <b>ganar músculo</b> (hipertrofia) y, a la vez, mejorar <b>fuerza</b>, <b>capacidades atléticas</b> y <b>salud</b>. La base es PHUL: cuatro días, cada músculo dos veces por semana, un día pesado (3–5 reps) y otro moderado (8–12) por zona. Eso coincide con lo que dicen los meta-análisis: dos sesiones semanales por músculo crecen más que una (Schoenfeld 2016), más series semanales dan más hipertrofia (Schoenfeld 2017) y las cargas altas suman fuerza mientras el músculo crece parecido con cargas moderadas (Schoenfeld 2017b).</p>
+    <p>Lo único que se añade a PHUL son unas <b>aperturas inversas</b> (2–3 × 10–15) en los dos días de torso. Remos y jalones trabajan el deltoide posterior solo a medias: el contractor inverso lo activa cerca del 90 % frente a ~55 % del remo sentado y el jalón (Botton 2013; Franke 2015). La posición de la mano casi no cambia el resultado, así que elige la más cómoda (Schoenfeld 2013). El calentamiento va al tren superior o al inferior según el día y termina con series de aproximación (Fradkin 2010; McCrary 2015).</p>
     <p>Para avanzar, la app mueve cuatro palancas y te dice cuál toca en cada ejercicio: <b>carga y repeticiones</b>, <b>esfuerzo</b>, <b>series</b> y <b>recuperación</b>.</p>`],
   ['1 · Carga y repeticiones', `<p>Cada ejercicio tiene un rango de repeticiones <code>[a, b]</code> (por ejemplo 3–5 u 8–12) y un incremento Δ. Tras cada sesión, la app mira tus <b>series de trabajo</b> (las de la carga más alta, sin contar el 1RM) y propone la siguiente con la <b>doble progresión</b>: primero repeticiones, luego carga.</p>
     <ul><li><b>↑ Sube Δ</b> si todas las series llegaron a b con RIR ≥ 1. Vuelves a a.</li>
@@ -2137,6 +2182,11 @@ const GUIDE = [
     <li>Kinoshita M et al. (2023). Triceps surae muscle hypertrophy is greater after standing versus seated calf-raise training. <span class="jr">Front Physiol</span> 14:1272106.</li>
     <li>Swinton PA et al. (2011). A biomechanical analysis of straight and hexagonal barbell deadlifts using submaximal loads. <span class="jr">J Strength Cond Res</span> 25(7):2000–2009.</li>
     <li>Fenwick CMJ, Brown SHM, McGill SM (2009). Comparison of different rowing exercises. <span class="jr">J Strength Cond Res</span> 23(2):350–358.</li>
+    <li>Ehlers Botton C et al. (2013). Electromyographical analysis of the deltoid between different strength training exercises. <span class="jr">Medicina Sportiva</span> 17(2):67–71.</li>
+    <li>Franke RA, Botton CE et al. (2015). Analysis of anterior, middle and posterior deltoid activation during single and multijoint exercises. <span class="jr">J Sports Med Phys Fitness</span> 55(7–8):714–721.</li>
+    <li>Schoenfeld BJ et al. (2013). Effect of hand position on EMG activity of the posterior shoulder musculature during a horizontal abduction exercise. <span class="jr">J Strength Cond Res</span> 27(10):2644–2649.</li>
+    <li>Fradkin AJ, Zazryn TR, Smoliga JM (2010). Effects of warming-up on physical performance: a systematic review with meta-analysis. <span class="jr">J Strength Cond Res</span> 24(1):140–148.</li>
+    <li>McCrary JM, Ackermann BJ, Halaki M (2015). A systematic review of the effects of upper body warm-up on performance and injury. <span class="jr">Br J Sports Med</span> 49(14):935–942.</li>
     <li>Calatayud J et al. (2015). Bench press and push-up at comparable levels of muscle activity results in similar strength gains. <span class="jr">J Strength Cond Res</span> 29(1):246–253.</li>
     <li>Kikuchi N, Nakazato K (2017). Low-load bench press and push-up induce similar muscle hypertrophy and strength gain. <span class="jr">J Exerc Sci Fit</span> 15(1):37–42.</li>
     <li>Doma K, Deakin GB, Ness KF (2013). Kinematic and electromyographic comparisons between chin-ups and lat-pull down exercises. <span class="jr">Sports Biomech</span> 12(3):302–313.</li>
@@ -2465,7 +2515,8 @@ const A = {
   warm: el => {
     const d = S.draft, i = +el.dataset.i; d.warmup[i] = !d.warmup[i]; save(); el.classList.toggle('on', d.warmup[i]);
     const n = d.warmup.filter(Boolean).length, r = document.querySelector('.xhead .ring');
-    if (r) r.outerHTML = ring(44, n / WARMUP.length, n === WARMUP.length ? IC.check : `${n}/${WARMUP.length}`, 'stico sm');
+    const wn = d.warmup.length;
+    if (r) r.outerHTML = ring(44, n / wn, n === wn ? IC.check : `${n}/${wn}`, 'stico sm');
   },
   toggleSet: el => toggleSet(+el.dataset.x, +el.dataset.s),
   // Desde los ajustes de la sesión: la hoja sigue abierta para poder tocar varias veces
