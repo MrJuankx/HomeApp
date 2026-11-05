@@ -539,6 +539,14 @@ select.inp option{background:#1b1b1e}
 .cal-m.in-r,.cal-m.in-l{animation:fade .3s var(--ease) both}
 @keyframes calR{from{opacity:0;transform:translateX(60px)}}@keyframes calL{from{opacity:0;transform:translateX(-60px)}}
 .stat.wide{grid-column:1/-1}
+/* Duración editable: la ficha se toca para cambiarla (sesión guardada o al terminar) */
+button.stat{display:block;width:100%;color:inherit;font:inherit;position:relative;transition:transform .18s var(--spring)}
+button.stat:active{transform:scale(.96)}
+button.stat .l svg{width:11px;height:11px;vertical-align:-1px;margin-left:3px;stroke-width:2}
+.durf{display:flex;gap:8px;align-items:center;margin-top:12px}
+.durf .inp{flex:1;text-align:center;font-size:20px;font-weight:600;font-variant-numeric:tabular-nums}
+.durf span{color:var(--muted);font-size:13px}
+[hidden]{display:none!important}
 .cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr)) 40px;gap:7px 5px;margin-top:4px;position:relative}
 .cal::after{content:"";position:absolute;right:0;width:28px;top:22px;bottom:-4px;border-radius:20px;background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.12));opacity:var(--sop,0);pointer-events:none}
 .cal>*{position:relative;z-index:1}
@@ -1557,13 +1565,15 @@ function sheetFinish() {
   const { nSets, vol, prs, pending } = draftStats(d);
   openSheet(`<div class="eyebrow gold">Terminar</div><h2 style="margin:6px 0 0">${esc(day?.name || 'Sesión')}</h2>
   <div class="sumgrid">
-    <div class="stat"><div class="v" style="font-size:22px">${fmtDur((Date.now() - d.start) / 1000)}</div><div class="l">Duración</div></div>
+    ${d.past ? `<div class="stat"><div class="v" style="font-size:22px">${fmtDur((Date.now() - d.start) / 1000)}</div><div class="l">Duración</div></div>`
+      : `<button class="stat" data-act="durOpen" aria-label="Cambiar la duración"><div class="v" style="font-size:22px">${fmtDur((Date.now() - d.start) / 1000)}</div><div class="l">Duración${IC.edit}</div></button>`}
     <div class="stat"><div class="v" style="font-size:22px">${nSets}</div><div class="l">Series</div></div>
     <div class="stat"><div class="v" style="font-size:22px">${fmtK(vol).replace(' kg', '')}</div><div class="l">${vol >= 10000 ? 'Volumen' : 'Volumen kg'}</div></div>
   </div>
   ${prs.map(p => `<div class="pr"><span class="badge">PR</span><span style="flex:1">${esc(p.name)}</span><span class="gold num-f">${fmt(p.now)} kg</span></div>`).join('')}
   ${pending ? `<div class="muted" style="font-size:13px;margin-top:10px">Quedan ${pending} series sin marcar; no se guardarán.</div>` : ''}
-  ${d.past ? `<label class="field"><span>Duración de esa sesión (min)</span><input class="inp" id="fDur" inputmode="numeric" value="${pastDur(d.dayId)}"></label>` : ''}
+  ${d.past ? `<label class="field"><span>Duración de esa sesión (min)</span><input class="inp" id="fDur" inputmode="numeric" value="${pastDur(d.dayId)}"></label>`
+    : `<label class="field" id="fDurLive" hidden><span>Duración real (min)</span><input class="inp" id="fDur" inputmode="numeric" value="${Math.max(1, Math.round((Date.now() - d.start) / 6e4))}"></label>`}
   <div class="field"><span>¿Cómo te sentiste?</span></div>
   <div class="stars" id="stars">${[1, 2, 3, 4, 5].map(n => `<button class="${d.rating === n ? 'on' : ''}" data-act="rate" data-n="${n}">${n}</button>`).join('')}</div>
   <div class="row between dim" style="font-size:11px;padding:0 8px"><span>Muy pesado</span><span>Excelente</span></div>
@@ -1577,7 +1587,9 @@ function sheetFinish() {
 const pastDur = id => { const l = S.sessions.filter(s => s.dayId === id); return l.length ? Math.round(l.reduce((t, s) => t + (s.end - s.start), 0) / l.length / 6e4) : 75; };
 function saveSession() {
   const d = S.draft, day = S.routine.days[d.dayId] || {};
-  const st = d.past ? parseYmd(d.date).getTime() + 18 * 36e5 : d.start, en = d.past ? st + Math.max(1, parseInt($('#fDur')?.value) || pastDur(d.dayId)) * 6e4 : Date.now();
+  // Sesión en vivo: si se corrigió la duración al terminar, el final es inicio + esa duración
+  const live = $('#fDurLive'), fix = live && !live.hidden ? Math.min(600, parseInt($('#fDur').value) || 0) : 0;
+  const st = d.past ? parseYmd(d.date).getTime() + 18 * 36e5 : d.start, en = d.past ? st + Math.max(1, parseInt($('#fDur')?.value) || pastDur(d.dayId)) * 6e4 : fix > 0 ? st + fix * 6e4 : Date.now();
   const rec = {
     id: d.id, dayId: d.dayId, dayName: day.name || 'Sesión', short: day.short || '', date: d.date, start: st, end: en,
     rating: d.rating || 0, note: (d.note || '').trim(), ...(d.deload ? { deload: true } : {}),
@@ -1782,7 +1794,7 @@ function sheetSession(id) {
   const s = S.sessions.find(z => z.id === id); if (!s) return;
   openSheet(`<div class="eyebrow gold">${esc(cap(longDate(s.date)))}</div><h2 style="margin:6px 0 0">${esc(s.dayName)}</h2>
   <div class="sumgrid">
-    <div class="stat"><div class="v" style="font-size:20px">${fmtMin((s.end - s.start) / 1000)}</div><div class="l">Duración</div></div>
+    <button class="stat" data-act="editDur" data-id="${s.id}" aria-label="Cambiar la duración"><div class="v" style="font-size:20px">${fmtMin((s.end - s.start) / 1000)}</div><div class="l">Duración${IC.edit}</div></button>
     <div class="stat"><div class="v" style="font-size:20px">${sessionSets(s)}</div><div class="l">Series</div></div>
     <div class="stat"><div class="v" style="font-size:20px">${s.rating ? s.rating + '/5' : '—'}</div><div class="l">Sensación</div></div>
   </div>
@@ -1790,6 +1802,18 @@ function sheetSession(id) {
   ${s.note ? `<div class="card" style="margin-top:14px"><div class="eyebrow">Notas</div><div style="margin-top:6px">${esc(s.note)}</div></div>` : ''}
   <div class="muted" style="font-size:13px;margin-top:14px">Volumen total: ${fmtK(sessionVolume(s))}</div>
   <button class="btn danger block" style="margin-top:16px" data-act="delSession" data-id="${s.id}">${IC.trash} Eliminar sesión</button>`);
+}
+
+// Cambiar cuánto duró una sesión ya guardada: se conserva el inicio y se mueve el final
+function sheetDur(id) {
+  const s = S.sessions.find(z => z.id === id); if (!s) return;
+  const m = Math.max(1, Math.round((s.end - s.start) / 6e4));
+  openSheet(`<div class="eyebrow gold">${esc(cap(longDate(s.date)))}</div><h2 style="margin:6px 0 0">Duración</h2>
+  <div class="durf"><input class="inp" id="dH" inputmode="numeric" value="${Math.floor(m / 60)}"><span>h</span><input class="inp" id="dM" inputmode="numeric" value="${m % 60}"><span>min</span></div>
+  <div class="stack" style="margin-top:16px">
+    <button class="btn primary block" data-act="saveDur" data-id="${s.id}">Guardar</button>
+    <button class="btn ghost block" data-act="openSession" data-id="${s.id}">Cancelar</button>
+  </div>`);
 }
 
 /* ---------- Calendario ---------- */
@@ -2599,6 +2623,14 @@ const A = {
   restClose: () => { setRest(null); tick(); },
   closeSheet: () => closeSheet(),
   openSession: el => sheetSession(el.dataset.id),
+  editDur: el => sheetDur(el.dataset.id),
+  saveDur: el => {
+    const s = S.sessions.find(z => z.id === el.dataset.id); if (!s) return;
+    const m = Math.max(0, parseInt($('#dH').value) || 0) * 60 + Math.max(0, parseInt($('#dM').value) || 0);
+    if (m < 1 || m > 600) { toast('Escribe una duración entre 1 min y 10 h'); return; }
+    s.end = s.start + m * 6e4; save(); rerender(); sheetSession(s.id); toast(`Duración: ${fmtMin(m * 60)}`);
+  },
+  durOpen: () => { const f = $('#fDurLive'); if (f) { f.hidden = !f.hidden; if (!f.hidden) $('#fDur').focus(); } },
   delSession: el => { if (!confirm('¿Eliminar esta sesión del historial? No se puede deshacer.')) return; S.sessions = S.sessions.filter(s => s.id !== el.dataset.id); save(); closeSheet(); rerender(); toast('Sesión eliminada'); },
   calNav: el => calMove(+el.dataset.n),
   calDay: el => { ui.calSel = el.dataset.d; document.querySelectorAll('.cal .c.sel').forEach(c => c.classList.remove('sel')); el.classList.add('sel'); sheetCalDay(el.dataset.d); },
