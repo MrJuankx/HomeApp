@@ -197,6 +197,10 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.7;stro
 .chev{color:var(--dim)}
 .badge{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:#0a0a0b;background:#f3f3f1;padding:3px 8px;border-radius:999px}
 .chip{font-size:12px;padding:5px 11px;border-radius:999px;border:1px solid var(--line2);color:var(--muted)}
+.chips.place{gap:6px;position:relative;z-index:1}
+.chips.place .chip{font-size:13px;padding:7px 14px;font-weight:600;transition:background .25s,color .25s,border-color .25s}
+.chips.place .chip.on{background:#f3f3f1;color:#0a0a0b;border-color:transparent}
+.tile.hero .hsub{max-width:52%;margin-top:10px}
 .chip.g{border-color:rgba(255,255,255,.4);color:#fff}
 .chips{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 0}
 .meter{position:relative;height:6px;border-radius:6px;background:rgba(255,255,255,.1);margin:12px 0 4px;overflow:hidden}
@@ -797,6 +801,7 @@ const REAR_AFTER = { tp: 'Press militar', th: 'Elevaciones laterales' };
 const DEFAULT_ROUTINE = {
   altsV: 2,
   rearV: 1,
+  homeV: 1,
   order: ['tp', 'pp', 'th', 'ph'],
   days: {
     tp: { id: 'tp', name: 'Torso potencia', short: 'TP', zone: 'Torso', kind: 'Potencia', weekday: 'Lunes',
@@ -859,6 +864,72 @@ const DEFAULT_ROUTINE = {
   },
 };
 
+// Versión en casa de cada día (calistenia, peso corporal, bandas y mochila): mismo patrón y mismas series que el día base (of).
+// Hipertrofia comparable cerca del fallo con carga baja (Schoenfeld 2017; Kikuchi 2017; Kotarsky 2018). Fuentes en la guía
+// levels: variantes de más fácil a más difícil; lv: la que toca. Cada nivel se guarda como un reemplazo del ejercicio (altKind 'lvl')
+const HA = (safe, own) => [...(safe ? [{ name: safe, kind: 'safe' }] : []), ...(own ? [{ name: own, kind: 'own' }] : [])];
+const H = (id, name, sets, reps, o = {}) => E(id, name, sets, reps, { inc: 0, alts: [], ...o });
+const HOME_DAYS = () => ({
+  tpc: { id: 'tpc', of: 'tp', name: 'Torso potencia · Casa', short: 'TP', zone: 'Torso', kind: 'Potencia', weekday: 'Lunes',
+    ath: [
+      H('tpc-a1', 'Flexiones pliométricas', [4, 4], [3, 3], { metric: 'reps', alts: HA('Flexiones explosivas desde rodillas', 'Lanzamiento de balón al pecho') }),
+      H('tpc-a2', 'Rotación explosiva con banda', [2, 2], [3, 3], { metric: 'reps', side: true, alts: HA('', 'Lanzamiento rotacional') }),
+    ],
+    main: [
+      H('tpc1', 'Flexiones de fuerza', [3, 4], [3, 5], { basic: true, inc: 2.5, rest: 180, levels: ['Flexiones con pies elevados', 'Flexiones arquero', 'Flexiones pseudoplancha', 'Flexión a una mano asistida'], alts: HA('Flexiones con banda') }),
+      H('tpc2', 'Fondos', [3, 4], [6, 10], { inc: 2.5, rest: 120, levels: ['Fondos en silla con pies en el suelo', 'Fondos entre sillas', 'Fondos entre sillas con pausa abajo'], alts: HA('Flexiones diamante') }),
+      H('tpc3', 'Remo invertido de fuerza', [3, 4], [3, 5], { basic: true, inc: 2.5, rest: 180, levels: ['Remo invertido con pies elevados', 'Remo invertido arquero', 'Remo invertido a una mano'], alts: HA('Remo con toalla en la puerta') }),
+      H('tpc4', 'Dominadas', [3, 4], [6, 10], { inc: 2.5, rest: 120, levels: ['Dominadas negativas', 'Dominadas con banda', 'Dominadas estrictas'], alts: HA('', 'Remo con banda') }),
+      H('tpc5', 'Empuje vertical con peso corporal', [2, 3], [5, 8], { rest: 150, levels: ['Flexiones en pica', 'Flexiones en pica con pies elevados', 'Flexiones en pino contra la pared parciales', 'Flexiones en pino contra la pared'], alts: HA('', 'Press de hombro con banda') }),
+      H('tpc8', 'Aperturas inversas con banda', [2, 3], [10, 15], { band: true, rest: 90, alts: HA('Pájaros boca abajo en el suelo') }),
+      H('tpc6', 'Curl con peso corporal', [2, 3], [6, 10], { rest: 90, levels: ['Curl con peso corporal en barra baja', 'Curl con peso corporal con pies elevados'], alts: HA('', 'Curl con mochila') }),
+      H('tpc7', 'Extensión de tríceps con peso corporal', [2, 3], [6, 10], { rest: 90, levels: ['Extensión de tríceps en mesa alta', 'Extensión de tríceps en mesa baja', 'Extensión de tríceps en el suelo de rodillas'], alts: HA('', 'Flexiones diamante') }),
+    ],
+    health: [H('tpc-h1', 'Colgarse de la barra', [3, 3], [30, 45], { metric: 'time', rest: 90, alts: HA('Colgarse con los pies apoyados', 'Paseo del granjero con garrafas') })],
+  },
+  ppc: { id: 'ppc', of: 'pp', name: 'Pierna potencia · Casa', short: 'PP', zone: 'Pierna', kind: 'Potencia', weekday: 'Martes',
+    ath: [H('ppc-a1', 'Saltos verticales', [4, 4], [3, 3], { metric: 'reps', alts: HA('', 'Saltos al cajón') })],
+    main: [
+      H('ppc1', 'Sentadilla a una pierna', [3, 4], [3, 5], { basic: true, side: true, inc: 2.5, rest: 180, levels: ['Sentadilla búlgara con mochila', 'Sentadilla pistol a caja', 'Sentadilla pistol'], alts: HA('Sentadilla del patinador a caja') }),
+      H('ppc2', 'Peso muerto rumano a una pierna', [3, 4], [6, 10], { basic: true, side: true, inc: 2.5, rest: 150, levels: ['Peso muerto rumano a una pierna con apoyo', 'Peso muerto rumano a una pierna'], alts: HA('Puente de glúteo a una pierna') }),
+      H('ppc3', 'Subida al banco', [3, 5], [10, 15], { side: true, inc: 2.5, rest: 120, levels: ['Subida a escalón', 'Subida a silla'], alts: HA('Zancada inversa') }),
+      H('ppc4', 'Curl femoral con deslizadores', [3, 4], [6, 10], { rest: 90, levels: ['Curl femoral con deslizadores a dos piernas', 'Curl femoral con deslizadores excéntrico a una pierna', 'Curl femoral con deslizadores a una pierna'], alts: HA('Puente de isquios con pies elevados') }),
+      H('ppc5', 'Gemelo a una pierna', [4, 4], [6, 10], { side: true, inc: 2.5, rest: 90, levels: ['Gemelo a una pierna en el suelo', 'Gemelo a una pierna en escalón'] }),
+    ],
+    health: [E('ppc-h1', 'Copenhagen', [1, 2], [6, 12], { metric: 'reps', side: true, rest: 60 })],
+  },
+  thc: { id: 'thc', of: 'th', name: 'Torso hipertrofia · Casa', short: 'TH', zone: 'Torso', kind: 'Hipertrofia', weekday: 'Jueves',
+    ath: [H('thc-a1', 'Pullover explosivo con banda', [4, 4], [3, 3], { metric: 'reps', alts: HA('', 'Lanzamiento por encima de la cabeza') })],
+    main: [
+      H('thc1', 'Flexiones con pies elevados', [3, 4], [8, 12], { inc: 2.5, rest: 120, alts: HA('Flexiones') }),
+      H('thc2', 'Aperturas con deslizadores', [3, 4], [8, 12], { rest: 90, levels: ['Aperturas con deslizadores de rodillas', 'Aperturas con deslizadores de pies'], alts: HA('', 'Aperturas con banda') }),
+      H('thc3', 'Remo invertido', [3, 4], [8, 12], { inc: 2.5, rest: 120, levels: ['Remo invertido con rodillas flexionadas', 'Remo invertido con piernas rectas', 'Remo invertido con pausa arriba'], alts: HA('Remo con toalla en la puerta') }),
+      H('thc4', 'Remo a una mano con mochila', [3, 4], [8, 12], { inc: 2, rest: 90, alts: HA('', 'Remo a una mano con banda') }),
+      H('thc5', 'Elevaciones laterales con banda', [3, 4], [8, 12], { band: true, rest: 90, alts: HA('', 'Elevaciones laterales con botellas') }),
+      H('thc8', 'Aperturas inversas con banda', [2, 3], [10, 15], { band: true, rest: 90, alts: HA('Pájaros boca abajo en el suelo') }),
+      H('thc6', 'Curl con banda', [3, 4], [8, 12], { band: true, rest: 90, alts: HA('', 'Curl con mochila') }),
+      H('thc7', 'Extensión de tríceps con banda por encima de la cabeza', [3, 4], [8, 12], { band: true, rest: 90, alts: HA('', 'Extensión de tríceps con peso corporal') }),
+    ],
+    health: [H('thc-h1', 'Plancha lateral', [3, 3], [30, 45], { metric: 'time', side: true, rest: 60, alts: HA('Plancha lateral con rodillas apoyadas') })],
+  },
+  phc: { id: 'phc', of: 'ph', name: 'Pierna hipertrofia · Casa', short: 'PH', zone: 'Pierna', kind: 'Hipertrofia', weekday: 'Viernes',
+    ath: [
+      E('phc-a1', 'Saltos de longitud', [3, 3], [3, 3], { metric: 'reps' }),
+      E('phc-a2', 'Saltos laterales a una pierna', [2, 2], [3, 3], { metric: 'reps', side: true }),
+    ],
+    main: [
+      H('phc1', 'Sentadilla del patinador', [3, 4], [8, 12], { side: true, inc: 2.5, rest: 150, levels: ['Sentadilla del patinador a caja', 'Sentadilla del patinador libre'], alts: HA('Sentadilla búlgara') }),
+      H('phc2', 'Sentadilla búlgara con mochila', [3, 4], [8, 12], { side: true, inc: 2, rest: 120, alts: HA('Zancada inversa') }),
+      H('phc3', 'Sentadilla sissy', [3, 4], [10, 15], { inc: 2.5, rest: 90, levels: ['Sentadilla sissy asistida', 'Sentadilla sissy libre'], alts: HA('', 'Sentadilla española con banda') }),
+      E('phc4', 'Curl nórdico', [3, 3], [3, 6], { inc: 0, rest: 120 }),
+      H('phc5', 'Gemelo sentado con mochila', [3, 4], [12, 20], { inc: 2, rest: 90 }),
+      H('phc6', 'Gemelo de pie en escalón', [3, 4], [12, 20], { inc: 2.5, rest: 90, levels: ['Gemelo de pie en escalón a dos piernas', 'Gemelo de pie en escalón a una pierna'] }),
+    ],
+    health: [E('phc-h1', 'Equilibrio a una pierna', [2, 2], [30, 30], { metric: 'time', side: true, inc: 0, rest: 30 })],
+  },
+});
+Object.assign(DEFAULT_ROUTINE.days, HOME_DAYS());
+
 // Calentamiento general y luego específico de la zona del día, con series de aproximación al final (Fradkin 2010; McCrary 2015)
 const WARMUP = {
   Torso: [
@@ -880,8 +951,14 @@ const WARMUP = {
     'Series de aproximación · 40 / 60 / 80 %',
   ],
 };
+// En casa: sin bici ni remo, y las series de aproximación con el nivel anterior
+const WARMUP_CASA = {
+  Torso: ['Trote en el sitio o cuerda · 2–3 min', ...WARMUP.Torso.slice(1, 6), 'Series de aproximación · 1–2 fáciles del nivel anterior'],
+  Pierna: ['Trote en el sitio · 2 min', 'Cuerda o saltitos · 2 × 1 min', ...WARMUP.Pierna.slice(2, 6), 'Series de aproximación · 1–2 fáciles del nivel anterior'],
+};
 const dayZone = (day, name = '') => day && /^(Torso|Pierna)$/.test(day.zone) ? day.zone : /pierna|inferior|lower/i.test(day?.name || name) ? 'Pierna' : 'Torso';
-const warmOf = d => WARMUP[dayZone(S.routine.days[d.dayId])];
+const warmList = day => (day && day.of ? WARMUP_CASA : WARMUP)[dayZone(day)];
+const warmOf = d => warmList(S.routine.days[d.dayId]);
 const BLOCKS = [
   ['ath', 'Bloque atlético', 'Máxima intención · 60–90 s de pausa · nunca hasta la fatiga'],
   ['main', 'Principal', 'RIR 1–2 en cada serie, nunca al fallo'],
@@ -970,7 +1047,7 @@ const cardioIcon = c => ({ '4x4': IC.pulse, z2: IC.bike, walk: IC.shoe })[c.kind
 const KEY = 'phul.v1';
 const freshState = () => ({
   v: 1,
-  settings: { goal: 4, warmup: true, athletic: true, health: true, autoRest: true, sound: true, vibrate: true, wake: true, fcmax: '', deloadEvery: 6, volUp: true },
+  settings: { goal: 4, warmup: true, athletic: true, health: true, autoRest: true, sound: true, vibrate: true, wake: true, fcmax: '', deloadEvery: 6, volUp: true, place: 'gym' },
   routine: clone(DEFAULT_ROUTINE), sessions: [], body: [], cardio: [], draft: null, timer: null, rest: null,
   altSug: [], altNo: [], prog: freshProg([]),
 });
@@ -998,6 +1075,7 @@ function load() {
       if (!s.routine.altsV) seedAlts(s.routine);
       if (s.routine.altsV === 1) altsV2(s.routine);
       if (!s.routine.rearV) addRear(s.routine);
+      if (!s.routine.homeV) addHome(s.routine);
       if (!s.prog || !s.prog.start) s.prog = freshProg(s.sessions);
       return s;
     }
@@ -1030,6 +1108,14 @@ function addRear(r) {
     d.main.splice(i < 0 ? d.main.length : i + 1, 0, REAR(id + '8'));
   }
   r.rearV = 1;
+}
+// Una sola vez: añade la versión en casa de cada día base que siga en la rutina guardada
+function addHome(r) {
+  for (const [id, d] of Object.entries(HOME_DAYS())) {
+    if (!r.days[d.of] || r.days[id] || Object.values(r.days).some(x => x.of === d.of)) continue;
+    r.days[id] = d;
+  }
+  r.homeV = 1;
 }
 const normAlts = l => (Array.isArray(l) ? l : []).map(a => typeof a === 'string' ? { name: a, kind: 'own' } : a).filter(a => a && a.name);
 let S = load();
@@ -1084,14 +1170,27 @@ function bestStreak() {
 }
 // Día siguiente: el que va después de la última sesión hecha, según el orden de Ajustes
 // Próxima sesión: la que sigue a la última de esta semana en el orden de Ajustes; cada lunes vuelve a empezar por el primer día
+// Una sesión en casa cuenta como su día base (of) para la rotación
 function nextDay() {
   const order = S.routine.order, ws = ymd(weekStart(new Date()));
-  for (let i = IDX.sorted.length - 1; i >= 0 && IDX.sorted[i].date >= ws; i--) { const k = order.indexOf(IDX.sorted[i].dayId); if (k >= 0) return order[(k + 1) % order.length]; }
+  for (let i = IDX.sorted.length - 1; i >= 0 && IDX.sorted[i].date >= ws; i--) { const k = order.indexOf(baseOf(IDX.sorted[i].dayId)); if (k >= 0) return order[(k + 1) % order.length]; }
   return order[0];
 }
+// Gimnasio o casa: el día base y su versión en casa
+const baseOf = id => { const d = S.routine.days[id]; return d && d.of && S.routine.days[d.of] ? d.of : id; };
+const homeOf = id => Object.values(S.routine.days).find(d => d.of === id)?.id || null;
+const placeDay = id => S.settings.place === 'casa' && homeOf(id) ? homeOf(id) : id;
+const isHomeSess = s => !!(s.home || S.routine.days[s.dayId]?.of);
+// Ejercicio por niveles: el nivel que toca y su clave en el historial
+const lvName = e => e.levels && e.levels.length ? e.levels[Math.max(0, Math.min(e.lv || 0, e.levels.length - 1))] : '';
+const eKey = e => lvName(e) ? `${e.name} › ${lvName(e)}` : e.name;
+const lvTag = x => x.altKind === 'lvl' && x.levels ? `nivel ${x.levels.indexOf(x.alt) + 1} de ${x.levels.length}` : '';
 const dayCount = d => d.ath.length + d.main.length + d.health.length;
 const lastOfDay = id => { for (let i = IDX.sorted.length - 1; i >= 0; i--) if (IDX.sorted[i].dayId === id) return IDX.sorted[i]; return null; };
 const sessionVolume = s => s.ex.reduce((v, x) => v + (x.metric === 'wr' ? x.sets.reduce((a, z) => a + num(z.w) * num(z.r), 0) : 0), 0);
+const sessionReps = s => s.ex.reduce((n, x) => n + (x.metric === 'wr' || x.metric === 'reps' ? x.sets.reduce((a, z) => a + num(z.r), 0) : 0), 0);
+// Carga de una sesión: kg levantados en el gimnasio; en casa, repeticiones totales
+const sessLoad = s => isHomeSess(s) ? `${sessionReps(s)} reps` : fmtK(sessionVolume(s));
 const sessionSets = s => s.ex.reduce((n, x) => n + x.sets.length, 0);
 const bestE1 = sets => Math.max(0, ...sets.map(z => e1rm(num(z.w), num(z.r))));
 function bestBefore(key) { let b = 0; for (const s of S.sessions) for (const x of s.ex) if (exKey(x) === key && x.metric === 'wr') b = Math.max(b, bestE1(x.sets)); return b; }
@@ -1141,7 +1240,7 @@ function stalled(key) {
   const n = Math.min(...t.map(o => o.reps.length)), sum = o => o.reps.slice(0, n).reduce((a, b) => a + b, 0);
   return sum(t[1]) <= sum(t[0]) && sum(t[2]) <= sum(t[0]);
 }
-const stalledBasics = () => { const out = new Set(); for (const d of Object.values(S.routine.days)) for (const e of d.main) if (e.basic && e.metric === 'wr' && stalled(e.name)) out.add(e.name); return [...out]; };
+const stalledBasics = () => { const out = new Set(); for (const d of Object.values(S.routine.days)) for (const e of d.main) if (e.basic && e.metric === 'wr' && stalled(eKey(e))) out.add(lvName(e) || e.name); return [...out]; };
 // Salto de carga: múltiplo del incremento más cercano a una fracción de la carga, como mínimo un incremento
 const stepOf = (w, f, inc) => inc > 0 ? Math.max(inc, Math.round(w * f / inc) * inc) : r25(w * f);
 // Series al empezar: el mínimo del rango en el primer bloque y el máximo desde el segundo; en descarga, la mitad
@@ -1183,16 +1282,21 @@ function suggest(x, prev, dl = inDeload()) {
   const rw = t.work.filter(z => !z.af), rirs = rw.filter(z => has(z.rir)).map(z => num(z.rir));
   const fail = rirs.some(v => v < 1), easy = rw.length > 0 && rirs.length === rw.length && rirs.every(v => v >= 3);
   const full = t.work.length >= x.t.sets[0], body = !(inc > 0 && w > 0);
+  // Peso corporal y bandas: el nivel (o la banda) hace de carga
+  const L = x.altKind === 'lvl' && x.levels ? x.levels : null, li = L ? L.indexOf(x.alt) : -1;
+  const lvUp = L && li >= 0 && li < L.length - 1 ? L[li + 1] : '', lvDown = L && li > 0 ? L[li - 1] : '';
+  const topWhy = x.band ? 'Tope del rango: usa una banda más fuerte' : inc > 0 ? 'Tope del rango: añade lastre en la mochila o baja más lento' : 'Tope del rango: más recorrido, bajada más lenta o lastre';
   if (all(b) && full && !fail) {
     const big = all(b + 2) || easy;
-    return body ? { w, r: b, dir: 'up', why: 'Tope del rango: más recorrido, bajada más lenta o lastre' }
+    if (body && lvUp) return { w, r: a, dir: 'up', label: `Pasa a ${lvUp}`, why: `Tope del rango en todas las series: siguiente nivel, desde ${a} reps` };
+    return body ? { w, r: b, dir: 'up', why: topWhy }
       : { w: r25(w + inc * (big ? 2 : 1)), r: a, dir: 'up', why: big ? `Te sobró margen sobre ${b} reps: sube dos saltos` : `${b} reps en todas las series: sube la carga` };
   }
   if (all(b) && fail) return { w, r: b, dir: 'same', why: `Llegaste a ${b}, pero al fallo: repite la carga con RIR 1–2` };
   if (all(b)) return { w, r: b, dir: 'same', why: `Haz las ${x.t.sets[0]} series al tope para subir` };
-  if (stalled(exKey(x))) return body ? { w, r: a, dir: 'down', why: '3 sesiones sin sumar reps: usa una versión más fácil y vuelve a subir' }
+  if (stalled(exKey(x))) return body ? (lvDown ? { w, r: a, dir: 'down', label: `Vuelve a ${lvDown}`, why: '3 sesiones sin sumar reps: nivel anterior y vuelve a subir' } : { w, r: a, dir: 'down', why: x.band ? '3 sesiones sin sumar reps: banda más suave y vuelve a subir' : '3 sesiones sin sumar reps: usa una versión más fácil y vuelve a subir' })
     : { w: r25(Math.max(0, w - stepOf(w, 0.1, inc))), r: b, dir: 'down', why: '3 sesiones sin sumar reps: baja un 10 % y vuelve a subir' };
-  if (R.some(r => r <= a - 2)) return body ? { w, r: a, dir: 'same', why: `Consolida ${a} reps antes de sumar` }
+  if (R.some(r => r <= a - 2)) return body ? (lvDown ? { w, r: a, dir: 'down', label: `Vuelve a ${lvDown}`, why: `Quedaste 2+ reps bajo ${a}: nivel anterior` } : { w, r: a, dir: 'same', why: `Consolida ${a} reps antes de sumar` })
     : { w: r25(Math.max(0, w - stepOf(w, 0.05, inc))), r: a, dir: 'down', why: `Quedaste 2+ reps bajo ${a}: baja un 5 %` };
   if (easy) return { w, r: Math.min(b, minR + 2), dir: 'same', why: 'Te sobró margen (RIR ≥ 3): suma dos repeticiones' };
   return { w, r: Math.min(b, minR + 1), dir: 'same', why: 'Misma carga: suma una repetición' };
@@ -1307,10 +1411,13 @@ addEventListener('resize', () => { if (ui.view === 'session') requestAnimationFr
 function rerender() { const y = window.scrollY; render(); window.scrollTo(0, y); }
 
 /* ---------- Inicio ---------- */
+// Selector Gimnasio / Casa: fichas en Inicio y segmento en la hoja de elegir día
+const PLACES = [['gym', 'Gimnasio'], ['casa', 'Casa']];
+const placeChips = () => PLACES.map(([k, l]) => `<button class="chip ${S.settings.place === k ? 'on' : ''}" data-act="place" data-p="${k}" aria-pressed="${S.settings.place === k}">${l}</button>`).join('');
 function vHome() {
   const now = new Date(), today = ymd(now), ws = weekStart(now), set = trainedSet(), goal = S.settings.goal;
   const done = weekCount(ws, set);
-  const nd = S.routine.days[nextDay()], ndLast = lastOfDay(nd.id);
+  const nb = S.routine.days[nextDay()], nd = S.routine.days[placeDay(nb.id)], ndLast = lastOfDay(nd.id), hasHome = !!homeOf(nb.id);
   const hr = now.getHours();
   const greet = hr < 6 ? ['Buenas', 'noches'] : hr < 13 ? ['Buenos', 'días'] : hr < 20 ? ['Buenas', 'tardes'] : ['Buenas', 'noches'];
   const lastS = IDX.sorted[IDX.sorted.length - 1];
@@ -1356,8 +1463,9 @@ function vHome() {
   <div class="bento">
     <div class="tile hero wide" role="button" data-act="dayOpen" data-day="${nd.id}">${HALFTONE}
       <span class="corner">${ring(58, done / goal, `${done}/${goal}`, 'sm')}</span>
-      <div><div class="eyebrow">${B.deload ? `Descarga · hasta el ${shortDate(ymd(addDays(parseYmd(B.deload.to), -1)))}` : 'Próxima sesión'}</div><div class="nm">${esc(nd.name)}</div>
-        <div class="chips">${nd.weekday ? `<span class="chip">${esc(nd.weekday)}</span>` : ''}<span class="chip">${ndLast ? daysAgo(ndLast.date) : 'Sin registros'}</span></div></div>
+      <div><div class="eyebrow">${B.deload ? `Descarga · hasta el ${shortDate(ymd(addDays(parseYmd(B.deload.to), -1)))}` : 'Próxima sesión'}</div><div class="nm">${esc(nb.name)}</div>
+        ${hasHome ? `<div class="chips place">${placeChips()}</div><div class="t2 hsub">${[nd.weekday, ndLast ? daysAgo(ndLast.date) : 'sin registros'].filter(Boolean).map(esc).join(' · ')}</div>`
+        : `<div class="chips">${nd.weekday ? `<span class="chip">${esc(nd.weekday)}</span>` : ''}<span class="chip">${ndLast ? daysAgo(ndLast.date) : 'Sin registros'}</span></div>`}</div>
       <button class="pick" data-act="pickDay" aria-label="Elegir otra sesión">${IC.plus}</button>
       <button class="play" data-act="start" data-day="${nd.id}" aria-label="Empezar ${esc(nd.name)}">${IC.play}</button>
     </div>
@@ -1384,27 +1492,35 @@ function vHome() {
 
     ${lastS ? `<div class="tile wide short" role="button" data-act="openSession" data-id="${lastS.id}">
       <div class="lead">${esc(lastS.short || '·')}</div>
-      <div class="grow"><div class="t2" style="margin:0">Última sesión · ${daysAgo(lastS.date)}</div><div class="t1">${esc(lastS.dayName)}</div><div class="t2">${fmtMin((lastS.end - lastS.start) / 1000)} · ${sessionSets(lastS)} series · ${fmtK(sessionVolume(lastS))}</div></div>${IC.chev}
-    </div>` : `<div class="intro">Aún no hay sesiones. Empieza por <b>${esc(nd.name)}</b> y la app irá sugiriendo cargas con la doble progresión.</div>`}
+      <div class="grow"><div class="t2" style="margin:0">Última sesión · ${daysAgo(lastS.date)}</div><div class="t1">${esc(lastS.dayName)}</div><div class="t2">${fmtMin((lastS.end - lastS.start) / 1000)} · ${sessionSets(lastS)} series · ${sessLoad(lastS)}</div></div>${IC.chev}
+    </div>` : `<div class="intro">Aún no hay sesiones. Empieza por <b>${esc(nb.name)}</b> y la app irá sugiriendo cargas con la doble progresión.</div>`}
   </div>
   </div>`;
 }
 
 function sheetPickDay() {
   const nd = nextDay();
+  const anyHome = S.routine.order.some(homeOf), casa = S.settings.place === 'casa';
   openSheet(`<div class="eyebrow gold">Entrenar</div><h2 style="margin:6px 0 10px">¿Qué toca hoy?</h2>
+  ${anyHome ? `<div class="seg" style="margin-bottom:10px">${PLACES.map(([k, l]) => `<button class="${S.settings.place === k ? 'on' : ''}" data-act="place" data-p="${k}">${l}</button>`).join('')}</div>` : ''}
   ${S.routine.order.map((id, i) => {
-    const d = S.routine.days[id], l = lastOfDay(id);
-    return `<button class="list-item" data-act="dayOpen" data-day="${id}">
+    const vid = placeDay(id), d = S.routine.days[vid], b = S.routine.days[id], l = lastOfDay(vid);
+    return `<button class="list-item" data-act="dayOpen" data-day="${vid}">
       <div class="lead">${esc(d.short)}</div>
-      <div class="grow"><div class="t1">${esc(d.name)} ${id === nd ? '<span class="badge" style="margin-left:6px">Siguiente</span>' : ''}</div>
-      <div class="t2">Día ${i + 1} · ${dayCount(d)} ejercicios · ${l ? 'última ' + daysAgo(l.date) : 'sin registros'}</div></div>${IC.chev}</button>`;
+      <div class="grow"><div class="t1">${esc(b.name)} ${id === nd ? '<span class="badge" style="margin-left:6px">Siguiente</span>' : ''}</div>
+      <div class="t2">${casa && vid !== id ? 'En casa · ' : ''}Día ${i + 1} · ${dayCount(d)} ejercicios · ${l ? 'última ' + daysAgo(l.date) : 'sin registros'}</div></div>${IC.chev}</button>`;
   }).join('')}
   <button class="list-item" data-act="timerStart"><div class="lead">${IC.pulse}</div><div class="grow"><div class="t1">4×4 noruego guiado</div><div class="t2">Temporizador por fases · 40 min</div></div>${IC.chev}</button>
   <button class="list-item" data-act="cardioLog"><div class="lead">${IC.bike}</div><div class="grow"><div class="t1">Registrar cardio</div><div class="t2">Zona 2, caminata u otro</div></div>${IC.chev}</button>`);
 }
 
 /* ---------- Sesión ---------- */
+// Ejercicio por niveles: empieza en el nivel guardado (uno menos en descarga); el nivel va como reemplazo para tener su propio historial
+function lvStart(e, dl) {
+  if (!e.levels || !e.levels.length) return {};
+  const i = Math.max(0, Math.min(e.lv || 0, e.levels.length - 1) - (dl ? 1 : 0));
+  return { alt: e.levels[i], altKind: 'lvl', levels: [...e.levels] };
+}
 function startSession(dayId, past) {
   if (S.draft) {
     if (S.draft.dayId === dayId && (S.draft.date === (past || ymd(new Date())))) { closeSheet(); go('session'); return; }
@@ -1419,11 +1535,11 @@ function startSession(dayId, past) {
     t: { sets: e.sets, reps: e.reps, inc: e.inc ?? 2.5, rest: e.rest || 0 },
     sets: Array.from({ length: plannedSets(e, dl) }, (_, i, n = plannedSets(e, dl)) => ({ w: '', r: '', rir: '', done: false,
       ...(!dl && e.metric === 'wr' && e.special && SP_KIND[e.special.k] && i === (e.special.at === 'first' ? 0 : n - 1) ? { [e.special.k]: true } : {}) })),
-    note: '',
+    note: '', ...(e.band ? { band: true } : {}), ...lvStart(e, dl),
   });
   S.draft = {
     id: uid(), dayId, start: Date.now(), date: past || ymd(new Date()), ...(past ? { past: true } : {}), ...(dl ? { deload: true } : {}), rating: 0, note: '', step: 0,
-    warmup: S.settings.warmup ? WARMUP[dayZone(day)].map(() => false) : null,
+    warmup: S.settings.warmup ? warmList(day).map(() => false) : null,
     ex: [
       ...(S.settings.athletic ? day.ath.map(e => mk(e, 'ath')) : []),
       ...day.main.map(e => mk(e, 'main')),
@@ -1592,20 +1708,43 @@ function saveSession() {
   const st = d.past ? parseYmd(d.date).getTime() + 18 * 36e5 : d.start, en = d.past ? st + Math.max(1, parseInt($('#fDur')?.value) || pastDur(d.dayId)) * 6e4 : fix > 0 ? st + fix * 6e4 : Date.now();
   const rec = {
     id: d.id, dayId: d.dayId, dayName: day.name || 'Sesión', short: day.short || '', date: d.date, start: st, end: en,
-    rating: d.rating || 0, note: (d.note || '').trim(), ...(d.deload ? { deload: true } : {}),
+    rating: d.rating || 0, note: (d.note || '').trim(), ...(d.deload ? { deload: true } : {}), ...(day.of ? { home: true } : {}),
     ex: d.ex.map(x => ({ name: x.name, ...(x.alt ? { alt: x.alt } : {}), metric: x.metric, basic: x.basic, side: x.side, blk: x.blk, t: x.t, note: (x.note || '').trim(), sets: x.sets.filter(z => z.done).map(z => ({ w: z.w, r: z.r, rir: z.rir, ...(z.max ? { max: true } : {}), ...(z.fail ? { fail: true } : {}), ...(z.af ? { af: true } : {}) })) })).filter(x => x.sets.length),
   };
   if (!rec.ex.length) { toast('Marca al menos una serie'); return; }
   // Reemplazos que no estaban en Ajustes: quedan como propuesta para añadirlos
-  for (const x of d.ex) if (x.alt && x.sets.some(z => z.done)) {
+  for (const x of d.ex) if (x.alt && x.altKind !== 'lvl' && x.sets.some(z => z.done)) {
     const e = routineEx(x, d.dayId), k = `${x.name}|${x.alt}`.toLowerCase();
     if (!e || normAlts(e.alts).some(a => a.name.toLowerCase() === x.alt.toLowerCase()) || S.altNo.includes(k) || S.altSug.some(z => z.k === k)) continue;
     S.altSug.push({ k, name: x.name, alt: x.alt, kind: x.altKind || 'own', date: d.date });
   }
-  S.sessions.push(rec); S.draft = null; setRest(null); save(); closeSheet(); wake(false);
-  go('home'); toast(d.past ? `Sesión guardada el ${shortDate(d.date)}` : 'Sesión guardada. Buen trabajo.');
+  S.sessions.push(rec);
+  const lvMsg = d.deload ? [] : lvAfter(d);
+  S.draft = null; setRest(null); save(); closeSheet(); wake(false);
+  go('home'); toast(lvMsg.length ? lvMsg.join(' · ') : d.past ? `Sesión guardada el ${shortDate(d.date)}` : 'Sesión guardada. Buen trabajo.');
 }
 
+// Tras guardar: cada ejercicio por niveles queda en el nivel que toca la próxima vez.
+// Sube si todas las series llegaron al tope sin fallo y sin lastre; baja si alguna quedó 2+ reps bajo el mínimo o lleva 3 sesiones sin sumar
+function lvAfter(d) {
+  IDX = buildIndex();
+  const out = [];
+  for (const x of d.ex) {
+    if (x.altKind !== 'lvl') continue;
+    const e = routineEx(x, d.dayId); if (!e || !e.levels) continue;
+    const i = e.levels.indexOf(x.alt); if (i < 0) continue;
+    const t = topWork(x.sets.filter(z => z.done)); let n = i;
+    if (t) {
+      const [a, b] = x.t.reps, rw = t.work.filter(z => !z.af), fail = rw.some(z => has(z.rir) && num(z.rir) < 1);
+      const lastre = +x.t.inc > 0 && t.w > 0, full = t.work.length >= x.t.sets[0];
+      if (!lastre && full && !fail && t.reps.every(r => r >= b) && i < e.levels.length - 1) n = i + 1;
+      else if (!lastre && i > 0 && (t.reps.some(r => r <= a - 2) || stalled(exKey(x)))) n = i - 1;
+    }
+    if (n !== i) out.push(`${n > i ? 'Siguiente nivel' : 'Nivel anterior'}: ${e.levels[n]}`);
+    e.lv = n;
+  }
+  return out;
+}
 function sheetExMenu(xi) {
   const x = S.draft.ex[xi], ci = x.sets.findIndex(z => !z.done);
   openSheet(`<div class="eyebrow gold">${BLOCK_NAME[x.blk]}</div><h2 style="margin:6px 0 8px">${esc(lit(x))}</h2>
@@ -1624,10 +1763,12 @@ function sheetSwap(xi) {
   const x = S.draft.ex[xi], alts = altsFor(x).filter(a => a.name !== x.alt);
   const opt = (name, kind, sub, ic) => `<button class="opt" data-act="swapTo" data-x="${xi}" data-name="${esc(name)}" data-kind="${kind}"><span class="ic">${ic}</span><span class="grow">${esc(name)}<small>${sub}</small></span></button>`;
   const last = name => { const p = IDX.last.get(`${x.name} › ${name}`); return p ? ` · ${shortDate(p.date)}: ${esc(setStr(p.sets[0], x.metric))}` : ''; };
-  openSheet(`<div class="eyebrow gold">Cambiar ejercicio</div><h2 style="margin:6px 0 4px">${esc(x.name)}</h2>
-    <div class="muted" style="font-size:13px">${x.basic ? 'Es un básico: cámbialo solo si hace falta. ' : ''}El progreso del reemplazo se guarda dentro de este ejercicio.</div>
+  const lv = x.levels ? x.levels.map((n, i) => [n, i]).filter(([n]) => n !== x.alt) : [];
+  openSheet(`<div class="eyebrow gold">${lv.length ? 'Cambiar nivel o ejercicio' : 'Cambiar ejercicio'}</div><h2 style="margin:6px 0 4px">${esc(x.name)}</h2>
+    <div class="muted" style="font-size:13px">${x.basic ? 'Es un básico: cámbialo solo si hace falta. ' : ''}${lv.length ? 'Cada nivel tiene su propio historial. El que uses hoy queda como el tuyo.' : 'El progreso del reemplazo se guarda dentro de este ejercicio.'}</div>
     <div class="optl alts">
-      ${x.alt ? opt(x.name, '', 'Ejercicio original', IC.undo) : ''}
+      ${lv.map(([n, i]) => opt(n, 'lvl', `Nivel ${i + 1} de ${x.levels.length}` + last(n), `<b style="font-size:13px">${i + 1}</b>`)).join('')}
+      ${x.alt && !x.levels ? opt(x.name, '', 'Ejercicio original', IC.undo) : ''}
       ${alts.map(a => opt(a.name, a.kind, (ALT_KIND[a.kind] || ALT_KIND.own) + last(a.name), KIND_IC[a.kind] || IC.edit)).join('')}
     </div>
     ${alts.length ? '' : '<div class="muted" style="font-size:13px;margin-top:12px">Sin reemplazos guardados. Puedes añadirlos en Ajustes, al editar el día.</div>'}
@@ -1649,10 +1790,10 @@ function swapTo(xi, name, kind) {
 // Historial y nota del ejercicio en curso, juntos en una hoja: la nota se edita arriba y se guarda al escribir
 function sheetExNotes(xi) {
   const x = S.draft.ex[xi], rows = histRows(x.name, x.alt || '');
-  openSheet(`<div class="eyebrow gold">${x.alt ? `Reemplazo de ${esc(x.name)}` : BLOCK_NAME[x.blk]}</div><h2 style="margin:6px 0 4px">${esc(lit(x))}</h2>
+  openSheet(`<div class="eyebrow gold">${lvTag(x) ? `${esc(x.name)} · ${lvTag(x)}` : x.alt ? `Reemplazo de ${esc(x.name)}` : BLOCK_NAME[x.blk]}</div><h2 style="margin:6px 0 4px">${esc(lit(x))}</h2>
     <label class="field"><span>Nota de hoy</span><textarea class="note" style="margin-top:0" data-xnote="${xi}" placeholder="Técnica, molestias, ajustes de máquina…">${esc(x.note)}</textarea></label>
     <div class="field"><span>Historial</span></div>
-    ${rows.length ? `<div class="card lst">${rows.join('')}</div>` : `<div class="empty" style="margin-top:6px">Aún no hay registros de ${x.alt ? 'este reemplazo' : 'este ejercicio'}.</div>`}
+    ${rows.length ? `<div class="card lst">${rows.join('')}</div>` : `<div class="empty" style="margin-top:6px">Aún no hay registros de ${lvTag(x) ? 'este nivel' : x.alt ? 'este reemplazo' : 'este ejercicio'}.</div>`}
     ${rows.length ? `<button class="btn ghost block" style="margin-top:14px" data-act="exOpen" data-name="${esc(x.name)}" data-alt="${esc(x.alt || '')}">Ver progreso completo</button>` : ''}`);
 }
 function histRows(name, alt) {
@@ -1676,13 +1817,14 @@ function vDay() {
   const d = S.routine.days[ui.dayId];
   const hist = IDX.sorted.filter(s => s.dayId === d.id).reverse();
   const durs = hist.map(s => (s.end - s.start) / 1000);
-  const bestVol = Math.max(0, ...hist.map(sessionVolume)), dl = deloadOn(ymd(new Date()));
+  const bestVol = Math.max(0, ...hist.map(sessionVolume)), dl = deloadOn(ymd(new Date())), bestReps = Math.max(0, ...hist.map(sessionReps));
+  const bid = baseOf(d.id), pair = homeOf(bid);
   const rows = b => d[b].map(e => {
-    const prev = IDX.last.get(e.name), x = { name: e.name, metric: e.metric, blk: b, basic: e.basic, t: { sets: e.sets, reps: e.reps, inc: e.inc } };
+    const lvn = lvName(e), prev = IDX.last.get(eKey(e)), x = { name: e.name, metric: e.metric, blk: b, basic: e.basic, band: e.band, t: { sets: e.sets, reps: e.reps, inc: e.inc }, ...(lvn ? { alt: lvn, altKind: 'lvl', levels: e.levels } : {}) };
     const sug = suggest(x, prev);
-    const spark = e.metric === 'wr' ? exSeries(e.name).slice(-8).map(o => bestE1(o.x.sets)) : [];
-    return `<div class="exrow"><div class="top"><div class="nm">${esc(e.name)}${e.basic ? '<span class="tag">Básico</span>' : ''}</div>${sparkline(spark)}</div>
-      <div class="sc">${plannedSets(e, dl)} × ${rng(e.reps)} ${UNIT[e.metric]}${e.side ? ' por lado' : ''}${e.metric === 'wr' ? ` · RIR ${dl ? '≥ 3' : '1–2'}` : ''}</div>
+    const spark = e.metric === 'wr' ? exSeries(e.name, lvn).slice(-8).map(o => bestE1(o.x.sets)) : [];
+    return `<div class="exrow"><div class="top"><div class="nm">${esc(lvn || e.name)}${e.basic ? '<span class="tag">Básico</span>' : ''}</div>${sparkline(spark)}</div>
+      <div class="sc">${plannedSets(e, dl)} × ${rng(e.reps)} ${UNIT[e.metric]}${e.side ? ' por lado' : ''}${e.metric === 'wr' ? ` · RIR ${dl ? '≥ 3' : '1–2'}` : ''}${lvn ? ` · ${cap(lvTag(x))}` : ''}</div>
       <div class="ls">${prev ? `${shortDate(prev.date)}: ${prev.sets.map(z => setStr(z, e.metric)).join(' · ')}` : 'Sin registros todavía'}</div>
       ${sug ? `<div class="sg">${SUG_ARR[sug.dir]} Próxima: ${esc(sugText(sug, e.metric))}<span class="dim"> · ${esc(sug.why)}</span></div>` : ''}</div>`;
   }).join('');
@@ -1690,23 +1832,24 @@ function vDay() {
   <div class="row between"><button class="icon-btn glass" data-act="nav" data-nav="home" aria-label="Volver">${IC.back}</button>
     <button class="icon-btn glass" data-act="editDay" data-day="${d.id}" aria-label="Editar día">${IC.edit}</button></div>
   <div class="dayhead">${HALFTONE}
-    <h1 style="position:relative">${esc(d.name)}</h1></div>
+    <h1 style="position:relative">${esc(S.routine.days[bid].name)}</h1></div>
+  ${pair ? `<div class="seg" style="margin:4px 0 12px">${PLACES.map(([k, l]) => `<button class="${(k === 'casa') === !!d.of ? 'on' : ''}" data-act="place" data-p="${k}">${l}</button>`).join('')}</div>` : ''}
   <div class="grid3" style="margin-top:6px">
     <div class="stat"><div class="v">${hist.length}</div><div class="l">Veces</div></div>
     <div class="stat"><div class="v">${durs.length ? Math.round(durs.reduce((a, b) => a + b, 0) / durs.length / 60) : '—'}</div><div class="l">Min medios</div></div>
-    <div class="stat"><div class="v">${bestVol ? fmtK(bestVol).replace(' kg', '').replace(' t', '') : '—'}${bestVol ? `<span class="muted" style="font-size:14px"> ${bestVol >= 10000 ? 't' : 'kg'}</span>` : ''}</div><div class="l">Mejor vol.</div></div>
+    ${d.of ? `<div class="stat"><div class="v">${bestReps || '—'}</div><div class="l">Máx. reps</div></div>` : `<div class="stat"><div class="v">${bestVol ? fmtK(bestVol).replace(' kg', '').replace(' t', '') : '—'}${bestVol ? `<span class="muted" style="font-size:14px"> ${bestVol >= 10000 ? 't' : 'kg'}</span>` : ''}</div><div class="l">Mejor vol.</div></div>`}
   </div>
   ${BLOCKS.filter(([b]) => d[b].length).map(([b, n]) => `<h3>${n}</h3><div class="card lst">${rows(b)}</div>`).join('')}
   <h3>Historial</h3>
   <div class="card lst">${hist.length ? hist.slice(0, 12).map(s => {
-    const main = s.ex.filter(x => x.blk === 'main' && x.metric === 'wr').slice(0, 2);
+    const main = s.ex.filter(x => x.blk === 'main' && x.metric === 'wr' && bestE1(x.sets) > 0).slice(0, 2);
     return `<button class="hist" data-act="openSession" data-id="${s.id}"><div class="row between"><b>${esc(cap(longDate(s.date)))}</b><span class="dim" style="font-size:12px">${s.rating ? '★'.repeat(s.rating) : ''}</span></div>
-      <div class="sets-t">${fmtMin((s.end - s.start) / 1000)} · ${sessionSets(s)} series · ${fmtK(sessionVolume(s))}</div>
+      <div class="sets-t">${fmtMin((s.end - s.start) / 1000)} · ${sessionSets(s)} series · ${sessLoad(s)}</div>
       ${main.length ? `<div class="sets-t dim" style="font-size:12.5px">${main.map(x => `${esc(lit(x))} ${fmt(bestE1(x.sets))} kg`).join(' · ')} <span style="opacity:.7">(1RM est.)</span></div>` : ''}</button>`;
   }).join('') : '<div class="empty">Aún no has hecho este día. Cuando lo hagas, aquí verás cada sesión.</div>'}</div>
   <div style="height:70px"></div>
   </div>
-  <div class="dockbar"><button class="btn primary" data-act="start" data-day="${d.id}">${IC.play} Empezar ${esc(d.name.toLowerCase())}</button></div>`;
+  <div class="dockbar"><button class="btn primary" data-act="start" data-day="${d.id}">${IC.play} Empezar ${esc(d.name.toLowerCase().replace(' · casa', ' en casa'))}</button></div>`;
 }
 
 const stepDone = (d, s) => s.t === 'warm' ? d.warmup.every(Boolean) : s.t === 'ex' ? d.ex[s.i].sets.every(z => z.done) : false;
@@ -1728,7 +1871,7 @@ function stepExercise(x, xi) {
   const dl = !!S.draft.deload;
   const nd = x.sets.filter(z => z.done).length;
   const ic = ring(60, nd / x.sets.length, `<b>${rng(x.t.reps)}</b><small>${m === 'wr' ? `RIR <i>${dl ? '≥3' : '1–2'}</i>` : esc((unit.trim() || 'reps'))}</small>`, 'xr');
-  const cols = { wr: ['#', 'Anterior', 'kg', 'Reps', 'RIR'], reps: ['#', 'Anterior', 'Reps'], time: ['#', 'Anterior', 'Seg'], dist: ['#', 'Anterior', 'kg', 'Metros'] }[m];
+  const cols = { wr: ['#', 'Anterior', S.routine.days[S.draft.dayId]?.of ? 'Lastre' : 'kg', 'Reps', 'RIR'], reps: ['#', 'Anterior', 'Reps'], time: ['#', 'Anterior', 'Seg'], dist: ['#', 'Anterior', 'kg', 'Metros'] }[m];
   const inp = (si, f, val, p) => x.sets[si].fail && f !== 'w' ? '<span class="num ro">–</span>'
     : `<input class="num" type="text" inputmode="decimal" autocomplete="off" data-x="${xi}" data-s="${si}" data-f="${f}" value="${esc(val)}" placeholder="${esc(p ?? '')}">`;
   const rows = x.sets.map((z, si) => {
@@ -1742,9 +1885,11 @@ function stepExercise(x, xi) {
   }).join('');
   ui.justSet = null;
   const sugHtml = sug ? `<div class="sug ${sug.dir}"><span class="arr">${SUG_ARR[sug.dir]}</span><div><b>${esc(sugText(sug, m))}</b> <span class="w">sugerido</span><div class="w">${esc(sug.why)}</div></div></div>`
-    : (!prev && m === 'wr' ? `<div class="sug"><span class="arr">i</span><div class="w">Primera vez: elige una carga con la que te queden 1–2 reps en reserva al llegar a ${x.t.reps[0]}.</div></div>` : '');
+    : (!prev && m === 'wr' ? `<div class="sug"><span class="arr">i</span><div class="w">${x.altKind === 'lvl' ? `Nivel nuevo: busca ${rng(x.t.reps)} reps con 1–2 en reserva. Si te sobran, añade peso a la mochila.`
+      : x.band ? `Primera vez: elige una banda con la que te queden 1–2 reps en reserva al llegar a ${x.t.reps[0]}.`
+      : `Primera vez: elige una carga con la que te queden 1–2 reps en reserva al llegar a ${x.t.reps[0]}.`}</div></div>` : '');
   return {
-    head: xHead(ic, lit(x), { blk: BLOCK_NAME[x.blk] + (x.alt ? ' · reemplazo' : '') + (dl ? ' · descarga' : ''), more: `<span class="xctl"><button class="xswap ${x.alt ? 'on' : ''}" data-act="swapMenu" data-x="${xi}" aria-label="Cambiar ejercicio">${IC.swap}</button><button class="xswap" data-act="exMenu" data-x="${xi}" aria-label="Opciones del ejercicio">${IC.more}</button></span>` }),
+    head: xHead(ic, lit(x), { blk: BLOCK_NAME[x.blk] + (lvTag(x) ? ' · ' + lvTag(x) : x.alt ? ' · reemplazo' : '') + (dl ? ' · descarga' : ''), more: `<span class="xctl"><button class="xswap ${x.alt && x.altKind !== 'lvl' ? 'on' : ''}" data-act="swapMenu" data-x="${xi}" aria-label="Cambiar ejercicio">${IC.swap}</button><button class="xswap" data-act="exMenu" data-x="${xi}" aria-label="Opciones del ejercicio">${IC.more}</button></span>` }),
     // Nota e historial comparten un botón discreto en la cabecera de la tabla; añadir y quitar series, en los ajustes de la sesión
     body: `${sugHtml}
     ${prev && prev.note ? `<div class="prev-note">Nota del ${shortDate(prev.date)}: “${esc(prev.note)}”</div>` : ''}
@@ -1771,7 +1916,7 @@ function sheetSesList() {
     } else if (s.t === 'ex') {
       const x = d.ex[s.i], n = x.sets.filter(z => z.done).length;
       ic = n === x.sets.length ? done : n ? ring(52, n / x.sets.length, `${n}/${x.sets.length}`) : `<span class="sq">${s.i + 1}</span>`;
-      nm = lit(x); sub = x.alt ? `En lugar de ${esc(x.name)}` : `${x.sets.length} × ${rng(x.t.reps)} ${UNIT[x.metric]} · ${BLOCK_NAME[x.blk]}`;
+      nm = lit(x); sub = x.alt && !lvTag(x) ? `En lugar de ${esc(x.name)}` : `${x.sets.length} × ${rng(x.t.reps)} ${UNIT[x.metric]} · ${lvTag(x) ? cap(lvTag(x)) : BLOCK_NAME[x.blk]}`;
       more = `<button class="icon-btn" data-act="exMenu" data-x="${s.i}" aria-label="Opciones de ${esc(nm)}">${IC.more}</button>`;
     } else { ic = `<span class="sq">${IC.check}</span>`; nm = 'Cierre y notas'; sub = 'Valoración y guardado'; }
     return `<div class="srowl ${k === d.step ? 'cur' : ''} ${s.t !== 'end' && stepDone(d, s) ? 'done' : ''}" role="button" data-act="stepTo" data-k="${k}">${ic}<div class="grow"><div class="t1">${esc(nm)}</div><div class="t2">${sub}</div></div>${more}</div>`;
@@ -1800,7 +1945,7 @@ function sheetSession(id) {
   </div>
   <div class="card lst" style="margin-top:4px">${s.ex.map(x => `<div class="hist"><div class="row between"><b>${esc(lit(x))}${x.alt ? `<span class="alt-of">en lugar de ${esc(x.name)}</span>` : ''}</b><span class="dim" style="font-size:12px">${x.metric === 'wr' && bestE1(x.sets) ? '1RM est. ' + fmt(bestE1(x.sets)) : ''}</span></div><div class="sets-t">${setsLine(x)}</div>${x.note ? `<div class="prev-note" style="margin-top:4px">${esc(x.note)}</div>` : ''}</div>`).join('')}</div>
   ${s.note ? `<div class="card" style="margin-top:14px"><div class="eyebrow">Notas</div><div style="margin-top:6px">${esc(s.note)}</div></div>` : ''}
-  <div class="muted" style="font-size:13px;margin-top:14px">Volumen total: ${fmtK(sessionVolume(s))}</div>
+  <div class="muted" style="font-size:13px;margin-top:14px">${isHomeSess(s) ? 'Repeticiones totales' : 'Volumen total'}: ${sessLoad(s)}</div>
   <button class="btn danger block" style="margin-top:16px" data-act="delSession" data-id="${s.id}">${IC.trash} Eliminar sesión</button>`);
 }
 
@@ -1871,7 +2016,7 @@ function vCal() {
 function sheetCalDay(k) {
   const today = ymd(new Date()), sel = byDate().get(k) || [], selC = cardioOn(k);
   openSheet(`<div class="eyebrow gold">${k === today ? 'Hoy' : k > today ? 'Día futuro' : cap(daysAgo(k))}</div><h2 style="margin:6px 0 10px">${esc(cap(longDate(k)))}</h2>
-    ${sel.length || selC.length ? `<div class="card lst">${sel.map(s => `<button class="list-item" data-act="openSession" data-id="${s.id}"><div class="lead">${esc(s.short)}</div><div class="grow"><div class="t1">${esc(s.dayName)}</div><div class="t2">${fmtMin((s.end - s.start) / 1000)} · ${sessionSets(s)} series · ${fmtK(sessionVolume(s))}</div></div>${IC.chev}</button>`).join('')}${selC.map(cardioItem).join('')}</div>`
+    ${sel.length || selC.length ? `<div class="card lst">${sel.map(s => `<button class="list-item" data-act="openSession" data-id="${s.id}"><div class="lead">${esc(s.short)}</div><div class="grow"><div class="t1">${esc(s.dayName)}</div><div class="t2">${fmtMin((s.end - s.start) / 1000)} · ${sessionSets(s)} series · ${sessLoad(s)}</div></div>${IC.chev}</button>`).join('')}${selC.map(cardioItem).join('')}</div>`
       : `<div class="empty">${k > today ? 'Aún no ha llegado este día.' : 'Sin entrenamiento este día.'}</div>`}
     ${k <= today ? `<button class="btn primary block" style="margin-top:14px" data-act="addTraining" data-d="${k}">${IC.plus} Añadir entrenamiento</button>` : ''}`);
 }
@@ -1881,7 +2026,7 @@ function sheetAddTraining(k) {
   openSheet(`<div class="eyebrow gold">Añadir entrenamiento</div><h2 style="margin:6px 0 4px">${esc(cap(longDate(k)))}</h2>
     ${isToday ? '' : '<div class="muted" style="font-size:13px">Las pesas se registran serie a serie, como una sesión normal, y se guardan en esta fecha.</div>'}
     <h3 style="margin-top:16px">Pesas</h3>
-    <div class="card lst">${S.routine.order.map(id => { const d = S.routine.days[id]; return `<button class="list-item" data-act="trainDay" data-day="${id}" data-d="${k}"><div class="lead">${esc(d.short)}</div><div class="grow"><div class="t1">${esc(d.name)}</div><div class="t2">${dayCount(d)} ejercicios</div></div>${IC.chev}</button>`; }).join('')}</div>
+    <div class="card lst">${S.routine.order.flatMap(id => [id, homeOf(id)].filter(Boolean)).map(id => { const d = S.routine.days[id]; return `<button class="list-item" data-act="trainDay" data-day="${id}" data-d="${k}"><div class="lead">${esc(d.short)}</div><div class="grow"><div class="t1">${esc(d.name)}</div><div class="t2">${dayCount(d)} ejercicios</div></div>${IC.chev}</button>`; }).join('')}</div>
     <h3>Cardio</h3>
     <div class="card lst">
       ${isToday ? `<button class="list-item" data-act="timerStart"><div class="lead">${IC.pulse}</div><div class="grow"><div class="t1">4×4 noruego guiado</div><div class="t2">Temporizador por fases · 40 min</div></div>${IC.chev}</button>` : ''}
@@ -1914,6 +2059,7 @@ function exSeries(name, alt = '') {
   for (const s of IDX.sorted) { const x = s.ex.find(e => e.name === name && (e.alt || '') === alt); if (x) out.push({ s, x }); }
   return out;
 }
+const lvFamily = name => Object.values(S.routine.days).some(d => [...d.ath, ...d.main, ...d.health].some(e => e.name === name && e.levels && e.levels.length));
 const altsDone = name => [...new Set(IDX.sorted.flatMap(s => s.ex.filter(x => x.name === name && x.alt).map(x => x.alt)))];
 /* ---------- Pestañas deslizables ----------
    El recuadro sigue al dedo (en la barra o deslizando el contenido) y puede quedarse entre dos opciones.
@@ -2038,11 +2184,12 @@ function progEx() {
   const groups = { main: [], ath: [], health: [] };
   for (const [n, i] of names) (groups[i.blk] || groups.main).push([n, i]);
   return names.size ? Object.entries(groups).filter(([, l]) => l.length).map(([b, list]) => `<h3>${BLOCK_NAME[b]}</h3><div class="card" style="padding:2px 16px">${list.sort((a, b) => b[1].date.localeCompare(a[1].date)).map(([n, i]) => {
-    const ser = exSeries(n), na = altsDone(n).length;
-    const best = !ser.length ? 0 : i.metric === 'wr' ? Math.max(...ser.map(o => bestE1(o.x.sets))) : Math.max(...ser.map(o => Math.max(...o.x.sets.map(z => num(z.r)))));
+    const ser = exSeries(n), na = altsDone(n).length, lvl = lvFamily(n);
+    const lvR = lvl ? Math.max(0, ...IDX.sorted.flatMap(s => s.ex.filter(x => x.name === n).flatMap(x => x.sets.map(z => num(z.r))))) : 0;
+    const best = lvl ? lvR : !ser.length ? 0 : i.metric === 'wr' ? Math.max(...ser.map(o => bestE1(o.x.sets))) : Math.max(...ser.map(o => Math.max(...o.x.sets.map(z => num(z.r)))));
     const spark = ser.slice(-10).map(o => i.metric === 'wr' ? bestE1(o.x.sets) : Math.max(...o.x.sets.map(z => num(z.r))));
-    return `<button class="list-item" data-act="exOpen" data-name="${esc(n)}"><div class="grow"><div class="t1">${esc(n)}${na ? `<span class="tag">+${na} ${na === 1 ? 'reemplazo' : 'reemplazos'}</span>` : ''}</div><div class="t2">${ser.length ? `${ser.length} ${ser.length === 1 ? 'sesión' : 'sesiones'}` : 'Solo con reemplazos'} · ${daysAgo(i.date)}</div></div>
-      ${sparkline(spark)}<div style="text-align:right;min-width:62px"><div class="gold" style="font-family:var(--serif);font-size:19px">${best ? fmt(best) : '—'}</div><div class="dim" style="font-size:10px;letter-spacing:.1em;text-transform:uppercase">${i.metric === 'wr' ? '1RM est.' : 'mejor ' + UNIT[i.metric]}</div></div></button>`;
+    return `<button class="list-item" data-act="exOpen" data-name="${esc(n)}"><div class="grow"><div class="t1">${esc(n)}${na ? `<span class="tag">${lvl ? `${na} ${na === 1 ? 'nivel' : 'niveles'}` : `+${na} ${na === 1 ? 'reemplazo' : 'reemplazos'}`}</span>` : ''}</div><div class="t2">${ser.length ? `${ser.length} ${ser.length === 1 ? 'sesión' : 'sesiones'}` : lvl ? 'Por niveles' : 'Solo con reemplazos'} · ${daysAgo(i.date)}</div></div>
+      ${sparkline(spark)}<div style="text-align:right;min-width:62px"><div class="gold" style="font-family:var(--serif);font-size:19px">${best ? fmt(best) : '—'}</div><div class="dim" style="font-size:10px;letter-spacing:.1em;text-transform:uppercase">${lvl ? 'mejor reps' : i.metric === 'wr' ? '1RM est.' : 'mejor ' + UNIT[i.metric]}</div></div></button>`;
   }).join('')}</div>`).join('') : '<div class="card" style="margin-top:18px"><div class="empty">Cuando registres sesiones aparecerá aquí la evolución de cada ejercicio y sus récords.</div></div>';
 }
 // Gráfica semanal con el estilo del volumen de Inicio: título y cifra dentro de la tarjeta, barras redondeadas
@@ -2149,7 +2296,7 @@ function vSet() {
   ${pend.length ? `<h3>Reemplazos nuevos</h3><div class="card lst">${pend.map(g => `<div class="altsug"><div class="t1">${esc(g.alt)}</div>
     <div class="t2">Lo usaste en lugar de <b>${esc(g.name)}</b> el ${shortDate(g.date)}. ¿Lo añades a sus reemplazos${g.kind && g.kind !== 'own' ? ` como «${ALT_KIND[g.kind].toLowerCase()}»` : ''}?</div>
     <div class="pair"><button class="btn primary sm" data-act="altSugAdd" data-k="${esc(g.k)}">Añadir</button><button class="btn ghost sm" data-act="altSugNo" data-k="${esc(g.k)}">Descartar</button></div></div>`).join('')}</div>` : ''}
-  <h3>Rutina</h3><div class="card" style="padding:2px 16px">${S.routine.order.map((id, i, o) => { const d = S.routine.days[id]; return `<div class="list-item" role="button" data-act="editDay" data-day="${id}"><div class="lead">${esc(d.short)}</div><div class="grow"><div class="t1">${esc(d.name)}</div><div class="t2">Día ${i + 1} · ${dayCount(d)} ejercicios${d.weekday ? ' · ' + esc(d.weekday) : ''}</div></div>${arrows('dayMove', `data-day="${id}"`, i, o.length)}</div>`; }).join('')}
+  <h3>Rutina</h3><div class="card" style="padding:2px 16px">${S.routine.order.map((id, i, o) => { const d = S.routine.days[id]; return `<div class="list-item" role="button" data-act="editDay" data-day="${id}"><div class="lead">${esc(d.short)}</div><div class="grow"><div class="t1">${esc(d.name)}</div><div class="t2">Día ${i + 1} · ${dayCount(d)} ejercicios${d.weekday ? ' · ' + esc(d.weekday) : ''}${homeOf(id) ? ' · con versión en casa' : ''}</div></div>${arrows('dayMove', `data-day="${id}"`, i, o.length)}</div>`; }).join('')}
     <button class="list-item" data-act="addDay"><div class="lead">${IC.plus}</div><div class="grow"><div class="t1">Añadir día</div><div class="t2">Vacío o copiando uno existente</div></div></button></div>
   <div class="muted" style="font-size:12.5px;margin-top:8px">Las flechas cambian el orden de rotación. En Inicio, la próxima sesión es el día que va después de tu última sesión en este orden.</div>
   <h3>Objetivo semanal</h3><div class="card"><div class="goalpick">${[1, 2, 3, 4, 5, 6, 7].map(n => `<button class="${n === st.goal ? 'on' : ''}" data-act="goal" data-n="${n}">${n}</button>`).join('')}</div></div>
@@ -2209,11 +2356,22 @@ const GUIDE = [
     <li><b>Cargas</b> (granjero, a una mano): primero distancia hasta el tope (+5 m) y después más kilos, sin inclinar el tronco.</li>
     <li><b>Equilibrio</b>: +5 s hasta el objetivo; luego ojos cerrados, superficie inestable o alcances.</li>
     <li><b>Regla de dolor</b>: molestia muscular sí; dolor articular agudo o que empeora sesión tras sesión, no. Para ese ejercicio y consulta.</li></ul>`],
+  ['En casa', `<p>Cada día tiene una <b>versión en casa</b> con calistenia, bandas y una mochila como lastre. Se elige con <b>Gimnasio / Casa</b> en Inicio o en +. Cuenta como su día en la rotación y mantiene patrón de movimiento y series.</p>
+    <p>Crece igual si las series van cerca del fallo: con cargas bajas y altas la hipertrofia fue similar (Schoenfeld 2017), y las flexiones dieron la misma hipertrofia y fuerza que el press banca (Kikuchi 2017; Kotarsky 2018; Calatayud 2015). Por debajo de ~30 % del 1RM rinde menos (Lasevicius 2018), por eso los ejercicios van por <b>niveles</b>.</p>
+    <ul><li><b>↑ Siguiente nivel</b> si todas las series llegaron al tope del rango con RIR ≥ 1 y sin lastre. Vuelves al mínimo. Con lastre en la mochila, se sube el lastre.</li>
+    <li><b>↓ Nivel anterior</b> si alguna serie quedó 2 o más repeticiones bajo el mínimo, o tras 3 sesiones sin sumar.</li>
+    <li>Con bandas, el tope del rango pide una <b>banda más fuerte</b>. En descarga se baja un nivel.</li></ul>
+    <p>La fuerza es específica del gesto: el 1RM con barra avanza menos las semanas en casa. Copenhagen, curl nórdico, saltos y equilibrio son los mismos ejercicios y comparten historial.</p>`],
   ['Descansos', `<p>2–3 min en básicos y 1–2 min en el resto (ACSM 2009); 60–90 s en saltos y lanzamientos. El temporizador usa el descanso de cada ejercicio, que puedes cambiar al editar el día.</p>`],
   ['Reemplazos', `<p>Si cambias un ejercicio, que sea por otro del <b>mismo patrón</b> y músculo (la regla de PHUL); los básicos, solo si hace falta. Su progreso se lleva aparte, con las mismas reglas. Los reemplazos por defecto se revisaron con estudios: barra hexagonal (Swinton 2011), remo invertido y con pecho apoyado (Fenwick 2009), flexiones lastradas (Calatayud 2015; Kikuchi 2017), dominadas (Doma 2013), press de pie con mancuernas (Saeterbakken 2013), extensión de tríceps por encima de la cabeza (Maeo 2023), curl femoral sentado (Maeo 2021) y gemelo de pie frente a sentado (Kinoshita 2023).</p>`],
   ['Cardio y meta OMS', `<p>150–300 min semanales de actividad moderada; 1 min vigoroso cuenta como 2 moderados: <code>M = m + 2v</code> (OMS 2020). El 4×4 aporta 16 min vigorosos (intervalos al 90–95 % de la FC máxima) y 9 moderados, y mejora el VO₂máx más que el trabajo continuo (Helgerud 2007). Progresión: en el 4×4, más potencia o ritmo a la misma frecuencia cardiaca; en zona 2, alargar hasta 60 min. Haz el cardio en días sin pesas.</p>`],
   ['Fuentes', `<ul class="refs">
     <li>Campbell B. <span class="jr">PHUL Workout</span>. Muscle & Strength.</li>
+    <li>Schoenfeld BJ, Grgic J, Ogborn D, Krieger JW (2017). Strength and hypertrophy adaptations between low- vs. high-load resistance training. <span class="jr">J Strength Cond Res</span> 31(12):3508–3523.</li>
+    <li>Lasevicius T et al. (2018). Effects of different intensities of resistance training with equated volume load on muscle strength and hypertrophy. <span class="jr">Eur J Sport Sci</span> 18(6):772–780.</li>
+    <li>Kikuchi N, Nakazato K (2017). Low-load bench press and push-up induce similar muscle hypertrophy and strength gain. <span class="jr">J Exerc Sci Fit</span> 15(1):37–42.</li>
+    <li>Kotarsky CJ et al. (2018). Effect of progressive calisthenic push-up training on muscle strength and thickness. <span class="jr">J Strength Cond Res</span> 32(3):651–659.</li>
+    <li>Calatayud J et al. (2015). Bench press and push-up at comparable levels of muscle activity results in similar strength gains. <span class="jr">J Strength Cond Res</span> 29(1):246–253.</li>
     <li>ACSM (2009). Progression models in resistance training for healthy adults. <span class="jr">Med Sci Sports Exerc</span> 41(3):687–708.</li>
     <li>Schoenfeld BJ, Ogborn D, Krieger JW (2016). Effects of resistance training frequency on muscle hypertrophy. <span class="jr">Sports Med</span> 46(11):1689–1697.</li>
     <li>Schoenfeld BJ, Ogborn D, Krieger JW (2017). Dose-response relationship between weekly resistance training volume and increases in muscle mass. <span class="jr">J Sports Sci</span> 35(11):1073–1082.</li>
@@ -2254,14 +2412,16 @@ function vEditDay() {
   const d = S.routine.days[ui.editDay]; if (!d) return vSet();
   const sel = (f, opts) => `<select class="inp" data-dayf="${f}">${[...new Set([...opts, d[f] || opts[opts.length - 1]])].map(o => `<option ${o === d[f] ? 'selected' : ''}>${esc(o)}</option>`).join('')}</select>`;
   return `<div class="stg"><button class="icon-btn" style="margin-left:-10px" data-act="nav" data-nav="set">${IC.back}</button>
-  <div class="eyebrow gold" style="margin-top:6px">Editar día · ${S.routine.order.indexOf(d.id) + 1} de ${S.routine.order.length}</div><h1 style="font-size:30px">${esc(d.name)}</h1>
+  <div class="eyebrow gold" style="margin-top:6px">${d.of ? `Versión en casa de ${esc(S.routine.days[d.of]?.name || '')}` : `Editar día · ${S.routine.order.indexOf(d.id) + 1} de ${S.routine.order.length}`}</div><h1 style="font-size:30px">${esc(d.name)}</h1>
+  ${homeOf(d.id) ? `<button class="list-item" style="margin-top:10px" data-act="editDay" data-day="${homeOf(d.id)}"><div class="lead">${IC.dumb}</div><div class="grow"><div class="t1">Versión en casa</div><div class="t2">${dayCount(S.routine.days[homeOf(d.id)])} ejercicios de calistenia, bandas y mochila</div></div>${IC.chev}</button>` : ''}
   <div class="card" style="margin-top:16px">
     <label class="field" style="margin-top:0"><span>Nombre</span><input class="inp" data-dayf="name" value="${esc(d.name)}"></label>
     <div class="pair"><label class="field"><span>Código</span><input class="inp" data-dayf="short" maxlength="3" value="${esc(d.short)}"></label><label class="field"><span>Día sugerido</span><input class="inp" data-dayf="weekday" value="${esc(d.weekday)}"></label></div>
     <div class="pair"><label class="field"><span>Zona</span>${sel('zone', ['Torso', 'Pierna', 'Cuerpo completo', 'Otro'])}</label><label class="field"><span>Tipo</span>${sel('kind', ['Potencia', 'Hipertrofia', 'Fuerza', 'Otro'])}</label></div>
   </div>
-  ${BLOCKS.map(([b, n]) => `<h3>${n}</h3><div class="card" style="padding:2px 16px">${d[b].map((e, i, l) => `<div class="list-item" role="button" data-act="editEx" data-b="${b}" data-i="${i}"><div class="grow"><div class="t1">${esc(e.name)}${e.basic ? '<span class="tag">Básico</span>' : ''}${e.metric === 'wr' && e.special && SP_KIND[e.special.k] ? `<span class="tag" title="${e.special.at === 'first' ? 'Primera' : 'Última'} serie">${SP_KIND[e.special.k]}</span>` : ''}</div><div class="t2">${rng(e.sets)} × ${rng(e.reps)} ${UNIT[e.metric]}${e.side ? ' por lado' : ''}${e.metric === 'wr' || e.metric === 'dist' ? ` · +${fmt(e.inc)} kg` : ''} · ${fmtDur(e.rest || DEFAULT_REST[b])}</div></div>${arrows('moveEx', `data-b="${b}"`, i, l.length)}</div>`).join('') || '<div class="empty">Sin ejercicios</div>'}
+  ${BLOCKS.map(([b, n]) => `<h3>${n}</h3><div class="card" style="padding:2px 16px">${d[b].map((e, i, l) => `<div class="list-item" role="button" data-act="editEx" data-b="${b}" data-i="${i}"><div class="grow"><div class="t1">${esc(e.name)}${e.basic ? '<span class="tag">Básico</span>' : ''}${e.metric === 'wr' && e.special && SP_KIND[e.special.k] ? `<span class="tag" title="${e.special.at === 'first' ? 'Primera' : 'Última'} serie">${SP_KIND[e.special.k]}</span>` : ''}</div><div class="t2">${rng(e.sets)} × ${rng(e.reps)} ${UNIT[e.metric]}${e.side ? ' por lado' : ''}${e.levels && e.levels.length ? ` · nivel ${Math.min(e.lv || 0, e.levels.length - 1) + 1} de ${e.levels.length}` : ''}${(e.metric === 'wr' || e.metric === 'dist') && e.inc > 0 ? ` · +${fmt(e.inc)} kg` : ''} · ${fmtDur(e.rest || DEFAULT_REST[b])}</div></div>${arrows('moveEx', `data-b="${b}"`, i, l.length)}</div>`).join('') || '<div class="empty">Sin ejercicios</div>'}
     <button class="list-item" data-act="editEx" data-b="${b}" data-i="-1"><span>${IC.plus}</span><span class="grow" style="font-weight:600">Añadir ejercicio</span></button></div>`).join('')}
+  ${d.of ? '<div class="muted" style="font-size:12.5px;margin-top:12px">Los ejercicios con niveles avanzan solos: al llegar al tope del rango en todas las series pasas al siguiente nivel. Puedes cambiar de nivel en la sesión con ⇆.</div>' : ''}
   <div class="muted" style="font-size:12.5px;margin-top:12px">Toca un ejercicio para editar su pauta y sus reemplazos. Las flechas cambian el orden de los ejercicios. Los cambios aplican a las próximas sesiones; el historial se agrupa por nombre del ejercicio.</div>
   <button class="btn danger block" style="margin-top:22px" data-act="delDay" data-day="${d.id}">${IC.trash} Eliminar este día</button></div>`;
 }
@@ -2283,10 +2443,11 @@ function addDay(from) {
 }
 function delDay(id) {
   const d = S.routine.days[id]; if (!d) return;
-  if (S.routine.order.length <= 1) { toast('La rutina necesita al menos un día'); return; }
-  if (S.draft && S.draft.dayId === id) { toast('Hay una sesión en curso de este día'); return; }
-  if (!confirm(`¿Eliminar «${d.name}» de la rutina? Las sesiones que ya hiciste se conservan.`)) return;
-  delete S.routine.days[id]; S.routine.order = S.routine.order.filter(x => x !== id);
+  const h = homeOf(id);
+  if (!d.of && S.routine.order.length <= 1) { toast('La rutina necesita al menos un día'); return; }
+  if (S.draft && (S.draft.dayId === id || S.draft.dayId === h)) { toast('Hay una sesión en curso de este día'); return; }
+  if (!confirm(`¿Eliminar «${d.name}»${h ? ' y su versión en casa' : ''} de la rutina? Las sesiones que ya hiciste se conservan.`)) return;
+  delete S.routine.days[id]; if (h) delete S.routine.days[h]; S.routine.order = S.routine.order.filter(x => x !== id);
   save(); go('set'); toast('Día eliminado');
 }
 // Reemplazos en edición (se guardan con el ejercicio al pulsar Guardar)
@@ -2316,6 +2477,8 @@ function sheetEditEx(b, i) {
       ${pick('fSp', SP_KIND, e.special?.k || '')}
       <div style="margin-top:6px">${pick('fSpAt', SP_AT, e.special?.at || 'last')}</div>
       <small class="dim" style="display:block;margin-top:6px;font-size:12px">Cada sesión empieza con esa serie marcada. En la descarga no se aplica.</small></div>
+    ${e.levels && e.levels.length ? `<div class="field"><span>Niveles · toca el que toca ahora</span></div>
+    <div class="optl">${e.levels.map((n, k) => `<button class="opt ${k === (e.lv || 0) ? 'on' : ''}" data-act="lvSet" data-b="${b}" data-i="${i}" data-k="${k}"><span class="ic"><b style="font-size:13px">${k + 1}</b></span><span class="grow">${esc(n)}<small>${k === (e.lv || 0) ? 'Nivel actual' : `Nivel ${k + 1} de ${e.levels.length}`}</small></span>${k === (e.lv || 0) ? IC.check : ''}</button>`).join('')}</div>` : ''}
     <div class="field"><span>Reemplazos</span></div>
     <div class="optl altl" id="fAlts">${altRows()}</div>
     <input class="inp" id="fAltName" placeholder="Añadir reemplazo" autocomplete="off" style="margin-top:10px">
@@ -2568,6 +2731,12 @@ const A = {
   nav: el => { closeSheet(); go(el.dataset.nav); },
   train: () => S.draft ? go('session') : S.timer ? go('timer') : sheetPickDay(),
   pickDay: () => sheetPickDay(),
+  place: el => {
+    const p = el.dataset.p;
+    S.settings.place = p; save();
+    if (ui.view === 'day' && ui.dayId) { const b = baseOf(ui.dayId); ui.dayId = p === 'casa' && homeOf(b) ? homeOf(b) : b; }
+    if ($('#sheet').classList.contains('open')) { sheetPickDay(); render(); } else rerender();
+  },
   start: el => startSession(el.dataset.day),
   resume: () => { go('session'); wake(true); },
   minimize: () => go('home'),
@@ -2680,6 +2849,7 @@ const A = {
     if (i >= 0) d[b][i] = e; else d[b].push(e);
     save(); closeSheet(); rerender(); toast('Rutina actualizada');
   },
+  lvSet: el => { const e = S.routine.days[ui.editDay][el.dataset.b][+el.dataset.i]; if (!e) return; e.lv = +el.dataset.k; save(); toast(`Nivel actual: ${e.levels[e.lv]}`); closeSheet(); rerender(); },
   moveEx: el => { const l = S.routine.days[ui.editDay][el.dataset.b], i = +el.dataset.i, j = i + +el.dataset.d; if (j < 0 || j >= l.length) return; [l[i], l[j]] = [l[j], l[i]]; save(); closeSheet(); rerender(); },
   delEx: el => { if (!confirm('¿Eliminar este ejercicio de la rutina?')) return; S.routine.days[ui.editDay][el.dataset.b].splice(+el.dataset.i, 1); save(); closeSheet(); rerender(); },
   resetRoutine: () => { if (!confirm('¿Restaurar la rutina PHUL original? Se pierden tus cambios en ejercicios (no el historial).')) return; S.routine = clone(DEFAULT_ROUTINE); save(); toast('Rutina restaurada'); render(); },
