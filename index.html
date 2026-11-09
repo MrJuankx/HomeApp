@@ -1168,14 +1168,34 @@ function bestStreak() {
   while (ws >= first) { if (weekCount(ws, set) >= g) { cur++; best = Math.max(best, cur); } else cur = 0; ws = addDays(ws, -7); }
   return best;
 }
-// Día siguiente: el que va después de la última sesión hecha, según el orden de Ajustes
-// Próxima sesión: la que sigue a la última de esta semana en el orden de Ajustes; cada lunes vuelve a empezar por el primer día
-// Una sesión en casa cuenta como su día base (of) para la rotación
-function nextDay() {
-  const order = S.routine.order, ws = ymd(weekStart(new Date()));
-  for (let i = IDX.sorted.length - 1; i >= 0 && IDX.sorted[i].date >= ws; i--) { const k = order.indexOf(baseOf(IDX.sorted[i].dayId)); if (k >= 0) return order[(k + 1) % order.length]; }
-  return order[0];
+// Próxima sesión: el día "menos hecho" según el historial reciente (gimnasio y casa cuentan igual: una sesión en casa vale por su día base).
+// Cada sesión pesa w = 2^(−edad/REC_H), con la edad en días (vida media de una semana; se ignoran las de más de REC_MAX días).
+// 1) Zona: carga de la zona = suma de pesos de sus sesiones / nº de días de esa zona en la rutina; se elige la menor.
+// 2) Dentro de la zona, el día con menos carga propia; si empatan, el que hace más que no se hace y luego el orden de Ajustes.
+const REC_H = 7, REC_MAX = 42, REC_EPS = 1e-9;
+function recommend() {
+  const order = S.routine.order, today = ymd(new Date()), zoneOf = id => S.routine.days[id].zone || 'Otro';
+  const nZ = {}, LZ = {}, ld = {}, lastD = {};
+  for (const id of order) { const z = zoneOf(id); nZ[z] = (nZ[z] || 0) + 1; LZ[z] = 0; ld[id] = 0; lastD[id] = null; }
+  for (let i = IDX.sorted.length - 1; i >= 0; i--) {
+    const s = IDX.sorted[i], id = baseOf(s.dayId); if (!(id in ld)) continue;
+    const age = Math.max(0, daysBetween(s.date, today)); if (age > REC_MAX) continue;
+    const w = Math.pow(2, -age / REC_H); ld[id] += w; LZ[zoneOf(id)] += w; if (!lastD[id] || s.date > lastD[id]) lastD[id] = s.date;
+  }
+  const key = id => [LZ[zoneOf(id)] / nZ[zoneOf(id)], ld[id], lastD[id] ? -daysBetween(lastD[id], today) : -Infinity, order.indexOf(id)];
+  const less = (a, b) => { for (let k = 0; k < a.length; k++) { if (Math.abs(a[k] - b[k]) > REC_EPS && a[k] !== b[k]) return a[k] < b[k]; } return false; };
+  let best = order[0];
+  for (const id of order) if (less(key(id), key(best))) best = id;
+  // Motivo corto para Inicio: racha de sesiones recientes de otra zona, o la menos trabajada
+  const z = zoneOf(best); let run = 0, rz = null;
+  for (let i = IDX.sorted.length - 1; i >= 0; i--) {
+    const id = baseOf(IDX.sorted[i].dayId); if (!(id in ld) || daysBetween(IDX.sorted[i].date, today) > REC_MAX) continue;
+    const zz = zoneOf(id); if (zz === z || (rz && zz !== rz)) break; rz = zz; run++;
+  }
+  const why = !Object.values(ld).some(v => v > 0) ? '' : run >= 2 ? `Tras ${run} de ${rz.toLowerCase()}` : run === 1 ? `Tras ${rz.toLowerCase()}` : 'Menos entrenado';
+  return { id: best, why };
 }
+const nextDay = () => recommend().id;
 // Gimnasio o casa: el día base y su versión en casa
 const baseOf = id => { const d = S.routine.days[id]; return d && d.of && S.routine.days[d.of] ? d.of : id; };
 const homeOf = id => Object.values(S.routine.days).find(d => d.of === id)?.id || null;
@@ -1417,7 +1437,7 @@ const placeChips = () => PLACES.map(([k, l]) => `<button class="chip ${S.setting
 function vHome() {
   const now = new Date(), today = ymd(now), ws = weekStart(now), set = trainedSet(), goal = S.settings.goal;
   const done = weekCount(ws, set);
-  const nb = S.routine.days[nextDay()], nd = S.routine.days[placeDay(nb.id)], ndLast = lastOfDay(nd.id), hasHome = !!homeOf(nb.id);
+  const rec = recommend(), nb = S.routine.days[rec.id], nd = S.routine.days[placeDay(nb.id)], ndLast = lastOfDay(nd.id), hasHome = !!homeOf(nb.id);
   const hr = now.getHours();
   const greet = hr < 6 ? ['Buenas', 'noches'] : hr < 13 ? ['Buenos', 'días'] : hr < 20 ? ['Buenas', 'tardes'] : ['Buenas', 'noches'];
   const lastS = IDX.sorted[IDX.sorted.length - 1];
@@ -1464,8 +1484,8 @@ function vHome() {
     <div class="tile hero wide" role="button" data-act="dayOpen" data-day="${nd.id}">${HALFTONE}
       <span class="corner">${ring(58, done / goal, `${done}/${goal}`, 'sm')}</span>
       <div><div class="eyebrow">${B.deload ? `Descarga · hasta el ${shortDate(ymd(addDays(parseYmd(B.deload.to), -1)))}` : 'Próxima sesión'}</div><div class="nm">${esc(nb.name)}</div>
-        ${hasHome ? `<div class="chips place">${placeChips()}</div><div class="t2 hsub">${[nd.weekday, ndLast ? daysAgo(ndLast.date) : 'sin registros'].filter(Boolean).map(esc).join(' · ')}</div>`
-        : `<div class="chips">${nd.weekday ? `<span class="chip">${esc(nd.weekday)}</span>` : ''}<span class="chip">${ndLast ? daysAgo(ndLast.date) : 'Sin registros'}</span></div>`}</div>
+        ${hasHome ? `<div class="chips place">${placeChips()}</div><div class="t2 hsub">${[rec.why, ndLast ? daysAgo(ndLast.date) : 'sin registros'].filter(Boolean).map(esc).join(' · ')}</div>`
+        : `<div class="chips">${rec.why ? `<span class="chip">${esc(rec.why)}</span>` : ''}<span class="chip">${ndLast ? daysAgo(ndLast.date) : 'Sin registros'}</span></div>`}</div>
       <button class="pick" data-act="pickDay" aria-label="Elegir otra sesión">${IC.plus}</button>
       <button class="play" data-act="start" data-day="${nd.id}" aria-label="Empezar ${esc(nd.name)}">${IC.play}</button>
     </div>
@@ -2298,7 +2318,7 @@ function vSet() {
     <div class="pair"><button class="btn primary sm" data-act="altSugAdd" data-k="${esc(g.k)}">Añadir</button><button class="btn ghost sm" data-act="altSugNo" data-k="${esc(g.k)}">Descartar</button></div></div>`).join('')}</div>` : ''}
   <h3>Rutina</h3><div class="card" style="padding:2px 16px">${S.routine.order.map((id, i, o) => { const d = S.routine.days[id]; return `<div class="list-item" role="button" data-act="editDay" data-day="${id}"><div class="lead">${esc(d.short)}</div><div class="grow"><div class="t1">${esc(d.name)}</div><div class="t2">Día ${i + 1} · ${dayCount(d)} ejercicios${d.weekday ? ' · ' + esc(d.weekday) : ''}${homeOf(id) ? ' · con versión en casa' : ''}</div></div>${arrows('dayMove', `data-day="${id}"`, i, o.length)}</div>`; }).join('')}
     <button class="list-item" data-act="addDay"><div class="lead">${IC.plus}</div><div class="grow"><div class="t1">Añadir día</div><div class="t2">Vacío o copiando uno existente</div></div></button></div>
-  <div class="muted" style="font-size:12.5px;margin-top:8px">Las flechas cambian el orden de rotación. En Inicio, la próxima sesión es el día que va después de tu última sesión en este orden.</div>
+  <div class="muted" style="font-size:12.5px;margin-top:8px">Las flechas cambian el orden de la lista. En Inicio, la próxima sesión es la que menos has hecho últimamente: primero la zona (torso o pierna) con menos sesiones recientes, luego el día de esa zona que menos has hecho. Las sesiones recientes pesan más y las de casa cuentan como su día.</div>
   <h3>Objetivo semanal</h3><div class="card"><div class="goalpick">${[1, 2, 3, 4, 5, 6, 7].map(n => `<button class="${n === st.goal ? 'on' : ''}" data-act="goal" data-n="${n}">${n}</button>`).join('')}</div></div>
   <h3>Progresión</h3><div class="card" style="padding:2px 16px">
     <div class="setting col"><div style="font-weight:600">${B.deload ? `Descarga hasta el ${shortDate(ymd(addDays(parseYmd(B.deload.to), -1)))}` : `Bloque ${B.n} · semana ${Math.min(B.wk, B.N + 1)}${B.wk > B.N ? ': toca descarga' : ` de ${B.N}`}`}</div>
@@ -2356,7 +2376,7 @@ const GUIDE = [
     <li><b>Cargas</b> (granjero, a una mano): primero distancia hasta el tope (+5 m) y después más kilos, sin inclinar el tronco.</li>
     <li><b>Equilibrio</b>: +5 s hasta el objetivo; luego ojos cerrados, superficie inestable o alcances.</li>
     <li><b>Regla de dolor</b>: molestia muscular sí; dolor articular agudo o que empeora sesión tras sesión, no. Para ese ejercicio y consulta.</li></ul>`],
-  ['En casa', `<p>Cada día tiene una <b>versión en casa</b> con calistenia, bandas y una mochila como lastre. Se elige con <b>Gimnasio / Casa</b> en Inicio o en +. Cuenta como su día en la rotación y mantiene patrón de movimiento y series.</p>
+  ['En casa', `<p>Cada día tiene una <b>versión en casa</b> con calistenia, bandas y una mochila como lastre. Se elige con <b>Gimnasio / Casa</b> en Inicio o en +. Cuenta como su día en la recomendación de Inicio y mantiene patrón de movimiento y series.</p>
     <p>Crece igual si las series van cerca del fallo: con cargas bajas y altas la hipertrofia fue similar (Schoenfeld 2017), y las flexiones dieron la misma hipertrofia y fuerza que el press banca (Kikuchi 2017; Kotarsky 2018; Calatayud 2015). Por debajo de ~30 % del 1RM rinde menos (Lasevicius 2018), por eso los ejercicios van por <b>niveles</b>.</p>
     <ul><li><b>↑ Siguiente nivel</b> si todas las series llegaron al tope del rango con RIR ≥ 1 y sin lastre. Vuelves al mínimo. Con lastre en la mochila, se sube el lastre.</li>
     <li><b>↓ Nivel anterior</b> si alguna serie quedó 2 o más repeticiones bajo el mínimo, o tras 3 sesiones sin sumar.</li>
